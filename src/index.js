@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 module.exports = {
+  hash: require('./hash'),
   nox58check: require('./nox58check'),
   address: require('./address'),
   networks: require('./networks')

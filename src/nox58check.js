@@ -6,14 +6,9 @@
 
 const base58 = require('bs58')
 const Buffer = require('safe-buffer').Buffer
-const blakejs = require('blakejs')
+const hash = require('./hash')
 
-module.exports = Nox58checkBase(dblake2b256)
-
-function dblake2b256 (buffer) {
-  const tmp = blakejs.blake2b(buffer, null, 32)
-  return blakejs.blake2b(tmp, null, 32)
-}
+module.exports = Nox58checkBase(hash.dblake2b256)
 
 function Nox58checkBase (checksumFn) {
   // Encode a buffer as a base58-check encoded string
