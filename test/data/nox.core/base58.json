@@ -1,0 +1,19 @@
+{
+  "base58":[
+    ["803f722b2c4074bb8b905d35e8d002248e7d9163","2ndV9ubASYT2AbN6yDxnstnLsiWn"]
+  ],
+  "base58check":[
+    [
+      "803f722b2c4074bb8b905d35e8d002248e7d9163","1Ch7VrkAksmkAECjx1L7SmkvurPVMbsVD3",
+      {
+        "mode": "btc"
+      }
+    ],
+    [
+      "803f722b2c4074bb8b905d35e8d002248e7d9163","RmHxseQZQmjanxAovJL6a8GBiCCv6bMkx3x",
+      {
+        "mode": "nox"
+      }
+    ]
+  ]
+}
