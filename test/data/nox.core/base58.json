@@ -6,13 +6,29 @@
     [
       "803f722b2c4074bb8b905d35e8d002248e7d9163","1Ch7VrkAksmkAECjx1L7SmkvurPVMbsVD3",
       {
-        "mode": "btc"
+        "coin": "btc",
+        "network": "mainnet"
+      }
+    ],
+    [
+      "803f722b2c4074bb8b905d35e8d002248e7d9163","Nm4chJPVfLcwQqVSQhfsa9yL4fnMen1PNoc",
+      {
+        "coin": "nox",
+        "network": "mainnet"
+      }
+    ],
+    [
+      "803f722b2c4074bb8b905d35e8d002248e7d9163","TmBJbDgQPFh38UzxsMA2MnNaHTV7mM9AngZ",
+      {
+        "coin": "nox",
+        "network": "testnet"
       }
     ],
     [
       "803f722b2c4074bb8b905d35e8d002248e7d9163","RmHxseQZQmjanxAovJL6a8GBiCCv6bMkx3x",
       {
-        "mode": "nox"
+        "coin": "nox",
+        "network": "privnet"
       }
     ]
   ]

@@ -4,5 +4,6 @@
 
 module.exports = {
   nox58check: require('./nox58check'),
-  address: require('./address')
+  address: require('./address'),
+  networks: require('./networks')
 }

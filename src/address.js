@@ -2,10 +2,12 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
+const Buffer = require('safe-buffer').Buffer
 const nox58check = require('./nox58check')
 
 module.exports = {
-  fromBase58Check: fromBase58Check
+  fromBase58Check: fromBase58Check,
+  toBase58Check: toBase58Check
 }
 
 function fromBase58Check (address) {
@@ -14,8 +16,16 @@ function fromBase58Check (address) {
   if (payload.length < 22) throw new TypeError(address + ' is too short')
   if (payload.length > 22) throw new TypeError(address + ' is too long')
 
-  const version = payload.readUInt16LE(0)
+  const version = payload.readUInt16BE(0)
   const hash = payload.slice(2)
 
   return { version: version, hash: hash }
+}
+
+function toBase58Check (hash, version) {
+  const payload = Buffer.allocUnsafe(22)
+  payload.writeUInt16BE(version, 0)
+  hash.copy(payload, 2)
+
+  return nox58check.encode(payload)
 }
