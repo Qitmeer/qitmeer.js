@@ -1,4 +1,4 @@
-## noxjs-lib
+# noxjs-lib
 
 The NOX client-side JavaScript library
 
