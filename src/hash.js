@@ -4,6 +4,7 @@
 
 const createHash = require('create-hash')
 const blakejs = require('blakejs')
+const Buffer = require('safe-buffer').Buffer
 
 function ripemd160 (buffer) {
   return createHash('rmd160').update(buffer).digest()
@@ -22,11 +23,11 @@ function dsha256 (buffer) {
 }
 
 function blake2b256 (buffer) {
-  return blakejs.blake2b(buffer, null, 32)
+  return Buffer.from(blakejs.blake2b(buffer, null, 32))
 }
 
 function blake2b512 (buffer) {
-  return blakejs.blake2b(buffer, null, 64)
+  return Buffer.from(blakejs.blake2b(buffer, null, 64))
 }
 
 function hash160 (buffer) {

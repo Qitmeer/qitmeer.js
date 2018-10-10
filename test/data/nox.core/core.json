@@ -1,0 +1,49 @@
+{
+  "entropy" : "6cfbd42df51a8a4c53675172f34a606a604b55dea75beee6ac1e2bb28f608331",
+  "base58":[
+    ["0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","An9mxLYzbKZ8d8EJVwVLuv5pFss"]
+  ],
+  "base58check":[
+    [
+      "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","1Ch7VrkAksmkAECjx1L7SmkvurPVMbsVD3",
+      {
+        "coin": "btc",
+        "network": "mainnet"
+      }
+    ],
+    [
+      "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","NmHNB2T6pYWj2xRnNZZAuXkXx3iEfiQmocS",
+      {
+        "coin": "nox",
+        "network": "mainnet"
+      }
+    ],
+    [
+      "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","TmQ44wk1YTapkbwJqD3KhA9nAqQznL9vqFW",
+      {
+        "coin": "nox",
+        "network": "testnet"
+      }
+    ],
+    [
+      "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","Rm7NkPMsHGSuYFg1o8o4b1v7owdYArn596R",
+      {
+        "coin": "nox",
+        "network": "privnet"
+      }
+    ]
+  ],
+  "hash" : {
+    "sha256" : [
+      [   "", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" ],
+      [ "00", "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d" ]
+    ],
+    "blake2b256" : [
+      [   "", "0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8" ],
+      [ "01", "ee155ace9c40292074cb6aff8c9ccdd273c81648ff1149ef36bcea6ebb8a3e25" ]
+    ],
+    "hash160" : [
+      [ "03194f326b7ab00f8a6e3a780450cf23eba8063b4ebc3a6cc38d53b21492863d75","0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6"]
+    ]
+  }
+}

@@ -6,7 +6,7 @@ const { describe, it } = require('mocha')
 const assert = require('assert')
 const base58 = require('bs58')
 const nox = require('../')
-const data = require('./data/nox.core/base58.json')
+const data = require('./data/nox.core/core.json')
 
 describe('Nox-core', function () {
   // base58
@@ -14,25 +14,52 @@ describe('Nox-core', function () {
     data.base58.forEach(function (f) {
       const hexStr = f[0]
       const b58Str = f[1]
-      it('base58 encode ' + hexStr + ' -> ' + b58Str, function () {
+      it('encode ' + hexStr + ' -> ' + b58Str, function () {
         const encoded = base58.encode(Buffer.from(hexStr, 'hex')).toString('hex')
         assert.strictEqual(encoded, b58Str)
       })
-      it('base58 decode ' + b58Str + ' -> ' + hexStr, function () {
+      it('decode ' + b58Str + ' -> ' + hexStr, function () {
         const decoded = base58.decode(b58Str).toString('hex')
         assert.strictEqual(decoded, hexStr)
       })
     })
   })
+  // hash
+  describe('nox.hash', function () {
+    data.hash.sha256.forEach(function (d) {
+      const inputStr = d[0]
+      const hashStr = d[1]
+      it('sha256 ' + inputStr + ' -> ' + hashStr, function () {
+        const hash = nox.hash.sha256(Buffer.from(inputStr, 'hex')).toString('hex')
+        assert.strictEqual(hash, hashStr)
+      })
+    })
+    data.hash.blake2b256.forEach(function (d) {
+      const inputStr = d[0]
+      const hashStr = d[1]
+      it('blake2b256 ' + inputStr + ' -> ' + hashStr, function () {
+        const hash = nox.hash.blake2b256(Buffer.from(inputStr, 'hex')).toString('hex')
+        assert.strictEqual(hash, hashStr)
+      })
+    })
+    data.hash.hash160.forEach(function (d) {
+      const inputStr = d[0]
+      const hashStr = d[1]
+      it('hash160 ' + inputStr + ' -> ' + hashStr, function () {
+        const hash = nox.hash.hash160(Buffer.from(inputStr, 'hex')).toString('hex')
+        assert.strictEqual(hash, hashStr)
+      })
+    })
+  })
   // base58check
-  describe('nox base58check', function () {
+  describe('nox.address', function () {
     data.base58check.forEach(function (f) {
       const hexStr = f[0]
       const nox58checkStr = f[1]
       const coin = f[2].coin
       const net = f[2].network
       if (coin === 'nox') {
-        it('nox base58check decode ' + nox58checkStr, function () {
+        it('fromBase58Checke ' + nox58checkStr, function () {
           const decoded = nox.address.fromBase58Check(nox58checkStr)
           assert.strictEqual(decoded.hash.toString('hex'), hexStr)
           switch (net) {
@@ -49,7 +76,7 @@ describe('Nox-core', function () {
               assert.fail('unknown network ' + net)
           }
         })
-        it('nox base58check encode ' + hexStr, function () {
+        it('toBase58Check ' + hexStr, function () {
           let encoded
           switch (net) {
             case 'privnet':
