@@ -101,4 +101,19 @@ describe('Nox-core', function () {
       }
     })
   })
+  describe('nox.EC', function () {
+    data.EC.wif.compressed.forEach(function (f) {
+      const ecPrivStr = f[0]
+      const wifStr = f[1]
+      let ecPair = nox.ec.fromWIF(wifStr)
+      it('fromWIF ' + wifStr, function () {
+        assert.strictEqual(ecPrivStr, Buffer.from(ecPair.privateKey).toString('hex'))
+        assert.strictEqual(true, ecPair.compressed)
+      })
+      it('toWIF ' + ecPrivStr, function () {
+        const wif = ecPair.toWIF()
+        assert.strictEqual(wifStr, wif)
+      })
+    })
+  })
 })

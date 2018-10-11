@@ -45,5 +45,17 @@
     "hash160" : [
       [ "03194f326b7ab00f8a6e3a780450cf23eba8063b4ebc3a6cc38d53b21492863d75","0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6"]
     ]
+  },
+  "EC" : {
+    "wif" : {
+      "compressed" : [
+        ["84ec10bb16e64e8d02b1142ea5c7a564c6f9ac3203d5cfd2adfaa11d62b15411","L1g6Qv9Q7H6mraoqLQ4r4pH4up2qfVqzx6y48AoUw1zkke9BnR1F"],
+        ["1a6102e379162ea3f3dab3546161cff41e12ed89dfe37efc2833fd1831d3d157","Kx6zGGVJHDKe8AonXjAE5HP7GnZ3X6mWtX6KG5eFfgDdmfbDt1YE"]
+      ],
+      "uncompressed" : [
+        ["84ec10bb16e64e8d02b1142ea5c7a564c6f9ac3203d5cfd2adfaa11d62b15411","5Jppu6F8xLxgchjnPX9aKY6uYT4b8pKMNzzZRjYq1uniBRWhZ1Z"],
+        ["1a6102e379162ea3f3dab3546161cff41e12ed89dfe37efc2833fd1831d3d157","5J1uPwiJWW5Dwe7XFfYznq7pe7F4HniMNBtxLjHbb8ynVFYEh1x"]
+      ]
+    }
   }
 }

@@ -4,6 +4,7 @@
 
 module.exports = {
   hash: require('./hash'),
+  ec: require('./ec'),
   nox58check: require('./nox58check'),
   address: require('./address'),
   networks: require('./networks')

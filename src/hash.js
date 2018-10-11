@@ -7,11 +7,11 @@ const blakejs = require('blakejs')
 const Buffer = require('safe-buffer').Buffer
 
 function ripemd160 (buffer) {
-  return createHash('rmd160').update(buffer).digest()
+  return Buffer.from(createHash('rmd160').update(buffer).digest())
 }
 
 function sha256 (buffer) {
-  return createHash('sha256').update(buffer).digest()
+  return Buffer.from(createHash('sha256').update(buffer).digest())
 }
 
 function bitcoin160 (buffer) {

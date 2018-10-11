@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 const Buffer = require('safe-buffer').Buffer
-const nox58check = require('./nox58check')
+const nox58check = require('./nox58check').default
 
 module.exports = {
   fromBase58Check: fromBase58Check,

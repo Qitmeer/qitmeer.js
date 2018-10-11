@@ -8,7 +8,11 @@ const base58 = require('bs58')
 const Buffer = require('safe-buffer').Buffer
 const hash = require('./hash')
 
-module.exports = Nox58checkBase(hash.dblake2b256)
+module.exports = {
+  default: Nox58checkBase(hash.dblake2b256),
+  Nox58checkdsha256: Nox58checkBase(hash.dsha256),
+  Nox58checkBase: Nox58checkBase
+}
 
 function Nox58checkBase (checksumFn) {
   // Encode a buffer as a base58-check encoded string
