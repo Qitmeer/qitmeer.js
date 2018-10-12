@@ -102,17 +102,62 @@ describe('Nox-core', function () {
     })
   })
   describe('nox.EC', function () {
-    data.EC.wif.compressed.forEach(function (f) {
-      const ecPrivStr = f[0]
-      const wifStr = f[1]
-      let ecPair = nox.ec.fromWIF(wifStr)
-      it('fromWIF ' + wifStr, function () {
-        assert.strictEqual(ecPrivStr, Buffer.from(ecPair.privateKey).toString('hex'))
-        assert.strictEqual(true, ecPair.compressed)
+    describe('wif compressed', function () {
+      data.EC.wif.compressed.forEach(function (f) {
+        const ecPrivStr = f[0]
+        const wifStr = f[1]
+        const ecPair = nox.ec.fromWIF(wifStr)
+        it('fromWIF ' + wifStr, function () {
+          assert.strictEqual(ecPrivStr, Buffer.from(ecPair.privateKey).toString('hex'))
+          assert.strictEqual(true, ecPair.compressed)
+        })
+        it('toWIF ' + ecPrivStr, function () {
+          const wif = ecPair.toWIF()
+          assert.strictEqual(wifStr, wif)
+        })
       })
-      it('toWIF ' + ecPrivStr, function () {
-        const wif = ecPair.toWIF()
-        assert.strictEqual(wifStr, wif)
+    })
+    describe('wif uncompressed', function () {
+      data.EC.wif.uncompressed.forEach(function (f) {
+        const ecPrivStr = f[0]
+        const wifStr = f[1]
+        const ecPair = nox.ec.fromWIF(wifStr)
+        it('fromWIF ' + wifStr, function () {
+          assert.strictEqual(ecPrivStr, Buffer.from(ecPair.privateKey).toString('hex'))
+          assert.strictEqual(false, ecPair.compressed)
+        })
+        it('toWIF ' + ecPrivStr, function () {
+          const wif = ecPair.toWIF()
+          assert.strictEqual(wifStr, wif)
+        })
+      })
+    })
+    describe('keypair compressed', function () {
+      data.EC.keypair.compressed.forEach(function (f) {
+        const privHex = f[0]
+        const pubHex = f[1]
+        it('fromPrivateKey ' + privHex, function () {
+          const keyPair = nox.ec.fromPrivateKey(Buffer.from(privHex, 'hex'))
+          assert.strictEqual(keyPair.compressed, true)
+          assert.strictEqual(keyPair.privateKey.toString('hex'), privHex)
+          assert.strictEqual(keyPair.__priv.toString('hex'), privHex)
+          assert.strictEqual(keyPair.publicKey.toString('hex'), pubHex)
+          assert.strictEqual(keyPair.__pub.toString('hex'), pubHex)
+        })
+      })
+    })
+    describe('keypair uncompressed', function () {
+      data.EC.keypair.uncompressed.forEach(function (f) {
+        const privHex = f[0]
+        const pubHex = f[1]
+        it('fromPrivateKey ' + privHex, function () {
+          const keyPair = nox.ec.fromPrivateKey(Buffer.from(privHex, 'hex'), { 'compressed': false })
+          assert.strictEqual(keyPair.compressed, false)
+          assert.strictEqual(keyPair.privateKey.toString('hex'), privHex)
+          assert.strictEqual(keyPair.__priv.toString('hex'), privHex)
+          assert.strictEqual(keyPair.publicKey.toString('hex'), pubHex)
+          assert.strictEqual(keyPair.__pub.toString('hex'), pubHex)
+        })
       })
     })
   })

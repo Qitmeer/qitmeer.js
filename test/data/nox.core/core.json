@@ -56,6 +56,16 @@
         ["84ec10bb16e64e8d02b1142ea5c7a564c6f9ac3203d5cfd2adfaa11d62b15411","5Jppu6F8xLxgchjnPX9aKY6uYT4b8pKMNzzZRjYq1uniBRWhZ1Z"],
         ["1a6102e379162ea3f3dab3546161cff41e12ed89dfe37efc2833fd1831d3d157","5J1uPwiJWW5Dwe7XFfYznq7pe7F4HniMNBtxLjHbb8ynVFYEh1x"]
       ]
+    },
+    "keypair" : {
+      "compressed": [
+        [ "0000000000000000000000000000000000000000000000000000000000000001",
+          "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798" ]
+      ],
+      "uncompressed": [
+        [ "0000000000000000000000000000000000000000000000000000000000000001",
+          "0479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"]
+      ]
     }
   }
 }
