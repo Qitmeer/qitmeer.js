@@ -176,5 +176,29 @@ describe('Nox-core', function () {
         })
       })
     })
+    describe('random', function () {
+      it('fromEntropy', function () {
+        const keyPair = nox.ec.fromEntropy()
+        assert.strictEqual(true, keyPair.compressed)
+        assert.strictEqual(32, keyPair.privateKey.length)
+        assert.strictEqual(33, keyPair.publicKey.length)
+        assert(keyPair.publicKey[0] === 0x03 || keyPair.publicKey[0] === 0x02)
+        const keyPair2 = nox.ec.fromPrivateKey(keyPair.privateKey)
+        assert.deepStrictEqual(keyPair2.publicKey, keyPair.publicKey)
+      })
+    })
+    describe('signature', function () {
+      it('sign', function () {
+        const ecPair = nox.ec.fromWIF('L1g6Qv9Q7H6mraoqLQ4r4pH4up2qfVqzx6y48AoUw1zkke9BnR1F')
+        const signature = ecPair.sign(Buffer.from('31d336c0f0fa39bd83e1349549befa279a4e3cf6da3bfcf77578ba078b99476d', 'hex'))
+        assert.strictEqual('a62d560012f8a3714b8c85c4282c7498b5490ea8a7e4ab5b392834264574d9d41b445cabb744c6aeeececfcc92cf2effaf2ac177a55cfd6071e41bf45eeb4454', signature.toString('hex'))
+      })
+      it('verify', function () {
+        const ecPair = nox.ec.fromWIF('L1g6Qv9Q7H6mraoqLQ4r4pH4up2qfVqzx6y48AoUw1zkke9BnR1F')
+        const result = ecPair.verify(Buffer.from('31d336c0f0fa39bd83e1349549befa279a4e3cf6da3bfcf77578ba078b99476d', 'hex'),
+          Buffer.from('a62d560012f8a3714b8c85c4282c7498b5490ea8a7e4ab5b392834264574d9d41b445cabb744c6aeeececfcc92cf2effaf2ac177a55cfd6071e41bf45eeb4454', 'hex'))
+        assert.strictEqual(true, result)
+      })
+    })
   })
 })
