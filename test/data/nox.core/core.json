@@ -179,7 +179,59 @@
       "height": 114,
       "txRoot": "904a99eee73e47b9b4a41e5e53d280bc0e2ceb4f742e1633e5b090dd7ce27740",
       "transactions": [
-        "79038c52b5a0cbb7dff5624b283c39f576b94f19a57aa48162d51c979ab67de4"
+        {
+          "hex": "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffffffffffff0300f2052a010000001976a914699e7e705893b4e7b3f9742ca55a743c7167288a88ac00000000000000000e6a0c72000000ac7c8d02bd8cf8a90082357a0a0000001976a91465ffb166a5eb252285b207a5639f97f9dbc42dfb88ac00000000000000000100743ba40b00000000000000ffffffff0700002f6e6f782f",
+          "txid": "79038c52b5a0cbb7dff5624b283c39f576b94f19a57aa48162d51c979ab67de4",
+          "txhash": "904a99eee73e47b9b4a41e5e53d280bc0e2ceb4f742e1633e5b090dd7ce27740",
+          "version": 1,
+          "locktime": 0,
+          "expire": 0,
+          "vin": [
+            {
+              "amountin": 50000000000,
+              "blockheight": 0,
+              "txindex": 4294967295,
+              "coinbase": "00002f6e6f782f",
+              "sequence": 4294967295
+            }
+          ],
+          "vout": [
+            {
+              "amount": 5000000000,
+              "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 699e7e705893b4e7b3f9742ca55a743c7167288a OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a914699e7e705893b4e7b3f9742ca55a743c7167288a88ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                  "RmFuDy3KowguWK63umdUzQBj3L4nKDmF43W"
+                ]
+              }
+            },
+            {
+              "amount": 0,
+              "scriptPubKey": {
+                "asm": "OP_RETURN 72000000ac7c8d02bd8cf8a9",
+                "hex": "6a0c72000000ac7c8d02bd8cf8a9",
+                "type": "nulldata"
+              }
+            },
+            {
+              "amount": 45000000000,
+              "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 65ffb166a5eb252285b207a5639f97f9dbc42dfb OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a91465ffb166a5eb252285b207a5639f97f9dbc42dfb88ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                  "RmFa5hnPd3uQRpzr3xWTfr8EFZdX7dS1qzV"
+                ]
+              }
+            }
+          ],
+          "blockheight": 114,
+          "confirmations": 5
+        }
       ],
       "stateRoot": "0000000000000000000000000000000000000000000000000000000000000000",
       "bits": "1f105590",
