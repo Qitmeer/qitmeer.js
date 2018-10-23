@@ -7,6 +7,10 @@ const Transaction = require('./transaction')
 
 module.exports = Block
 
+// version + parentRoot + txRoot + stateRoot + difficulty + height + timestamp + nonce
+// 124 = 4 + 32 + 32 + 32 + 4 + 8 + 4 + 8
+const BlockHeaderSize = 124
+
 function Block () {
   this.version = 1
   this.parentRoot = null
@@ -56,7 +60,7 @@ Block.fromBuffer = function (buffer) {
   block.timestamp = readUInt32()
   block.nonce = readUInt64()
 
-  if (buffer.length === 80) return block
+  if (buffer.length === BlockHeaderSize) return block
 
   function readVarInt () {
     const vi = varuint.decode(buffer, offset)
@@ -78,4 +82,12 @@ Block.fromBuffer = function (buffer) {
   }
 
   return block
+}
+
+Block.prototype.byteLength = function (headersOnly) {
+  if (headersOnly || !this.transactions) return BlockHeaderSize
+
+  return BlockHeaderSize + varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
+    return a + x.byteLength()
+  }, 0)
 }

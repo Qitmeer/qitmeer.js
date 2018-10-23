@@ -202,54 +202,62 @@ describe('Nox-core', function () {
     })
   })
   describe('nox.tx', function () {
-    it('fromBuffer nowitness', function () {
+    describe('nowitness', function () {
       const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
-      assert.strictEqual(tx.version, data.TX.nowitness.tx.version)
-      assert.strictEqual(tx.vin.length, data.TX.nowitness.tx.vin.length)
-      tx.vin.forEach(function (vin, index) {
-        assert.strictEqual(vin.txid.reverse().toString('hex'), data.TX.nowitness.tx.vin[index].txid)
-        assert.strictEqual(vin.vout, data.TX.nowitness.tx.vin[index].vout)
-        assert.strictEqual(vin.sequence, data.TX.nowitness.tx.vin[index].sequence)
-        assert.deepStrictEqual(vin.script, Buffer.from(data.TX.nowitness.tx.vin[index].scriptSig.hex, 'hex'))
+      it('fromBuffer', function () {
+        assert.strictEqual(tx.version, data.TX.nowitness.tx.version)
+        assert.strictEqual(tx.vin.length, data.TX.nowitness.tx.vin.length)
+        tx.vin.forEach(function (vin, index) {
+          assert.strictEqual(vin.txid.reverse().toString('hex'), data.TX.nowitness.tx.vin[index].txid)
+          assert.strictEqual(vin.vout, data.TX.nowitness.tx.vin[index].vout)
+          assert.strictEqual(vin.sequence, data.TX.nowitness.tx.vin[index].sequence)
+          assert.deepStrictEqual(vin.script, Buffer.from(data.TX.nowitness.tx.vin[index].scriptSig.hex, 'hex'))
+        })
+        assert.strictEqual(tx.vout.length, data.TX.nowitness.tx.vout.length)
+        tx.vout.forEach(function (vout, index) {
+          assert.strictEqual(vout.amount, data.TX.nowitness.tx.vout[index].amount)
+          assert.deepStrictEqual(vout.script, Buffer.from(data.TX.nowitness.tx.vout[index].scriptPubKey.hex, 'hex'))
+        })
+        assert.strictEqual(tx.locktime, data.TX.nowitness.tx.locktime)
+        assert.strictEqual(tx.exprie, data.TX.nowitness.tx.expire)
       })
-      assert.strictEqual(tx.vout.length, data.TX.nowitness.tx.vout.length)
-      tx.vout.forEach(function (vout, index) {
-        assert.strictEqual(vout.amount, data.TX.nowitness.tx.vout[index].amount)
-        assert.deepStrictEqual(vout.script, Buffer.from(data.TX.nowitness.tx.vout[index].scriptPubKey.hex, 'hex'))
+      it('byteLength', function () {
+        assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.nowitness.hex, 'hex').length)
       })
-      assert.strictEqual(tx.locktime, data.TX.nowitness.tx.locktime)
-      assert.strictEqual(tx.exprie, data.TX.nowitness.tx.expire)
-      assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.nowitness.hex, 'hex').length)
     })
-    it('fromBuffer witness', function () {
+    describe('full witness', function () {
       const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
-      assert.strictEqual(tx.version, data.TX.witness.tx.version)
-      assert.strictEqual(tx.vin.length, data.TX.witness.tx.vin.length)
-      tx.vin.forEach(function (vin, index) {
-        assert.strictEqual(vin.txid.reverse().toString('hex'), data.TX.witness.tx.vin[index].txid)
-        assert.strictEqual(vin.vout, data.TX.witness.tx.vin[index].vout)
-        assert.strictEqual(vin.sequence, data.TX.witness.tx.vin[index].sequence)
-        assert.strictEqual(vin.amountin, data.TX.witness.tx.vin[index].amountin)
-        assert.strictEqual(vin.blockheight, data.TX.witness.tx.vin[index].blockheight)
-        assert.strictEqual(vin.txindex, data.TX.witness.tx.vin[index].txindex)
-        assert.deepStrictEqual(vin.script, Buffer.from(data.TX.witness.tx.vin[index].scriptSig.hex, 'hex'))
-        assert.strictEqual(106, vin.script.length)
+      it('fromBuffer', function () {
+        assert.strictEqual(tx.version, data.TX.witness.tx.version)
+        assert.strictEqual(tx.vin.length, data.TX.witness.tx.vin.length)
+        tx.vin.forEach(function (vin, index) {
+          assert.strictEqual(vin.txid.reverse().toString('hex'), data.TX.witness.tx.vin[index].txid)
+          assert.strictEqual(vin.vout, data.TX.witness.tx.vin[index].vout)
+          assert.strictEqual(vin.sequence, data.TX.witness.tx.vin[index].sequence)
+          assert.strictEqual(vin.amountin, data.TX.witness.tx.vin[index].amountin)
+          assert.strictEqual(vin.blockheight, data.TX.witness.tx.vin[index].blockheight)
+          assert.strictEqual(vin.txindex, data.TX.witness.tx.vin[index].txindex)
+          assert.deepStrictEqual(vin.script, Buffer.from(data.TX.witness.tx.vin[index].scriptSig.hex, 'hex'))
+          assert.strictEqual(106, vin.script.length)
+        })
+        assert.strictEqual(tx.vout.length, data.TX.witness.tx.vout.length)
+        tx.vout.forEach(function (vout, index) {
+          assert.strictEqual(vout.amount, data.TX.witness.tx.vout[index].amount)
+          assert.deepStrictEqual(vout.script, Buffer.from(data.TX.witness.tx.vout[index].scriptPubKey.hex, 'hex'))
+          assert.strictEqual(25, vout.script.length)
+          assert.strictEqual(25, Buffer.from(data.TX.witness.tx.vout[index].scriptPubKey.hex, 'hex').length)
+        })
+        assert.strictEqual(tx.locktime, data.TX.witness.tx.locktime)
+        assert.strictEqual(tx.exprie, data.TX.witness.tx.expire)
       })
-      assert.strictEqual(tx.vout.length, data.TX.witness.tx.vout.length)
-      tx.vout.forEach(function (vout, index) {
-        assert.strictEqual(vout.amount, data.TX.witness.tx.vout[index].amount)
-        assert.deepStrictEqual(vout.script, Buffer.from(data.TX.witness.tx.vout[index].scriptPubKey.hex, 'hex'))
-        assert.strictEqual(25, vout.script.length)
-        assert.strictEqual(25, Buffer.from(data.TX.witness.tx.vout[index].scriptPubKey.hex, 'hex').length)
+      it('byteLength', function () {
+        assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.witness.hex, 'hex').length)
       })
-      assert.strictEqual(tx.locktime, data.TX.witness.tx.locktime)
-      assert.strictEqual(tx.exprie, data.TX.witness.tx.expire)
-      assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.witness.hex, 'hex').length)
     })
   })
   describe('nox.block', function () {
+    const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
     it('fromBuffer', function () {
-      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
       assert.strictEqual(block.version, data.Block.json.version)
       assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentHash)
       assert.strictEqual(block.txRoot.reverse().toString('hex'), data.Block.json.txRoot)
@@ -280,6 +288,9 @@ describe('Nox-core', function () {
         assert.strictEqual(tx.exprie, data.Block.json.transactions[index].expire)
         assert.strictEqual(tx.byteLength(), Buffer.from(data.Block.json.transactions[index].hex, 'hex').length)
       })
+    })
+    it('byteLength', function () {
+      assert.strictEqual(block.byteLength(false), Buffer.from(data.Block.hex, 'hex').length)
     })
   })
 })

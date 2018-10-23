@@ -117,7 +117,7 @@ Transaction.prototype.__byteLength = function () {
     this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0) + // txid + vout + seq
     this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) + // amount + script
     4 + 4 + // lock-time + expire
-    (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) +
+    (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
     (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + 8 + 4 + 4 + varSliceSize(input.script) }, 0) : 0) // amountin + blockheight + txindex + script
   return length
 }
