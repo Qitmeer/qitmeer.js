@@ -303,5 +303,13 @@ describe('Nox-core', function () {
       const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
       assert.deepStrictEqual(block.toBuffer(false), Buffer.from(data.Block.hex, 'hex'))
     })
+    it('getHash', function () {
+      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+      assert.deepStrictEqual(block.getHash(), Buffer.from(data.Block.json.hash, 'hex').reverse())
+    })
+    it('getId', function () {
+      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+      assert.strictEqual(block.getId(), data.Block.json.hash)
+    })
   })
 })

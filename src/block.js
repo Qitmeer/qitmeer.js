@@ -4,6 +4,7 @@
 const utils = require('./utils')
 const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
+const hash = require('./hash')
 
 module.exports = Block
 
@@ -134,4 +135,12 @@ Block.prototype.toBuffer = function (headersOnly) {
   })
 
   return buffer
+}
+
+Block.prototype.getHash = function () {
+  return hash.dblake2b256(this.toBuffer(true))
+}
+
+Block.prototype.getId = function () {
+  return this.getHash().reverse().toString('hex')
 }
