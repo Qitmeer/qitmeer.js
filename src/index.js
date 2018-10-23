@@ -7,5 +7,7 @@ module.exports = {
   ec: require('./ec'),
   nox58check: require('./nox58check'),
   address: require('./address'),
-  networks: require('./networks')
+  networks: require('./networks'),
+  tx: require('./transaction'),
+  block: require('./block')
 }

@@ -200,5 +200,13 @@ describe('Nox-core', function () {
         assert.strictEqual(true, result)
       })
     })
+    describe('Transaction', function () {
+      it('fromBuffer nowitness', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
+        assert.strictEqual(tx.version, data.TX.nowitness.tx.version)
+        assert.strictEqual(tx.ins.length, data.TX.nowitness.tx.vin.length)
+        assert.strictEqual(tx.ins[0].hash.reverse().toString('hex'), data.TX.nowitness.tx.vin[0].txid)
+      })
+    })
   })
 })
