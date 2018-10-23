@@ -203,8 +203,8 @@ describe('Nox-core', function () {
   })
   describe('nox.tx', function () {
     describe('nowitness', function () {
-      const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
       it('fromBuffer', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.strictEqual(tx.version, data.TX.nowitness.tx.version)
         assert.strictEqual(tx.vin.length, data.TX.nowitness.tx.vin.length)
         tx.vin.forEach(function (vin, index) {
@@ -222,12 +222,13 @@ describe('Nox-core', function () {
         assert.strictEqual(tx.exprie, data.TX.nowitness.tx.expire)
       })
       it('byteLength', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.nowitness.hex, 'hex').length)
       })
     })
     describe('full witness', function () {
-      const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
       it('fromBuffer', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.strictEqual(tx.version, data.TX.witness.tx.version)
         assert.strictEqual(tx.vin.length, data.TX.witness.tx.vin.length)
         tx.vin.forEach(function (vin, index) {
@@ -251,13 +252,14 @@ describe('Nox-core', function () {
         assert.strictEqual(tx.exprie, data.TX.witness.tx.expire)
       })
       it('byteLength', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.witness.hex, 'hex').length)
       })
     })
   })
   describe('nox.block', function () {
-    const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
     it('fromBuffer', function () {
+      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
       assert.strictEqual(block.version, data.Block.json.version)
       assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentHash)
       assert.strictEqual(block.txRoot.reverse().toString('hex'), data.Block.json.txRoot)
@@ -290,7 +292,16 @@ describe('Nox-core', function () {
       })
     })
     it('byteLength', function () {
+      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
       assert.strictEqual(block.byteLength(false), Buffer.from(data.Block.hex, 'hex').length)
+    })
+    it('toBuffer headeronly', function () {
+      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+      assert.deepStrictEqual(block.toBuffer(true), Buffer.from(data.BlockHeader.hex, 'hex'))
+    })
+    it('toBuffer full', function () {
+      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+      assert.deepStrictEqual(block.toBuffer(false), Buffer.from(data.Block.hex, 'hex'))
     })
   })
 })

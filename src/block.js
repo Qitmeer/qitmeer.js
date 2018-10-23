@@ -91,3 +91,47 @@ Block.prototype.byteLength = function (headersOnly) {
     return a + x.byteLength()
   }, 0)
 }
+
+Block.prototype.toBuffer = function (headersOnly) {
+  const buffer = Buffer.allocUnsafe(this.byteLength(headersOnly))
+  let offset = 0
+
+  function writeSlice (slice) {
+    slice.copy(buffer, offset)
+    offset += slice.length
+  }
+  function writeInt32 (i) {
+    buffer.writeInt32LE(i, offset)
+    offset += 4
+  }
+  function writeUInt32 (i) {
+    buffer.writeUInt32LE(i, offset)
+    offset += 4
+  }
+  function writeUInt64 (i) {
+    utils.writeUInt64LE(buffer, i, offset)
+    offset += 8
+  }
+
+  writeInt32(this.version)
+  writeSlice(this.parentRoot)
+  writeSlice(this.txRoot)
+  writeSlice(this.stateRoot)
+  writeUInt32(this.difficulty)
+  writeUInt64(this.height)
+  writeUInt32(this.timestamp)
+  writeUInt64(this.nonce)
+
+  if (headersOnly || !this.transactions) return buffer
+
+  varuint.encode(this.transactions.length, buffer, offset)
+  offset += varuint.encode.bytes
+
+  this.transactions.forEach(function (tx) {
+    const txSize = tx.byteLength() // TODO: extract from toBuffer?
+    tx.toBuffer(buffer, offset)
+    offset += txSize
+  })
+
+  return buffer
+}

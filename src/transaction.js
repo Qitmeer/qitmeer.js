@@ -105,10 +105,6 @@ Transaction.prototype.hasWitnesses = function () {
 }
 
 Transaction.prototype.byteLength = function () {
-  return this.__byteLength()
-}
-
-Transaction.prototype.__byteLength = function () {
   const hasWitnesses = this.hasWitnesses()
   const length =
     4 + // version
@@ -120,4 +116,52 @@ Transaction.prototype.__byteLength = function () {
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
     (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + 8 + 4 + 4 + varSliceSize(input.script) }, 0) : 0) // amountin + blockheight + txindex + script
   return length
+}
+
+Transaction.prototype.toBuffer = function (buffer, initialOffset) {
+  if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength())
+
+  let offset = initialOffset || 0
+  function writeSlice (slice) { offset += slice.copy(buffer, offset) }
+  // function writeUInt16 (i) { offset = buffer.writeUInt16LE(i, offset) }
+  function writeUInt32 (i) { offset = buffer.writeUInt32LE(i, offset) }
+  function writeInt32 (i) { offset = buffer.writeInt32LE(i, offset) }
+  function writeUInt64 (i) { offset = utils.writeUInt64LE(buffer, i, offset) }
+  function writeVarInt (i) {
+    varuint.encode(i, buffer, offset)
+    offset += varuint.encode.bytes
+  }
+  function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
+
+  writeInt32(this.version)
+
+  writeVarInt(this.vin.length)
+  this.vin.forEach(function (txIn) {
+    writeSlice(txIn.txid)
+    writeUInt32(txIn.vout)
+    writeUInt32(txIn.sequence)
+  })
+
+  writeVarInt(this.vout.length)
+  this.vout.forEach(function (txOut) {
+    writeUInt64(txOut.amount)
+    writeVarSlice(txOut.script)
+  })
+
+  writeUInt32(this.locktime)
+  writeUInt32(this.exprie)
+
+  const hasWitnesses = this.hasWitnesses()
+  if (hasWitnesses) {
+    writeVarInt(this.vin.length)
+    this.vin.forEach(function (input) {
+      writeUInt64(input.amountin)
+      writeUInt32(input.blockheight)
+      writeUInt32(input.txindex)
+      writeVarSlice(input.script)
+    })
+  }
+  // avoid slicing unless necessary
+  if (initialOffset !== undefined) return buffer.slice(initialOffset, offset)
+  return buffer
 }
