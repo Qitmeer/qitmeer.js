@@ -230,7 +230,7 @@ describe('Nox-core', function () {
         assert.deepStrictEqual(tx.toBuffer(undefined, undefined, 1), Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.deepStrictEqual(tx.getHash().reverse(), Buffer.from(data.TX.nowitness.tx.txid, 'hex'))
       })
-      it('getId', function () {
+      it('getId ' + data.TX.nowitness.tx.txid, function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.strictEqual(tx.getId(), data.TX.nowitness.tx.txid)
       })
@@ -268,15 +268,15 @@ describe('Nox-core', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.deepStrictEqual(tx.getHash().reverse(), Buffer.from(data.TX.witness.tx.txid, 'hex'))
       })
-      it('getId', function () {
+      it('getId ' + data.TX.witness.tx.txid, function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.strictEqual(tx.getId(), data.TX.witness.tx.txid)
       })
-      it('getHashFull', function () {
+      it('getHashFull ', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.deepStrictEqual(tx.getHashFull().reverse(), Buffer.from(data.TX.witness.tx.txhash, 'hex'))
       })
-      it('getHsahFullId', function () {
+      it('getHsahFullId ' + data.TX.witness.tx.txhash, function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.strictEqual(tx.getHashFullId(), data.TX.witness.tx.txhash)
       })
@@ -332,9 +332,22 @@ describe('Nox-core', function () {
       const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
       assert.deepStrictEqual(block.getHash(), Buffer.from(data.Block.json.hash, 'hex').reverse())
     })
-    it('getId', function () {
+    it('getId ' + data.Block.json.hash, function () {
       const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
       assert.strictEqual(block.getId(), data.Block.json.hash)
+    })
+    describe('tx in block ' + data.Block.json.hash, function () {
+      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+      block.transactions.forEach(function (tx, index) {
+        const txid = data.Block.json.transactions[index].txid
+        it('txid ' + txid, function () {
+          assert.strictEqual(tx.getId(), txid)
+        })
+        const fullhash = data.Block.json.transactions[index].txhash
+        it('txfullhash ' + fullhash, function () {
+          assert.strictEqual(tx.getHashFullId(), fullhash)
+        })
+      })
     })
   })
 })
