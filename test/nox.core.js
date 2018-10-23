@@ -225,6 +225,15 @@ describe('Nox-core', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.nowitness.hex, 'hex').length)
       })
+      it('getHash', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
+        assert.deepStrictEqual(tx.toBuffer(undefined, undefined, 1), Buffer.from(data.TX.nowitness.hex, 'hex'))
+        assert.deepStrictEqual(tx.getHash().reverse(), Buffer.from(data.TX.nowitness.tx.txid, 'hex'))
+      })
+      it('getId', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
+        assert.strictEqual(tx.getId(), data.TX.nowitness.tx.txid)
+      })
     })
     describe('full witness', function () {
       it('fromBuffer', function () {

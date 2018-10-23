@@ -4,6 +4,7 @@
 
 const utils = require('./utils')
 const varuint = require('varuint-bitcoin')
+const hash = require('./hash')
 
 module.exports = Transaction
 
@@ -12,6 +13,10 @@ function varSliceSize (someScript) {
 
   return varuint.encodingLength(length) + length
 }
+
+const TxSerializeFull = 0
+const TxSerializeNoWitness = 1
+const TxSerializeOnlyWitness = 2
 
 function Transaction () {
   this.version = 1
@@ -62,31 +67,36 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   tx.version = readUInt16() // tx version
 
   tx._stype = readUInt16() // tx serialize type
-  if (tx._stype !== 0 && tx._stype !== 1) throw new Error('unsupported tx serialize type')
-  let hasWitnesses = (tx._stype === 0)
-
-  const vinLen = readVarInt()
-  for (var i = 0; i < vinLen; ++i) {
-    tx.vin.push({
-      txid: readSlice(32),
-      vout: readUInt32(),
-      sequence: readUInt32()
-    })
+  if (tx._stype !== TxSerializeFull && tx._stype !== TxSerializeNoWitness && tx._stype !== TxSerializeOnlyWitness) {
+    throw new Error('unsupported tx serialize type')
+  }
+  let vinLen = 0
+  if (tx._stype === TxSerializeFull || tx._stype === TxSerializeNoWitness) {
+    vinLen = readVarInt()
+    for (var i = 0; i < vinLen; ++i) {
+      tx.vin.push({
+        txid: readSlice(32),
+        vout: readUInt32(),
+        sequence: readUInt32()
+      })
+    }
+    const voutLen = readVarInt()
+    for (i = 0; i < voutLen; ++i) {
+      tx.vout.push({
+        amount: readUInt64(),
+        script: readVarSlice()
+      })
+    }
+    tx.locktime = readUInt32()
+    tx.exprie = readUInt32()
   }
 
-  const voutLen = readVarInt()
-  for (i = 0; i < voutLen; ++i) {
-    tx.vout.push({
-      amount: readUInt64(),
-      script: readVarSlice()
-    })
+  let hasWitnesses = tx._stype !== TxSerializeNoWitness
+  if (hasWitnesses) {
+    const witnessLen = readVarInt()
+    if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
+    vinLen = witnessLen
   }
-  tx.locktime = readUInt32()
-  tx.exprie = readUInt32()
-
-  const witnessLen = hasWitnesses ? readVarInt() : 0
-  if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
-
   for (i = 0; i < vinLen; ++i) {
     tx.vin[i].amountin = hasWitnesses ? readUInt64() : 0
     tx.vin[i].blockheight = hasWitnesses ? readUInt32() : 0
@@ -96,7 +106,6 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
 
   if (__noStrict) return tx
   if (offset !== buffer.length) throw new Error('Transaction has unexpected data')
-
   return tx
 }
 
@@ -118,41 +127,59 @@ Transaction.prototype.byteLength = function () {
   return length
 }
 
-Transaction.prototype.toBuffer = function (buffer, initialOffset) {
+Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength())
 
   let offset = initialOffset || 0
+
   function writeSlice (slice) { offset += slice.copy(buffer, offset) }
-  // function writeUInt16 (i) { offset = buffer.writeUInt16LE(i, offset) }
+
+  function writeUInt16 (i) { offset = buffer.writeUInt16LE(i, offset) }
+
   function writeUInt32 (i) { offset = buffer.writeUInt32LE(i, offset) }
+
   function writeInt32 (i) { offset = buffer.writeInt32LE(i, offset) }
+
   function writeUInt64 (i) { offset = utils.writeUInt64LE(buffer, i, offset) }
+
   function writeVarInt (i) {
     varuint.encode(i, buffer, offset)
     offset += varuint.encode.bytes
   }
-  function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
 
-  writeInt32(this.version)
+  function writeVarSlice (slice) {
+    writeVarInt(slice.length)
+    writeSlice(slice)
+  }
 
-  writeVarInt(this.vin.length)
-  this.vin.forEach(function (txIn) {
-    writeSlice(txIn.txid)
-    writeUInt32(txIn.vout)
-    writeUInt32(txIn.sequence)
-  })
+  let serializeType = stype || this._stype
 
-  writeVarInt(this.vout.length)
-  this.vout.forEach(function (txOut) {
-    writeUInt64(txOut.amount)
-    writeVarSlice(txOut.script)
-  })
+  if (serializeType === TxSerializeFull) {
+    writeInt32(this.version)
+  } else {
+    writeUInt16(this.version)
+    writeUInt16(stype)
+  }
 
-  writeUInt32(this.locktime)
-  writeUInt32(this.exprie)
+  if (serializeType === TxSerializeFull || TxSerializeNoWitness) {
+    writeVarInt(this.vin.length)
+    this.vin.forEach(function (txIn) {
+      writeSlice(txIn.txid)
+      writeUInt32(txIn.vout)
+      writeUInt32(txIn.sequence)
+    })
 
-  const hasWitnesses = this.hasWitnesses()
-  if (hasWitnesses) {
+    writeVarInt(this.vout.length)
+    this.vout.forEach(function (txOut) {
+      writeUInt64(txOut.amount)
+      writeVarSlice(txOut.script)
+    })
+
+    writeUInt32(this.locktime)
+    writeUInt32(this.exprie)
+  }
+
+  if (serializeType !== TxSerializeNoWitness) {
     writeVarInt(this.vin.length)
     this.vin.forEach(function (input) {
       writeUInt64(input.amountin)
@@ -164,4 +191,13 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset) {
   // avoid slicing unless necessary
   if (initialOffset !== undefined) return buffer.slice(initialOffset, offset)
   return buffer
+}
+
+Transaction.prototype.getHash = function () {
+  return hash.dblake2b256(this.toBuffer(undefined, undefined, TxSerializeNoWitness))
+}
+
+Transaction.prototype.getId = function () {
+  // transaction hash's are displayed in reverse order
+  return this.getHash().reverse().toString('hex')
 }
