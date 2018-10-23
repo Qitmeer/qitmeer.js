@@ -1,8 +1,11 @@
 // Copyright 2017-2018 The nox developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
+const utils = require('./utils')
 const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
+
+module.exports = Block
 
 function Block () {
   this.version = 1
@@ -37,15 +40,21 @@ Block.fromBuffer = function (buffer) {
     return i
   }
 
+  function readUInt64 () {
+    const i = utils.readUInt64LE(buffer, offset)
+    offset += 8
+    return i
+  }
+
   const block = new Block()
   block.version = readInt32()
   block.parentRoot = readSlice(32)
   block.txRoot = readSlice(32)
   block.stateRoot = readSlice(32)
   block.difficulty = readUInt32()
-  block.height = readUInt32(32)
+  block.height = readUInt64()
   block.timestamp = readUInt32()
-  block.nonce = readUInt32()
+  block.nonce = readUInt64()
 
   if (buffer.length === 80) return block
 

@@ -7,8 +7,15 @@ const varuint = require('varuint-bitcoin')
 
 module.exports = Transaction
 
+function varSliceSize (someScript) {
+  const length = someScript.length
+
+  return varuint.encodingLength(length) + length
+}
+
 function Transaction () {
   this.version = 1
+  this._stype = 0 // default = 0, TxSerializeType : 0 - full , 1 - no-witness, 2 - only-witness
   this.locktime = 0
   this.exprie = 0
   this.vin = []
@@ -51,9 +58,12 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   }
 
   const tx = new Transaction()
-  tx.version = readUInt16()
-  const sver = readUInt16()
-  let hasWitnesses = (sver === 0)
+
+  tx.version = readUInt16() // tx version
+
+  tx._stype = readUInt16() // tx serialize type
+  if (tx._stype !== 0 && tx._stype !== 1) throw new Error('unsupported tx serialize type')
+  let hasWitnesses = (tx._stype === 0)
 
   const vinLen = readVarInt()
   for (var i = 0; i < vinLen; ++i) {
@@ -88,4 +98,26 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   if (offset !== buffer.length) throw new Error('Transaction has unexpected data')
 
   return tx
+}
+
+Transaction.prototype.hasWitnesses = function () {
+  return this._stype === 0
+}
+
+Transaction.prototype.byteLength = function () {
+  return this.__byteLength()
+}
+
+Transaction.prototype.__byteLength = function () {
+  const hasWitnesses = this.hasWitnesses()
+  const length =
+    4 + // version
+    varuint.encodingLength(this.vin.length) +
+    varuint.encodingLength(this.vout.length) +
+    this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0) + // txid + vout + seq
+    this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) + // amount + script
+    4 + 4 + // lock-time + expire
+    (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0 ) +
+    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + 8 + 4 + 4 + varSliceSize(input.script) }, 0) : 0) // amountin + blockheight + txindex + script
+  return length
 }
