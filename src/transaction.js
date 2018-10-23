@@ -11,8 +11,8 @@ function Transaction () {
   this.version = 1
   this.locktime = 0
   this.exprie = 0
-  this.ins = []
-  this.outs = []
+  this.vin = []
+  this.vout = []
 }
 
 Transaction.fromBuffer = function (buffer, __noStrict) {
@@ -64,9 +64,9 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
 
   const vinLen = readVarInt()
   for (var i = 0; i < vinLen; ++i) {
-    tx.ins.push({
-      hash: readSlice(32),
-      index: readUInt32(),
+    tx.vin.push({
+      txid: readSlice(32),
+      vout: readUInt32(),
       sequence: readUInt32(),
       script: hasWitnesses ? readVarSlice() : null,
       witness: []
@@ -75,14 +75,14 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
 
   const voutLen = readVarInt()
   for (i = 0; i < voutLen; ++i) {
-    tx.outs.push({
+    tx.vout.push({
       value: readUInt64(),
       script: readVarSlice()
     })
   }
 
   for (i = 0; i < vinLen; ++i) {
-    tx.ins[i].witness = hasWitnesses ? readVector() : null
+    tx.vin[i].witness = hasWitnesses ? readVector() : null
   }
 
   tx.locktime = readUInt32()
