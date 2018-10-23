@@ -113,8 +113,11 @@ Transaction.prototype.hasWitnesses = function () {
   return this._stype === 0
 }
 
-Transaction.prototype.byteLength = function () {
-  const hasWitnesses = this.hasWitnesses()
+Transaction.prototype.byteLength = function (stype) {
+  let hasWitnesses = this.hasWitnesses()
+  if (stype !== undefined) {
+    hasWitnesses = (stype === TxSerializeFull || stype === TxSerializeOnlyWitness)
+  }
   const length =
     4 + // version
     varuint.encodingLength(this.vin.length) +
@@ -128,7 +131,7 @@ Transaction.prototype.byteLength = function () {
 }
 
 Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
-  if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength())
+  if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength(stype))
 
   let offset = initialOffset || 0
 
