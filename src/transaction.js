@@ -115,18 +115,21 @@ Transaction.prototype.hasWitnesses = function () {
 
 Transaction.prototype.byteLength = function (stype) {
   let hasWitnesses = this.hasWitnesses()
+  let onlyWitnesses = false
   if (stype !== undefined) {
     hasWitnesses = (stype === TxSerializeFull || stype === TxSerializeOnlyWitness)
+    onlyWitnesses = (stype === TxSerializeOnlyWitness)
   }
   const length =
     4 + // version
-    varuint.encodingLength(this.vin.length) +
-    varuint.encodingLength(this.vout.length) +
-    this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0) + // txid + vout + seq
-    this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) + // amount + script
-    4 + 4 + // lock-time + expire
+    (onlyWitnesses ? 0 : varuint.encodingLength(this.vin.length)) +
+    (onlyWitnesses ? 0 : varuint.encodingLength(this.vout.length)) +
+    (onlyWitnesses ? 0 : this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0)) + // txid + vout + seq
+    (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
+    (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
-    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + 8 + 4 + 4 + varSliceSize(input.script) }, 0) : 0) // amountin + blockheight + txindex + script
+    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + 8 + 4 + 4 + varSliceSize(input.script) }, 0) : 0)
+  // amountin + blockheight + txindex + script
   return length
 }
 
@@ -164,7 +167,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
     writeUInt16(stype)
   }
 
-  if (serializeType === TxSerializeFull || TxSerializeNoWitness) {
+  if (serializeType === TxSerializeFull || serializeType === TxSerializeNoWitness) {
     writeVarInt(this.vin.length)
     this.vin.forEach(function (txIn) {
       writeSlice(txIn.txid)
@@ -203,4 +206,15 @@ Transaction.prototype.getHash = function () {
 Transaction.prototype.getId = function () {
   // transaction hash's are displayed in reverse order
   return this.getHash().reverse().toString('hex')
+}
+
+Transaction.prototype.getHashFull = function () {
+  const prefixHash = this.getHash()
+  const witnessHash = hash.dblake2b256(this.toBuffer(undefined, undefined, TxSerializeOnlyWitness))
+  return hash.dblake2b256(Buffer.concat([prefixHash, witnessHash]))
+}
+
+Transaction.prototype.getHashFullId = function () {
+  // transaction hash's are displayed in reverse order
+  return this.getHashFull().reverse().toString('hex')
 }

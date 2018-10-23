@@ -272,6 +272,14 @@ describe('Nox-core', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.strictEqual(tx.getId(), data.TX.witness.tx.txid)
       })
+      it('getHashFull', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
+        assert.deepStrictEqual(tx.getHashFull().reverse(), Buffer.from(data.TX.witness.tx.txhash, 'hex'))
+      })
+      it('getHsahFullId', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
+        assert.strictEqual(tx.getHashFullId(), data.TX.witness.tx.txhash)
+      })
     })
   })
   describe('nox.block', function () {
