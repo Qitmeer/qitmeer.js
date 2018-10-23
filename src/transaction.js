@@ -50,13 +50,6 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     return readSlice(readVarInt())
   }
 
-  function readVector () {
-    const count = readVarInt()
-    const vector = []
-    for (var i = 0; i < count; i++) vector.push(readVarSlice())
-    return vector
-  }
-
   const tx = new Transaction()
   tx.version = readUInt16()
   const sver = readUInt16()
@@ -67,26 +60,29 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     tx.vin.push({
       txid: readSlice(32),
       vout: readUInt32(),
-      sequence: readUInt32(),
-      script: hasWitnesses ? readVarSlice() : null,
-      witness: []
+      sequence: readUInt32()
     })
   }
 
   const voutLen = readVarInt()
   for (i = 0; i < voutLen; ++i) {
     tx.vout.push({
-      value: readUInt64(),
+      amount: readUInt64(),
       script: readVarSlice()
     })
   }
-
-  for (i = 0; i < vinLen; ++i) {
-    tx.vin[i].witness = hasWitnesses ? readVector() : null
-  }
-
   tx.locktime = readUInt32()
   tx.exprie = readUInt32()
+
+  const witnessLen = hasWitnesses ? readVarInt() : 0
+  if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
+
+  for (i = 0; i < vinLen; ++i) {
+    tx.vin[i].amountin = hasWitnesses ? readUInt64() : 0
+    tx.vin[i].blockheight = hasWitnesses ? readUInt32() : 0
+    tx.vin[i].txindex = hasWitnesses ? readUInt32() : 0
+    tx.vin[i].script = hasWitnesses ? readVarSlice() : Buffer.from('', 'hex')
+  }
 
   if (__noStrict) return tx
   if (offset !== buffer.length) throw new Error('Transaction has unexpected data')

@@ -76,6 +76,7 @@
         "txhash": "7d4836ee48aa5c0dfe91c70b257d7e556c9680224a4fbd9d5d1181fda4f72ee6",
         "version": 1,
         "locktime": 0,
+        "expire": 0,
         "vin": [
           {
             "txid": "db4d833a87b300f516a3702a3450037dc9fe9febe41a0713d8e626173c8c4c3f",
@@ -87,6 +88,56 @@
             "scriptSig": {
               "asm": "",
               "hex": ""
+            }
+          }
+        ],
+        "vout": [
+          {
+            "amount": 44000000000,
+            "scriptPubKey": {
+              "asm": "OP_DUP OP_HASH160 69570a6c1fcb68db1b1c50b34960e714d42c7b9c OP_EQUALVERIFY OP_CHECKSIG",
+              "hex": "76a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac",
+              "reqSigs": 1,
+              "type": "pubkeyhash",
+              "addresses": [
+                "RmFskNPMcPLn4KpDqYzkgwBoa5soPS2SDDH"
+              ]
+            }
+          },
+          {
+            "amount": 990000000,
+            "scriptPubKey": {
+              "asm": "OP_DUP OP_HASH160 c693f8fbfe6836f1fb55579b427cfc4fd2014953 OP_EQUALVERIFY OP_CHECKSIG",
+              "hex": "76a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac",
+              "reqSigs": 1,
+              "type": "pubkeyhash",
+              "addresses": [
+                "RmQNkCr8ehRUzJhmNmgQVByv7VjakuCjc3d"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "witness" : {
+      "hex":"01000000013f4c8c3c1726e6d813071ae4eb9ffec97d0350342a70a316f500b3873a834ddb02000000ffffffff0200b89a3e0a0000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac0000000000000000010082357a0a00000015000000000000006a47304402204c55811103d1a786210b3c88a8a852462bce22f690a555b60541d69ca88279d9022030e3ec4bb23710690317d1d03fc9af8c044593b937e92c4dd4ca0082c16a3ae3012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174",
+      "tx":{
+        "txid": "cbb540d78ea976b005f9a7547b149cefab14b01e9ee7e76d7491a6a9488629e9",
+        "txhash": "9212a91b40446db7c478903cdf812fbed89b0ea08dea5246780f5cdfa39d314c",
+        "version": 1,
+        "locktime": 0,
+        "expire": 0,
+        "vin": [
+          {
+            "txid": "db4d833a87b300f516a3702a3450037dc9fe9febe41a0713d8e626173c8c4c3f",
+            "vout": 2,
+            "sequence": 4294967295,
+            "amountin": 45000000000,
+            "blockheight": 21,
+            "txindex": 0,
+            "scriptSig": {
+              "asm": "304402204c55811103d1a786210b3c88a8a852462bce22f690a555b60541d69ca88279d9022030e3ec4bb23710690317d1d03fc9af8c044593b937e92c4dd4ca0082c16a3ae301 02abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174",
+              "hex": "47304402204c55811103d1a786210b3c88a8a852462bce22f690a555b60541d69ca88279d9022030e3ec4bb23710690317d1d03fc9af8c044593b937e92c4dd4ca0082c16a3ae3012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174"
             }
           }
         ],
