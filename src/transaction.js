@@ -14,9 +14,9 @@ function varSliceSize (someScript) {
   return varuint.encodingLength(length) + length
 }
 
-const TxSerializeFull = 0
-const TxSerializeNoWitness = 1
-const TxSerializeOnlyWitness = 2
+Transaction.TxSerializeFull = 0
+Transaction.TxSerializeNoWitness = 1
+Transaction.TxSerializeOnlyWitness = 2
 
 function Transaction () {
   this.version = 1
@@ -67,11 +67,14 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   tx.version = readUInt16() // tx version
 
   tx._stype = readUInt16() // tx serialize type
-  if (tx._stype !== TxSerializeFull && tx._stype !== TxSerializeNoWitness && tx._stype !== TxSerializeOnlyWitness) {
+  if (tx._stype !== Transaction.TxSerializeFull &&
+    tx._stype !== Transaction.TxSerializeNoWitness &&
+    tx._stype !== Transaction.TxSerializeOnlyWitness) {
     throw new Error('unsupported tx serialize type')
   }
   let vinLen = 0
-  if (tx._stype === TxSerializeFull || tx._stype === TxSerializeNoWitness) {
+  if (tx._stype === Transaction.TxSerializeFull ||
+    tx._stype === Transaction.TxSerializeNoWitness) {
     vinLen = readVarInt()
     for (var i = 0; i < vinLen; ++i) {
       tx.vin.push({
@@ -91,7 +94,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     tx.exprie = readUInt32()
   }
 
-  let hasWitnesses = tx._stype !== TxSerializeNoWitness
+  let hasWitnesses = tx._stype !== Transaction.TxSerializeNoWitness
   if (hasWitnesses) {
     const witnessLen = readVarInt()
     if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
@@ -117,8 +120,8 @@ Transaction.prototype.byteLength = function (stype) {
   let hasWitnesses = this.hasWitnesses()
   let onlyWitnesses = false
   if (stype !== undefined) {
-    hasWitnesses = (stype === TxSerializeFull || stype === TxSerializeOnlyWitness)
-    onlyWitnesses = (stype === TxSerializeOnlyWitness)
+    hasWitnesses = (stype === Transaction.TxSerializeFull || stype === Transaction.TxSerializeOnlyWitness)
+    onlyWitnesses = (stype === Transaction.TxSerializeOnlyWitness)
   }
   const length =
     4 + // version
@@ -160,14 +163,15 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 
   let serializeType = stype || this._stype
 
-  if (serializeType === TxSerializeFull) {
+  if (serializeType === Transaction.TxSerializeFull) {
     writeInt32(this.version)
   } else {
     writeUInt16(this.version)
     writeUInt16(stype)
   }
 
-  if (serializeType === TxSerializeFull || serializeType === TxSerializeNoWitness) {
+  if (serializeType === Transaction.TxSerializeFull ||
+    serializeType === Transaction.TxSerializeNoWitness) {
     writeVarInt(this.vin.length)
     this.vin.forEach(function (txIn) {
       writeSlice(txIn.txid)
@@ -185,7 +189,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
     writeUInt32(this.exprie)
   }
 
-  if (serializeType !== TxSerializeNoWitness) {
+  if (serializeType !== Transaction.TxSerializeNoWitness) {
     writeVarInt(this.vin.length)
     this.vin.forEach(function (input) {
       writeUInt64(input.amountin)
@@ -200,7 +204,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 }
 
 Transaction.prototype.getHash = function () {
-  return hash.dblake2b256(this.toBuffer(undefined, undefined, TxSerializeNoWitness))
+  return hash.dblake2b256(this.toBuffer(undefined, undefined, Transaction.TxSerializeNoWitness))
 }
 
 Transaction.prototype.getId = function () {
@@ -210,7 +214,7 @@ Transaction.prototype.getId = function () {
 
 Transaction.prototype.getHashFull = function () {
   const prefixHash = this.getHash()
-  const witnessHash = hash.dblake2b256(this.toBuffer(undefined, undefined, TxSerializeOnlyWitness))
+  const witnessHash = hash.dblake2b256(this.toBuffer(undefined, undefined, Transaction.TxSerializeOnlyWitness))
   return hash.dblake2b256(Buffer.concat([prefixHash, witnessHash]))
 }
 

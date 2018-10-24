@@ -227,7 +227,7 @@ describe('Nox-core', function () {
       })
       it('getHash', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
-        assert.deepStrictEqual(tx.toBuffer(undefined, undefined, 1), Buffer.from(data.TX.nowitness.hex, 'hex'))
+        assert.deepStrictEqual(tx.toBuffer(undefined, undefined, nox.tx.TxSerializeNoWitness), Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.deepStrictEqual(tx.getHash().reverse(), Buffer.from(data.TX.nowitness.tx.txid, 'hex'))
       })
       it('getId ' + data.TX.nowitness.tx.txid, function () {
@@ -266,6 +266,7 @@ describe('Nox-core', function () {
       })
       it('getHash', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
+        assert.deepStrictEqual(tx.toBuffer(undefined, undefined, nox.tx.TxSerializeWitness), Buffer.from(data.TX.witness.hex, 'hex'))
         assert.deepStrictEqual(tx.getHash().reverse(), Buffer.from(data.TX.witness.tx.txid, 'hex'))
       })
       it('getId ' + data.TX.witness.tx.txid, function () {
