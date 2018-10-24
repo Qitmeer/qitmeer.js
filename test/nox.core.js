@@ -283,60 +283,62 @@ describe('Nox-core', function () {
     })
   })
   describe('nox.block', function () {
-    it('fromBuffer', function () {
-      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-      assert.strictEqual(block.version, data.Block.json.version)
-      assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentHash)
-      assert.strictEqual(block.txRoot.reverse().toString('hex'), data.Block.json.txRoot)
-      assert.strictEqual(block.stateRoot.reverse().toString('hex'), data.Block.json.stateRoot)
-      assert.strictEqual(block.difficulty, data.Block.json.difficulty)
-      assert.strictEqual(block.height, data.Block.json.height)
-      assert.strictEqual(block.timestamp, Math.round(new Date(data.Block.json.timestamp).getTime() / 1000))
-      assert.strictEqual(block.nonce, data.Block.json.nonce)
+    describe('test block', function () {
+      it('fromBuffer', function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        assert.strictEqual(block.version, data.Block.json.version)
+        assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentHash)
+        assert.strictEqual(block.txRoot.reverse().toString('hex'), data.Block.json.txRoot)
+        assert.strictEqual(block.stateRoot.reverse().toString('hex'), data.Block.json.stateRoot)
+        assert.strictEqual(block.difficulty, data.Block.json.difficulty)
+        assert.strictEqual(block.height, data.Block.json.height)
+        assert.strictEqual(block.timestamp, Math.round(new Date(data.Block.json.timestamp).getTime() / 1000))
+        assert.strictEqual(block.nonce, data.Block.json.nonce)
 
-      assert.strictEqual(block.transactions.length, data.Block.json.transactions.length)
-      block.transactions.forEach(function (tx, index) {
-        assert.strictEqual(tx.version, data.Block.json.transactions[index].version)
-        assert.strictEqual(tx.vin.length, data.Block.json.transactions[index].vin.length)
-        tx.vin.forEach(function (vin, i) {
-          // assert.strictEqual(vin.txid.reverse().toString('hex'), data.Block.json.transactions[index].vin[j].txid)
-          // assert.strictEqual(vin.vout, data.Block.json.transactions[index].vin[j].vout)
-          assert.strictEqual(vin.sequence, data.Block.json.transactions[index].vin[i].sequence)
-          assert.strictEqual(vin.amountin, data.Block.json.transactions[index].vin[i].amountin)
-          assert.strictEqual(vin.blockheight, data.Block.json.transactions[index].vin[i].blockheight)
-          assert.strictEqual(vin.txindex, data.Block.json.transactions[index].vin[i].txindex)
+        assert.strictEqual(block.transactions.length, data.Block.json.transactions.length)
+        block.transactions.forEach(function (tx, index) {
+          assert.strictEqual(tx.version, data.Block.json.transactions[index].version)
+          assert.strictEqual(tx.vin.length, data.Block.json.transactions[index].vin.length)
+          tx.vin.forEach(function (vin, i) {
+            // assert.strictEqual(vin.txid.reverse().toString('hex'), data.Block.json.transactions[index].vin[j].txid)
+            // assert.strictEqual(vin.vout, data.Block.json.transactions[index].vin[j].vout)
+            assert.strictEqual(vin.sequence, data.Block.json.transactions[index].vin[i].sequence)
+            assert.strictEqual(vin.amountin, data.Block.json.transactions[index].vin[i].amountin)
+            assert.strictEqual(vin.blockheight, data.Block.json.transactions[index].vin[i].blockheight)
+            assert.strictEqual(vin.txindex, data.Block.json.transactions[index].vin[i].txindex)
+          })
+          assert.strictEqual(tx.vout.length, data.Block.json.transactions[index].vout.length)
+          tx.vout.forEach(function (vout, i) {
+            assert.strictEqual(vout.amount, data.Block.json.transactions[index].vout[i].amount)
+            assert.deepStrictEqual(vout.script, Buffer.from(data.Block.json.transactions[index].vout[i].scriptPubKey.hex, 'hex'))
+          })
+          assert.strictEqual(tx.locktime, data.Block.json.transactions[index].locktime)
+          assert.strictEqual(tx.exprie, data.Block.json.transactions[index].expire)
+          assert.strictEqual(tx.byteLength(), Buffer.from(data.Block.json.transactions[index].hex, 'hex').length)
         })
-        assert.strictEqual(tx.vout.length, data.Block.json.transactions[index].vout.length)
-        tx.vout.forEach(function (vout, i) {
-          assert.strictEqual(vout.amount, data.Block.json.transactions[index].vout[i].amount)
-          assert.deepStrictEqual(vout.script, Buffer.from(data.Block.json.transactions[index].vout[i].scriptPubKey.hex, 'hex'))
-        })
-        assert.strictEqual(tx.locktime, data.Block.json.transactions[index].locktime)
-        assert.strictEqual(tx.exprie, data.Block.json.transactions[index].expire)
-        assert.strictEqual(tx.byteLength(), Buffer.from(data.Block.json.transactions[index].hex, 'hex').length)
+      })
+      it('byteLength', function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        assert.strictEqual(block.byteLength(false), Buffer.from(data.Block.hex, 'hex').length)
+      })
+      it('toBuffer headeronly', function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        assert.deepStrictEqual(block.toBuffer(true), Buffer.from(data.BlockHeader.hex, 'hex'))
+      })
+      it('toBuffer full', function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        assert.deepStrictEqual(block.toBuffer(false), Buffer.from(data.Block.hex, 'hex'))
+      })
+      it('getHash', function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        assert.deepStrictEqual(block.getHash(), Buffer.from(data.Block.json.hash, 'hex').reverse())
+      })
+      it('getId ' + data.Block.json.hash, function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        assert.strictEqual(block.getId(), data.Block.json.hash)
       })
     })
-    it('byteLength', function () {
-      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-      assert.strictEqual(block.byteLength(false), Buffer.from(data.Block.hex, 'hex').length)
-    })
-    it('toBuffer headeronly', function () {
-      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-      assert.deepStrictEqual(block.toBuffer(true), Buffer.from(data.BlockHeader.hex, 'hex'))
-    })
-    it('toBuffer full', function () {
-      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-      assert.deepStrictEqual(block.toBuffer(false), Buffer.from(data.Block.hex, 'hex'))
-    })
-    it('getHash', function () {
-      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-      assert.deepStrictEqual(block.getHash(), Buffer.from(data.Block.json.hash, 'hex').reverse())
-    })
-    it('getId ' + data.Block.json.hash, function () {
-      const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-      assert.strictEqual(block.getId(), data.Block.json.hash)
-    })
-    describe('tx in block ' + data.Block.json.hash, function () {
+    describe('tx in block', function () {
       const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
       block.transactions.forEach(function (tx, index) {
         const txid = data.Block.json.transactions[index].txid
@@ -347,6 +349,24 @@ describe('Nox-core', function () {
         it('txfullhash ' + fullhash, function () {
           assert.strictEqual(tx.getHashFullId(), fullhash)
         })
+      })
+    })
+    describe('txRoot', function () {
+      it('calculate txRoot, single tx', function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        const singleTxInBlock = block.transactions
+        assert.strictEqual(1, singleTxInBlock.length)
+        assert.deepStrictEqual(nox.block.calculateTxRoot(singleTxInBlock), Buffer.from(data.Block.json.txRoot, 'hex').reverse())
+      })
+      it('calculate txRoot, multi tx', function () {
+        const block = nox.block.fromBuffer(Buffer.from(data.BlockMultipleTx.hex, 'hex'))
+        const txInBlock = block.transactions
+        assert.strictEqual(3, txInBlock.length)
+        txInBlock.forEach(function (tx, i) {
+          assert.strictEqual(tx.getId(), data.BlockMultipleTx.json.transactions[i].txid)
+          assert.strictEqual(tx.getHashFullId(), data.BlockMultipleTx.json.transactions[i].txhash)
+        })
+        assert.deepStrictEqual(nox.block.calculateTxRoot(txInBlock), Buffer.from(data.BlockMultipleTx.json.txRoot, 'hex').reverse())
       })
     })
   })

@@ -5,6 +5,7 @@ const utils = require('./utils')
 const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
 const hash = require('./hash')
+const fastMerkleRoot = require('merkle-lib/fastRoot')
 
 module.exports = Block
 
@@ -143,4 +144,21 @@ Block.prototype.getHash = function () {
 
 Block.prototype.getId = function () {
   return this.getHash().reverse().toString('hex')
+}
+
+Block.calculateTxRoot = function (transactions) {
+  if (transactions.length === 0) throw TypeError('Cannot compute merkle root for zero transactions')
+
+  const hashes = transactions.map(function (transaction) {
+    return transaction.getHashFull()
+  })
+
+  return fastMerkleRoot(hashes, hash.dblake2b256)
+}
+
+Block.prototype.checkTxRoot = function () {
+  if (!this.transactions) return false
+
+  const actualTxRoot = Block.calculateTxRoot(this.transactions)
+  return this.merkleRoot.compare(actualTxRoot) === 0
 }
