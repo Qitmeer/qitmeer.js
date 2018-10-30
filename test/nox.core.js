@@ -370,5 +370,11 @@ describe('Nox-core', function () {
         assert.deepStrictEqual(nox.block.calculateTxRoot(txInBlock), Buffer.from(data.BlockMultipleTx.json.txRoot, 'hex').reverse())
       })
     })
+    describe('ops', function () {
+      it('test OP_CHECKSIG', function () {
+        assert.strictEqual(nox.OPS_MAP[nox.OPS.OP_CHECKSIG], 'OP_CHECKSIG')
+        assert.strictEqual(nox.OPS.OP_CHECKSIG, 172)
+      })
+    })
   })
 })
