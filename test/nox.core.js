@@ -379,21 +379,25 @@ describe('Nox-core', function () {
   })
   describe('nox script', function () {
     describe('fromBuffer ', function () {
-      const script = nox.script.fromBuffer(Buffer.from(data.Script1.hex, 'hex'))
-      it('test script toAsm ', function () {
-        assert.strictEqual(data.Script1.asm, script.toAsm())
-      })
-      it('test script toBuffer ', function () {
-        assert.deepStrictEqual(Buffer.from(data.Script1.hex, 'hex'), script.toBuffer())
+      data.ScriptTest.forEach(function (f) {
+        const script = nox.script.fromBuffer(Buffer.from(f.hex, 'hex'))
+        it('test script toAsm ' + f.asm, function () {
+          assert.strictEqual(f.asm, script.toAsm())
+        })
+        it('test script toBuffer ' + f.hex, function () {
+          assert.deepStrictEqual(Buffer.from(f.hex, 'hex'), script.toBuffer())
+        })
       })
     })
     describe('fromAsm ', function () {
-      const script = nox.script.fromAsm(data.Script1.asm)
-      it('test script toAsm ', function () {
-        assert.strictEqual(data.Script1.asm, script.toAsm())
-      })
-      it('test script toBuffer', function () {
-        assert.deepStrictEqual(Buffer.from(data.Script1.hex, 'hex'), script.toBuffer())
+      data.ScriptTest.forEach(function (f) {
+        const script = nox.script.fromAsm(f.asm)
+        it('test script toAsm ' + f.asm, function () {
+          assert.strictEqual(f.asm, script.toAsm())
+        })
+        it('test script toBuffer ' + f.hex, function () {
+          assert.deepStrictEqual(Buffer.from(f.hex, 'hex'), script.toBuffer())
+        })
       })
     })
   })
