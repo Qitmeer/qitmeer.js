@@ -11,5 +11,6 @@ module.exports = {
   tx: require('./transaction'),
   block: require('./block'),
   OPS: _OPS,
-  OPS_MAP: require('./ops/map')
+  OPS_MAP: require('./ops/map'),
+  script: require('./script')
 }
