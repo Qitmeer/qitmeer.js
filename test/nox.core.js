@@ -329,14 +329,14 @@ describe('Nox-core', function () {
       })
     })
     describe('signhash', function () {
-      it('getSignHash', function () {
-        data.SignHashTest.forEach(function (f) {
-          const tx = nox.tx.fromBuffer(Buffer.from(f.txHex, 'hex'))
-          assert.strictEqual(tx.getId(), f.txId)
+      data.SignHashTest.forEach(function (f) {
+        it('getSignHash', function () {
+          const mytx = nox.tx.fromBuffer(Buffer.from(f.txHex, 'hex'))
+          assert.strictEqual(mytx.getId(), f.txId)
           const preScript = nox.script.fromBuffer(Buffer.from(f.prvScriptHex, 'hex'))
           assert.strictEqual(preScript.toAsm(), f.prvScriptAsm)
-          const signHash = tx.getSignatureHash(0, preScript, nox.tx.SIGHASH_ALL)
-          assert.strictEqual(signHash.reverse().toString('hex'), f.signHash)
+          const signHash = mytx.getSignatureHash(0, preScript, nox.tx.SIGHASH_ALL)
+          assert.deepStrictEqual(signHash, Buffer.from(f.signHash, 'hex'))
         })
       })
     })

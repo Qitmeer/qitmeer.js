@@ -2,6 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
+const Buffer = require('safe-buffer').Buffer
 const utils = require('./utils')
 const varuint = require('varuint-bitcoin')
 const hash = require('./hash')
@@ -387,6 +388,8 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
 
   function writeSlice (buffer, slice, offset) { let o = slice.copy(buffer, offset); return offset + o }
 
+  function writeUInt16 (buffer, i, offset) { let o = buffer.writeUInt16LE(i, offset); return o }
+
   function writeUInt32 (buffer, i, offset) { let o = buffer.writeUInt32LE(i, offset); return o }
 
   function writeUInt64 (buffer, i, offset) { let o = utils.writeUInt64LE(buffer, i, offset); return o }
@@ -403,12 +406,13 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
   }
 
   const prefixBuffer = Buffer.allocUnsafe(sigHashPrefixSerializeSize(txTmp.vin, txTmp.vout, inIndex))
+  prefixBuffer.fill(0)
 
   // Commit to the version and hash serialization type.
-  const sigHashPrefixVer = txTmp.Version | SigHashSerializePrefix << 16
   // prefix version
   let offset = 0
-  offset = writeUInt32(prefixBuffer, sigHashPrefixVer, offset)
+  offset = writeUInt16(prefixBuffer, txTmp.version, offset)
+  offset = writeUInt16(prefixBuffer, SigHashSerializePrefix, offset)
   // txIn
   offset = writeVarInt(prefixBuffer, txTmp.vin.length, offset)
   txTmp.vin.forEach(function (txIn) {
@@ -427,10 +431,11 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
   offset = writeUInt32(prefixBuffer, txTmp.exprie, offset)
 
   const witnessBuffer = Buffer.allocUnsafe(sigHashWitnessSerializeSize(txTmp.vin, ourScript))
+  witnessBuffer.fill(0)
   offset = 0
   // witness version
-  const sigHashWitVer = txTmp.Version | SigHashSerializeWitness << 16
-  offset = writeUInt32(witnessBuffer, sigHashWitVer, offset)
+  offset = writeUInt16(witnessBuffer, txTmp.version, offset)
+  offset = writeUInt16(witnessBuffer, SigHashSerializeWitness, offset)
   // txIns
   offset = writeVarInt(witnessBuffer, txTmp.vin.length, offset)
   txTmp.vin.forEach(function (txIn) {
@@ -445,7 +450,7 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
   // 3) witness hash (as produced by hash function)
   const typeBuffer = Buffer.allocUnsafe(4)
   typeBuffer.writeUInt32LE(hashType)
-  const prefixHash = hash.dblake2b256(prefixBuffer)
-  const witnessHash = hash.dblake2b256(witnessBuffer)
-  return hash.dblake2b256(Buffer.concat([typeBuffer, prefixHash, witnessHash]))
+  const prefixHash = hash.blake2b256(prefixBuffer)
+  const witnessHash = hash.blake2b256(witnessBuffer)
+  return hash.blake2b256(Buffer.concat([typeBuffer, prefixHash, witnessHash]))
 }
