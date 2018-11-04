@@ -25,7 +25,6 @@ const SigHashMask = 0x1f
 const SigHashSerializePrefix = 1
 const SigHashSerializeWitness = 3
 
-const ONE = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
 const EMPTY_SCRIPT = Buffer.allocUnsafe(0)
 const BLANK_OUTPUT = {
   amount: 0,
@@ -283,12 +282,14 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
 
   // check for invalid inIndex
   if (inIndex >= this.vin.length) {
-    return ONE
+    throw new Error('invalid input index ' + inIndex +
+      ', out of the range of tx input ' + this.vin.length)
   }
   // Check for invalid use of SIGHASH_SINGLE
   if (fSingle && (inIndex >= this.vout.length)) {
     // out of range of the nOut
-    return ONE
+    throw new Error('invalid input index ' + inIndex +
+      'for SIGHASH_SINGLE, out of the range of tx output ' + this.vin.length)
   }
 
   // handle the passed scriptCode, skipping the OP_CODESEPARATOR

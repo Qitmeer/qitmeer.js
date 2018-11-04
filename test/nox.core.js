@@ -329,8 +329,15 @@ describe('Nox-core', function () {
       })
     })
     describe('signhash', function () {
+      it('getSignHash, throw invalid index', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.SignHashTest[0].txHex, 'hex'))
+        const preScript = nox.script.fromBuffer(Buffer.from(data.SignHashTest[0].prvScriptHex, 'hex'))
+        assert.throws(function () {
+          tx.getSignatureHash(1, preScript, nox.tx.SIGHASH_ALL)
+        }, /^Error: invalid input index 1, out of the range of tx input 1$/)
+      })
       data.SignHashTest.forEach(function (f) {
-        it('getSignHash', function () {
+        it('getSignHash ' + f.signHash, function () {
           const mytx = nox.tx.fromBuffer(Buffer.from(f.txHex, 'hex'))
           assert.strictEqual(mytx.getId(), f.txId)
           const preScript = nox.script.fromBuffer(Buffer.from(f.prvScriptHex, 'hex'))
