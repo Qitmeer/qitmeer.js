@@ -120,3 +120,15 @@ Script.prototype.toBuffer = function () {
   if (offset !== buffer.length) throw new Error('Could not decode chunks')
   return buffer
 }
+
+Script.prototype.removeOP = function (op) {
+  this.stack = this.stack.filter(function (x) {
+    return x !== op
+  })
+  return this
+}
+
+Script.prototype.removeCodeSeparator = function () {
+  this.removeOP(OPS.OP_CODESEPARATOR)
+  return this
+}

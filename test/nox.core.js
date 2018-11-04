@@ -234,6 +234,29 @@ describe('Nox-core', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.strictEqual(tx.getId(), data.TX.nowitness.tx.txid)
       })
+      it('clone', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
+        const txClone = tx.clone()
+        assert.strictEqual(tx.version, txClone.version)
+        assert.strictEqual(tx.vin.length, txClone.vin.length)
+        tx.vin.forEach(function (vin, index) {
+          assert.strictEqual(vin.txid, txClone.vin[index].txid)
+          assert.strictEqual(vin.vout, txClone.vin[index].vout)
+          assert.strictEqual(vin.sequence, txClone.vin[index].sequence)
+          assert.deepStrictEqual(vin.script, txClone.vin[index].script)
+        })
+        assert.strictEqual(tx.vout.length, txClone.vout.length)
+        tx.vout.forEach(function (vout, index) {
+          assert.strictEqual(vout.amount, txClone.vout[index].amount)
+          assert.deepStrictEqual(vout.script, txClone.vout[index].script)
+        })
+        assert.strictEqual(tx.locktime, txClone.locktime)
+        assert.strictEqual(tx.exprie, txClone.exprie)
+        assert.strictEqual(tx.getId(), txClone.getId())
+        assert.deepStrictEqual(tx.getHash(), txClone.getHash())
+        assert.strictEqual(tx.getHashFullId(), txClone.getHashFullId())
+        assert.deepStrictEqual(tx.getHashFull(), txClone.getHashFull())
+      })
     })
     describe('full witness', function () {
       it('fromBuffer', function () {
@@ -280,6 +303,29 @@ describe('Nox-core', function () {
       it('getHsahFullId ' + data.TX.witness.tx.txhash, function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.strictEqual(tx.getHashFullId(), data.TX.witness.tx.txhash)
+      })
+      it('clone', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
+        const txClone = tx.clone()
+        assert.strictEqual(tx.version, txClone.version)
+        assert.strictEqual(tx.vin.length, txClone.vin.length)
+        tx.vin.forEach(function (vin, index) {
+          assert.strictEqual(vin.txid, txClone.vin[index].txid)
+          assert.strictEqual(vin.vout, txClone.vin[index].vout)
+          assert.strictEqual(vin.sequence, txClone.vin[index].sequence)
+          assert.deepStrictEqual(vin.script, txClone.vin[index].script)
+        })
+        assert.strictEqual(tx.vout.length, txClone.vout.length)
+        tx.vout.forEach(function (vout, index) {
+          assert.strictEqual(vout.amount, txClone.vout[index].amount)
+          assert.deepStrictEqual(vout.script, txClone.vout[index].script)
+        })
+        assert.strictEqual(tx.locktime, txClone.locktime)
+        assert.strictEqual(tx.exprie, txClone.exprie)
+        assert.strictEqual(tx.getId(), txClone.getId())
+        assert.deepStrictEqual(tx.getHash(), txClone.getHash())
+        assert.strictEqual(tx.getHashFullId(), txClone.getHashFullId())
+        assert.deepStrictEqual(tx.getHashFull(), txClone.getHashFull())
       })
     })
   })
@@ -397,6 +443,17 @@ describe('Nox-core', function () {
         })
         it('test script toBuffer ' + f.hex, function () {
           assert.deepStrictEqual(Buffer.from(f.hex, 'hex'), script.toBuffer())
+        })
+      })
+    })
+    describe('removeCodeSeparator ', function () {
+      data.ScriptRemoveTest.forEach(function (f) {
+        it('test script ' + f.before.hex + '->' + f.after.hex, function () {
+          const script = nox.script.fromAsm(f.before.asm)
+          assert.strictEqual(f.before.asm, script.toAsm())
+          assert.strictEqual(script.removeCodeSeparator().toAsm(), f.after.asm)
+          assert.strictEqual(script.removeCodeSeparator().toBuffer().toString('hex'),
+            f.after.hex)
         })
       })
     })

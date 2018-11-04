@@ -14,6 +14,24 @@ function varSliceSize (someScript) {
   return varuint.encodingLength(length) + length
 }
 
+// SignatureHashType
+Transaction.SIGHASH_ALL = 0x01
+Transaction.SIGHASH_NONE = 0x02
+Transaction.SIGHASH_SINGLE = 0x03
+Transaction.SIGHASH_ANYONECANPAY = 0x80
+
+const SigHashMask = 0x1f
+const SigHashSerializePrefix = 1
+const SigHashSerializeWitness = 3
+
+const ONE = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
+const EMPTY_SCRIPT = Buffer.allocUnsafe(0)
+const BLANK_OUTPUT = {
+  amount: 0,
+  script: EMPTY_SCRIPT
+}
+
+// SerializeType
 Transaction.TxSerializeFull = 0
 Transaction.TxSerializeNoWitness = 1
 Transaction.TxSerializeOnlyWitness = 2
@@ -221,4 +239,215 @@ Transaction.prototype.getHashFull = function () {
 Transaction.prototype.getHashFullId = function () {
   // transaction hash's are displayed in reverse order
   return this.getHashFull().reverse().toString('hex')
+}
+
+Transaction.prototype.clone = function () {
+  const newTx = new Transaction()
+  newTx._stype = this._stype
+  newTx.version = this.version
+
+  newTx.vin = this.vin.map(function (txIn) {
+    return {
+      txid: txIn.txid,
+      vout: txIn.vout,
+      sequence: txIn.sequence,
+      amountin: txIn.amountin,
+      blockheight: txIn.blockheight,
+      txindex: txIn.txindex,
+      script: txIn.script
+    }
+  })
+
+  newTx.vout = this.vout.map(function (txOut) {
+    return {
+      amount: txOut.amount,
+      script: txOut.script
+    }
+  })
+  newTx.locktime = this.locktime
+  newTx.exprie = this.exprie
+
+  return newTx
+}
+
+// The hashed serialized transaction with the according hashType
+// Which can be verified by signatureScript (aka. pubkey and signature)
+Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashType) {
+  const fSingle = (hashType & SigHashMask) === Transaction.SIGHASH_SINGLE
+  const fNone = (hashType & SigHashMask) === Transaction.SIGHASH_NONE
+  const fAnyOne = (hashType & Transaction.SIGHASH_ANYONECANPAY) !== 0
+
+  // the reference SignHash implementation from :
+  // https://github.com/bitcoin/bitcoin/blob/master/src/script/interpreter.cpp
+
+  // check for invalid inIndex
+  if (inIndex >= this.vin.length) {
+    return ONE
+  }
+  // Check for invalid use of SIGHASH_SINGLE
+  if (fSingle && (inIndex >= this.vout.length)) {
+    // out of range of the nOut
+    return ONE
+  }
+
+  // handle the passed scriptCode, skipping the OP_CODESEPARATOR
+  // In case concatenating two scripts ends up with two code-separators,
+  // or an extra one at the end, this prevents all those possible incompatibilities.
+  const ourScript = prevOutScript.removeCodeSeparator()
+
+  const txTmp = this.clone()
+
+  // Handle Inputs
+  // Blank other inputs completely,      SIGHASH_ANYONECANPAY
+  if (fAnyOne) {
+    txTmp.vin = [txTmp.vin[inIndex]]
+    txTmp.vin[0].script = ourScript
+  }
+  // Blank only other inputs'signatures, SIGHASH_ALL
+  txTmp.vin.forEach(function (input) { input.script = EMPTY_SCRIPT })
+  txTmp.vin[inIndex].script = ourScript
+
+  // Handle Outputs
+  // Blank all output, and clear others sequence,  SIGHASH_NONE
+  if (fNone) {
+    txTmp.vout = []
+    // ignore sequence numbers (except at inIndex)
+    txTmp.vin.forEach(function (input, i) {
+      if (i === inIndex) return
+      input.sequence = 0
+    })
+  // Blank all other output except the same index, SIGHASH_SINGLE
+  } else if (fSingle) {
+    // truncate outputs after
+    txTmp.vout.length = inIndex + 1
+
+    // "blank" outputs before
+    for (var i = 0; i < inIndex; i++) {
+      txTmp.vout[i] = BLANK_OUTPUT
+    }
+    // ignore sequence numbers (except at inIndex)
+    txTmp.vin.forEach(function (input, y) {
+      if (y === inIndex) return
+      input.sequence = 0
+    })
+  }
+
+  // Serialize and Hash
+  function sigHashPrefixSerializeSize (txIns, txOuts, inIndex) {
+    // 1) 4 bytes version/serialization type
+    // 2) number of inputs varint
+    // 3) per input:
+    //    a) 32 bytes prevout hash
+    //    b) 4 bytes prevout index
+    //    c) 1 byte prevout tree
+    //    d) 4 bytes sequence
+    // 4) number of outputs varint
+    // 5) per output:
+    //    a) 8 bytes amount
+    //    b) 2 bytes script version
+    //    c) pkscript len varint (1 byte if not SigHashSingle output)
+    //    d) N bytes pkscript (0 bytes if not SigHashSingle output)
+    // 6) 4 bytes lock time
+    // 7) 4 bytes expiry
+    let nTxIns = txIns.length
+    let nTxOuts = txOuts.length
+    let size = 4 + varuint.encodingLength(nTxIns) +
+      nTxIns * (32 + 4 + 1 + 4) +
+      varuint.encodingLength(nTxOuts) +
+      nTxOuts * (8 + 2) +
+      4 + 4
+    txOuts.forEach(function (output, i) {
+      let s = output.script
+      if (fSingle && i !== inIndex) {
+        s = EMPTY_SCRIPT
+      }
+      size += varuint.encodingLength(s.length)
+      size += s.length
+    })
+    return size
+  }
+  function sigHashWitnessSerializeSize (txIns, signScript) {
+    // 1) 4 bytes version/serialization type
+    // 2) number of inputs varint
+    // 3) per input:
+    //    a) prevout pkscript varint (1 byte if not input being signed)
+    //    b) N bytes prevout pkscript (0 bytes if not input being signed)
+    //
+    // NOTE: The prevout pkscript is replaced by nil for all inputs except
+    // the input being signed.  Thus, all other inputs (aka numTxIns-1) commit
+    // to a nil script which gets encoded as a single 0x00 byte.  This is
+    // because encoding 0 as a varint results in 0x00 and there is no script
+    // to write.  So, rather than looping through all inputs and manually
+    // calculating the size per input, use (numTxIns - 1) as an
+    // optimization.
+    let nTxIns = txIns.length
+    let size = 4 + varuint.encodingLength(nTxIns) + (nTxIns - 1) +
+         varuint.encodingLength(signScript.length) +
+         signScript.length
+    return size
+  }
+
+  function writeSlice (buffer, slice, offset) { let o = slice.copy(buffer, offset); return offset + o }
+
+  function writeUInt32 (buffer, i, offset) { let o = buffer.writeUInt32LE(i, offset); return offset + o }
+
+  function writeUInt64 (buffer, i, offset) { let o = utils.writeUInt64LE(buffer, i, offset); return offset + o }
+
+  function writeVarInt (buffer, i, offset) {
+    varuint.encode(i, buffer, offset)
+    let o = varuint.encode.bytes
+    return offset + o
+  }
+  function writeVarSlice (buffer, slice, offset) {
+    let o = writeVarInt(buffer, slice.length, offset)
+    o += writeSlice(buffer, slice, o)
+    return offset + o
+  }
+
+  const prefixBuffer = Buffer.allocUnsafe(sigHashPrefixSerializeSize(txTmp.vin, txTmp.vout, inIndex))
+
+  // Commit to the version and hash serialization type.
+  const sigHashPrefixVer = txTmp.Version | SigHashSerializePrefix << 16
+  // prefix version
+  let offset = 0
+  offset += writeUInt32(prefixBuffer, sigHashPrefixVer, offset)
+  // txIn
+  offset += writeVarInt(prefixBuffer, txTmp.vin.length, offset)
+  txTmp.vin.forEach(function (txIn) {
+    offset += writeSlice(prefixBuffer, txIn.txid, offset)
+    offset += writeUInt32(prefixBuffer, txIn.vout, offset)
+    offset += writeUInt32(prefixBuffer, txIn.sequence, offset)
+  })
+  // txOut
+  offset += writeVarInt(prefixBuffer, txTmp.vout.length, offset)
+  txTmp.vout.forEach(function (txOut) {
+    offset += writeUInt64(prefixBuffer, txOut.amount, offset)
+    offset += writeVarSlice(prefixBuffer, txOut.script, offset)
+  })
+
+  offset += writeUInt32(prefixBuffer, txTmp.locktime, offset)
+  offset += writeUInt32(prefixBuffer, txTmp.exprie, offset)
+
+  const witnessBuffer = Buffer.allocUnsafe(sigHashWitnessSerializeSize(txTmp.vin, ourScript))
+  offset = 0
+  // witness version
+  const sigHashWitVer = txTmp.Version | SigHashSerializeWitness << 16
+  offset += writeUInt32(witnessBuffer, sigHashWitVer, offset)
+  // txIns
+  offset += writeVarInt(witnessBuffer, txTmp.vin.length, offset)
+  txTmp.vin.forEach(function (txIn) {
+    offset += writeVarSlice(witnessBuffer, txIn.script, offset)
+  })
+
+  // The final signature hash (message to sign) is the hash of the
+  // serialization of the following fields:
+  //
+  // 1) the hash type (as little-endian uint32)
+  // 2) prefix hash (as produced by hash function)
+  // 3) witness hash (as produced by hash function)
+  const typeBuffer = Buffer.allocUnsafe(4)
+  typeBuffer.writeUInt32LE(hashType)
+  const prefixHash = hash.dblake2b256(prefixBuffer)
+  const witnessHash = hash.dblake2b256(witnessBuffer)
+  return hash.dblake2b256(Buffer.concat([typeBuffer, prefixHash, witnessHash]))
 }

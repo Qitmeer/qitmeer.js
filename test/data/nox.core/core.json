@@ -422,5 +422,18 @@
     "asm": "304402204cceb6f5ef004ecfbf5a6a38137f5e154e99f008289b5e9bc38f35c02a6af0420220310726bd11de57206487fc49aa250ce68e1acdfe332c736ec999abbb04e0758d01 02abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174",
     "hex": "47304402204cceb6f5ef004ecfbf5a6a38137f5e154e99f008289b5e9bc38f35c02a6af0420220310726bd11de57206487fc49aa250ce68e1acdfe332c736ec999abbb04e0758d012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174"
     }
+  ],
+  "ScriptRemoveTest" : [
+    {
+      "before":{
+        "asm": "OP_DUP OP_HASH160 OP_CODESEPARATOR OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a9ab88ac"
+      },
+      "after":{
+        "asm": "OP_DUP OP_HASH160 OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a988ac"
+      }
+    }
   ]
+
 }
