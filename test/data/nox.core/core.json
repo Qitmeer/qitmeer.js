@@ -434,6 +434,18 @@
         "hex": "76a988ac"
       }
     }
+  ],
+  "SignHashTest" : [
+    {
+      "txHex" : "01000100013f4c8c3c1726e6d813071ae4eb9ffec97d0350342a70a316f500b3873a834ddb02000000ffffffff0200b89a3e0a0000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac0000000000000000",
+      "txId"  : "cbb540d78ea976b005f9a7547b149cefab14b01e9ee7e76d7491a6a9488629e9",
+      "prvScriptHex" : "76a91465ffb166a5eb252285b207a5639f97f9dbc42dfb88ac",
+      "prvScriptAsm" : "OP_DUP OP_HASH160 65ffb166a5eb252285b207a5639f97f9dbc42dfb OP_EQUALVERIFY OP_CHECKSIG",
+      "type"  : "SIGHASH_ALL",
+      "inIndex" : 0,
+      "signHash"  : "b14ca08cb6bb7185a1b22448680f6b3294401e44b26d0f0090ee033cfda19c70",
+      "signature" : "304402204c55811103d1a786210b3c88a8a852462bce22f690a555b60541d69ca88279d9022030e3ec4bb23710690317d1d03fc9af8c044593b937e92c4dd4ca0082c16a3ae3"
+    }
   ]
 
 }

@@ -293,7 +293,7 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
   // handle the passed scriptCode, skipping the OP_CODESEPARATOR
   // In case concatenating two scripts ends up with two code-separators,
   // or an extra one at the end, this prevents all those possible incompatibilities.
-  const ourScript = prevOutScript.removeCodeSeparator()
+  const ourScript = prevOutScript.removeCodeSeparator().toBuffer()
 
   const txTmp = this.clone()
 
@@ -381,17 +381,15 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
     // calculating the size per input, use (numTxIns - 1) as an
     // optimization.
     let nTxIns = txIns.length
-    let size = 4 + varuint.encodingLength(nTxIns) + (nTxIns - 1) +
-         varuint.encodingLength(signScript.length) +
-         signScript.length
+    let size = 4 + varuint.encodingLength(nTxIns) + (nTxIns - 1) + varSliceSize(signScript)
     return size
   }
 
   function writeSlice (buffer, slice, offset) { let o = slice.copy(buffer, offset); return offset + o }
 
-  function writeUInt32 (buffer, i, offset) { let o = buffer.writeUInt32LE(i, offset); return offset + o }
+  function writeUInt32 (buffer, i, offset) { let o = buffer.writeUInt32LE(i, offset); return o }
 
-  function writeUInt64 (buffer, i, offset) { let o = utils.writeUInt64LE(buffer, i, offset); return offset + o }
+  function writeUInt64 (buffer, i, offset) { let o = utils.writeUInt64LE(buffer, i, offset); return o }
 
   function writeVarInt (buffer, i, offset) {
     varuint.encode(i, buffer, offset)
@@ -400,8 +398,8 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
   }
   function writeVarSlice (buffer, slice, offset) {
     let o = writeVarInt(buffer, slice.length, offset)
-    o += writeSlice(buffer, slice, o)
-    return offset + o
+    o = writeSlice(buffer, slice, o)
+    return o
   }
 
   const prefixBuffer = Buffer.allocUnsafe(sigHashPrefixSerializeSize(txTmp.vin, txTmp.vout, inIndex))
@@ -410,33 +408,33 @@ Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashT
   const sigHashPrefixVer = txTmp.Version | SigHashSerializePrefix << 16
   // prefix version
   let offset = 0
-  offset += writeUInt32(prefixBuffer, sigHashPrefixVer, offset)
+  offset = writeUInt32(prefixBuffer, sigHashPrefixVer, offset)
   // txIn
-  offset += writeVarInt(prefixBuffer, txTmp.vin.length, offset)
+  offset = writeVarInt(prefixBuffer, txTmp.vin.length, offset)
   txTmp.vin.forEach(function (txIn) {
-    offset += writeSlice(prefixBuffer, txIn.txid, offset)
-    offset += writeUInt32(prefixBuffer, txIn.vout, offset)
-    offset += writeUInt32(prefixBuffer, txIn.sequence, offset)
+    offset = writeSlice(prefixBuffer, txIn.txid, offset)
+    offset = writeUInt32(prefixBuffer, txIn.vout, offset)
+    offset = writeUInt32(prefixBuffer, txIn.sequence, offset)
   })
   // txOut
-  offset += writeVarInt(prefixBuffer, txTmp.vout.length, offset)
+  offset = writeVarInt(prefixBuffer, txTmp.vout.length, offset)
   txTmp.vout.forEach(function (txOut) {
-    offset += writeUInt64(prefixBuffer, txOut.amount, offset)
-    offset += writeVarSlice(prefixBuffer, txOut.script, offset)
+    offset = writeUInt64(prefixBuffer, txOut.amount, offset)
+    offset = writeVarSlice(prefixBuffer, txOut.script, offset)
   })
 
-  offset += writeUInt32(prefixBuffer, txTmp.locktime, offset)
-  offset += writeUInt32(prefixBuffer, txTmp.exprie, offset)
+  offset = writeUInt32(prefixBuffer, txTmp.locktime, offset)
+  offset = writeUInt32(prefixBuffer, txTmp.exprie, offset)
 
   const witnessBuffer = Buffer.allocUnsafe(sigHashWitnessSerializeSize(txTmp.vin, ourScript))
   offset = 0
   // witness version
   const sigHashWitVer = txTmp.Version | SigHashSerializeWitness << 16
-  offset += writeUInt32(witnessBuffer, sigHashWitVer, offset)
+  offset = writeUInt32(witnessBuffer, sigHashWitVer, offset)
   // txIns
-  offset += writeVarInt(witnessBuffer, txTmp.vin.length, offset)
+  offset = writeVarInt(witnessBuffer, txTmp.vin.length, offset)
   txTmp.vin.forEach(function (txIn) {
-    offset += writeVarSlice(witnessBuffer, txIn.script, offset)
+    offset = writeVarSlice(witnessBuffer, txIn.script, offset)
   })
 
   // The final signature hash (message to sign) is the hash of the
