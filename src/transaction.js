@@ -6,6 +6,8 @@ const Buffer = require('safe-buffer').Buffer
 const utils = require('./utils')
 const varuint = require('varuint-bitcoin')
 const hash = require('./hash')
+const types = require('./types')
+const typecheck = require('./typecheck')
 
 module.exports = Transaction
 
@@ -14,6 +16,9 @@ function varSliceSize (someScript) {
 
   return varuint.encodingLength(length) + length
 }
+
+// default sequence 4294967295
+Transaction.DEFAULT_SEQUENCE = 0xffffffff
 
 // SignatureHashType
 Transaction.SIGHASH_ALL = 0x01
@@ -241,6 +246,43 @@ Transaction.prototype.getHashFullId = function () {
   return this.getHashFull().reverse().toString('hex')
 }
 
+Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
+  typecheck(types.Hash256, hash)
+  typecheck(types.UInt32, index)
+  if (types.Nil(sequence)) {
+    sequence = Transaction.DEFAULT_SEQUENCE
+  }
+  if (types.Nil(scriptSig)) {
+    scriptSig = EMPTY_SCRIPT
+  }
+  // Add the input and return the input's index
+  let size = this.vin.push({
+    txid: hash,
+    vout: index,
+    sequence: sequence,
+    script: scriptSig
+  })
+  return size - 1
+}
+
+Transaction.prototype.addOutput = function (scriptPubKey, amount) {
+  typecheck(types.Buffer, scriptPubKey)
+  typecheck(types.Amount, amount)
+
+  // Add the output and return the output's index
+  return (this.vout.push({
+    amount: amount,
+    script: scriptPubKey
+  }) - 1)
+}
+
+Transaction.prototype.setInputScript = function (index, scriptSig) {
+  typecheck(types.Number, index)
+  typecheck(types.Buffer, scriptSig)
+
+  this.vin[index].script = scriptSig
+}
+
 Transaction.prototype.clone = function () {
   const newTx = new Transaction()
   newTx._stype = this._stype
@@ -251,9 +293,9 @@ Transaction.prototype.clone = function () {
       txid: txIn.txid,
       vout: txIn.vout,
       sequence: txIn.sequence,
-      amountin: txIn.amountin,
-      blockheight: txIn.blockheight,
-      txindex: txIn.txindex,
+      amountin: txIn.amountin || 0,
+      blockheight: txIn.blockheight || 0,
+      txindex: txIn.txindex || 0,
       script: txIn.script
     }
   })
@@ -272,7 +314,7 @@ Transaction.prototype.clone = function () {
 
 // The hashed serialized transaction with the according hashType
 // Which can be verified by signatureScript (aka. pubkey and signature)
-Transaction.prototype.getSignatureHash = function (inIndex, prevOutScript, hashType) {
+Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashType) {
   const fSingle = (hashType & SigHashMask) === Transaction.SIGHASH_SINGLE
   const fNone = (hashType & SigHashMask) === Transaction.SIGHASH_NONE
   const fAnyOne = (hashType & Transaction.SIGHASH_ANYONECANPAY) !== 0

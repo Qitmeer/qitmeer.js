@@ -9,6 +9,15 @@ const nox = require('../')
 const data = require('./data/nox.core/core.json')
 
 describe('Nox-core', function () {
+  // type check
+  describe('type check', function () {
+    it('hash256', function () {
+      const hexStr = '5c0dff371fe9c762139570bdfef7d34aca5e84325871e67fd0203f0da8c5e50c'
+      assert.strictEqual(nox.typecheck(nox.types.Hex, hexStr), true)
+      assert.strictEqual(nox.typecheck(nox.types.Hex32, hexStr), true)
+      assert.strictEqual(nox.typecheck(nox.types.Hash256, Buffer.from(hexStr, 'hex')), true)
+    })
+  })
   // base58
   describe('base58', function () {
     data.base58.forEach(function (f) {
@@ -329,20 +338,20 @@ describe('Nox-core', function () {
       })
     })
     describe('signhash', function () {
-      it('getSignHash, throw invalid index', function () {
+      it('hashForSignature, throw invalid index', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.SignHashTest[0].txHex, 'hex'))
         const preScript = nox.script.fromBuffer(Buffer.from(data.SignHashTest[0].prvScriptHex, 'hex'))
         assert.throws(function () {
-          tx.getSignatureHash(1, preScript, nox.tx.SIGHASH_ALL)
+          tx.hashForSignature(1, preScript, nox.tx.SIGHASH_ALL)
         }, /^Error: invalid input index 1, out of the range of tx input 1$/)
       })
       data.SignHashTest.forEach(function (f) {
-        it('getSignHash ' + f.signHash, function () {
+        it('hashForSignature ' + f.signHash, function () {
           const mytx = nox.tx.fromBuffer(Buffer.from(f.txHex, 'hex'))
           assert.strictEqual(mytx.getId(), f.txId)
           const preScript = nox.script.fromBuffer(Buffer.from(f.prvScriptHex, 'hex'))
           assert.strictEqual(preScript.toAsm(), f.prvScriptAsm)
-          const signHash = mytx.getSignatureHash(0, preScript, nox.tx.SIGHASH_ALL)
+          const signHash = mytx.hashForSignature(0, preScript, nox.tx.SIGHASH_ALL)
           assert.deepStrictEqual(signHash, Buffer.from(f.signHash, 'hex'))
         })
       })
@@ -475,6 +484,27 @@ describe('Nox-core', function () {
             f.after.hex)
         })
       })
+    })
+  })
+  describe('example', function () {
+    it('sign a raw transaction', function () {
+      // alex's privkey 9af3b7c0b4f19635f90a5fc722defb961ac43508c66ffe5df992e9314f2a2948
+      const alex = nox.ec.fromWIF('L2QvAGZrNTdJSjzMSEA15vXkbjzdhn7fBJrcWHv3sprLFhkHXksC')
+      // create a new tx-signer
+      const txsnr = nox.txsign.newSigner()
+      txsnr.setVersion(1)
+      // alex's previous transaction output, has 450 nox
+      txsnr.addInput('5c0dff371fe9c762139570bdfef7d34aca5e84325871e67fd0203f0da8c5e50c', 2)
+      txsnr.addOutput('RmFskNPMcPLn4KpDqYzkgwBoa5soPS2SDDH', 44000000000)
+      txsnr.addOutput('RmQNkCr8ehRUzJhmNmgQVByv7VjakuCjc3d', 990000000)
+      // (in)45000000000 - (out)44990000000 = (miner fee)10000000
+
+      // sign
+      txsnr.sign(0, alex)
+      // get raw Tx
+      const rawTx = txsnr.build().toBuffer()
+      // can be broadcast to the nox network
+      assert.strictEqual(rawTx.toString('hex'), '01000000010ce5c5a80d3f20d07fe6715832845eca4ad3f7febd70951362c7e91f37ff0d5c02000000ffffffff0200b89a3e0a0000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac000000000000000001000000000000000000000000000000006a473044022061e957624fc53e9be6217845ed9c7251c04de33fd5143dab84e73c27193effe40220231ba5e6365277af20d41e8e08413147247070b7022f0cbbe9cbb35dc16e24d8012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174')
     })
   })
 })

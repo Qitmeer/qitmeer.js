@@ -14,6 +14,44 @@ function Script () {
   this.stack = []
 }
 
+Script.types = {
+  NONSTANDARD: 'nonstandard',
+  NULLDATA: 'nulldata',
+  P2PK: 'pubkey',
+  P2PKH: 'pubkeyhash',
+  P2SH: 'scripthash'
+}
+
+const __publicKeyScript = function (hash) {
+  const script = new Script()
+  script.stack = [
+    OPS.OP_DUP,
+    OPS.OP_HASH160,
+    hash,
+    OPS.OP_EQUALVERIFY,
+    OPS.OP_CHECKSIG
+  ]
+  return script
+}
+
+const __signatureScript = function (signature, pubkey) {
+  const script = new Script()
+  script.stack = [
+    signature,
+    pubkey
+  ]
+  return script
+}
+
+Script.Output = {
+  P2PKH: __publicKeyScript
+}
+
+Script.Input = {
+  P2PKH: __signatureScript,
+  P2PK: __signatureScript
+}
+
 Script.fromBuffer = function (buffer) {
   const script = new Script()
   if (Buffer.isBuffer(buffer)) {

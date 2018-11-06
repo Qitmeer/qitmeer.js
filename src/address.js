@@ -4,10 +4,13 @@
 
 const Buffer = require('safe-buffer').Buffer
 const nox58check = require('./nox58check').default
+const Network = require('./networks')
+const Script = require('./script')
 
 module.exports = {
   fromBase58Check: fromBase58Check,
-  toBase58Check: toBase58Check
+  toBase58Check: toBase58Check,
+  toOutputScript: toOutputScript
 }
 
 function fromBase58Check (address) {
@@ -28,4 +31,14 @@ function toBase58Check (hash, version) {
   hash.copy(payload, 2)
 
   return nox58check.encode(payload)
+}
+
+function toOutputScript (address, network) {
+  network = network || Network.privnet
+  const decode = fromBase58Check(address)
+  if (decode) {
+    if (decode.version === network.pubKeyHashAddrId) return Script.Output.P2PKH(decode.hash)
+    throw Error('Unknown version ' + decode.version)
+  }
+  throw Error('fail to base58check decode ' + address)
 }
