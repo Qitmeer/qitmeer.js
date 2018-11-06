@@ -337,6 +337,13 @@ describe('Nox-core', function () {
         assert.deepStrictEqual(tx.getHashFull(), txClone.getHashFull())
       })
     })
+    describe('two inputs', function () {
+      it('fromBuffer/toBuffer', function () {
+        const tx = nox.tx.fromBuffer(Buffer.from(data.TX.twoinputs.hex, 'hex'))
+        assert.strictEqual(tx.vin.length, data.TX.twoinputs.vin.length)
+        assert.strictEqual(tx.toBuffer().toString('hex'), data.TX.twoinputs.hex)
+      })
+    })
     describe('signhash', function () {
       it('hashForSignature, throw invalid index', function () {
         const tx = nox.tx.fromBuffer(Buffer.from(data.SignHashTest[0].txHex, 'hex'))
@@ -505,6 +512,26 @@ describe('Nox-core', function () {
       const rawTx = txsnr.build().toBuffer()
       // can be broadcast to the nox network
       assert.strictEqual(rawTx.toString('hex'), '01000000010ce5c5a80d3f20d07fe6715832845eca4ad3f7febd70951362c7e91f37ff0d5c02000000ffffffff0200b89a3e0a0000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac000000000000000001000000000000000000000000000000006a473044022061e957624fc53e9be6217845ed9c7251c04de33fd5143dab84e73c27193effe40220231ba5e6365277af20d41e8e08413147247070b7022f0cbbe9cbb35dc16e24d8012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174')
+    })
+    it('two inputs of alex', function () {
+      // alex's privkey 9af3b7c0b4f19635f90a5fc722defb961ac43508c66ffe5df992e9314f2a2948
+      const alex = nox.ec.fromWIF('L2QvAGZrNTdJSjzMSEA15vXkbjzdhn7fBJrcWHv3sprLFhkHXksC')
+      // create a new tx-signer
+      const txsnr = nox.txsign.newSigner()
+      txsnr.setVersion(1)
+      txsnr.addInput('d46a58fced5a05b1dc1f4450e1bdf09696291348a7eccec069ed59343ec35b4d', 2)
+      txsnr.addInput('46a6d3d9e1ef552dc9b0eba147ea97e481654a2bccf59fd764652971cb4d9fdd', 2)
+      txsnr.addOutput('RmFskNPMcPLn4KpDqYzkgwBoa5soPS2SDDH', 89000000000)
+      txsnr.addOutput('RmQNkCr8ehRUzJhmNmgQVByv7VjakuCjc3d', 990000000)
+      // (in)90000000000 - (out)89990000000 = (miner fee)10000000
+      // sign all index
+      txsnr.sign(0, alex)
+      txsnr.sign(1, alex)
+      // get raw Tx
+      const rawTx = txsnr.build()
+
+      // can be broadcast to the nox network
+      assert.deepStrictEqual(rawTx.toBuffer(), Buffer.from('01000000024d5bc33e3459ed69c0ceeca74813299696f0bde150441fdcb1055aedfc586ad402000000ffffffffdd9f4dcb71296564d79ff5cc2b4a6581e497ea47a1ebb0c92d55efe1d9d3a64602000000ffffffff02003ad0b8140000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac000000000000000002000000000000000000000000000000006a473044022005422cf4f7a082fe931509b44aee54c3d3c80b1f0d43ed1483ffeb7248857fe402202b9c050ed0fbb9883c8ff98d8a48c33483b32ad776d6746365f9b8851e6dcda5012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174000000000000000000000000000000006b483045022100be434e16f4c83947b1a19fefbf319b7170b280c9a0d89c0786624a83bda337910220395753153ab55b21d7041705c75f42778d7846a41ca5cbb5b033f875d20a9f15012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174', 'hex'))
     })
   })
 })

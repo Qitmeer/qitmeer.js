@@ -168,6 +168,70 @@
           }
         ]
       }
+    },
+    "twoinputs" : {
+      "hex" : "01000000024d5bc33e3459ed69c0ceeca74813299696f0bde150441fdcb1055aedfc586ad402000000ffffffffdd9f4dcb71296564d79ff5cc2b4a6581e497ea47a1ebb0c92d55efe1d9d3a64602000000ffffffff02003ad0b8140000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac0000000000000000020082357a0a00000001000000000000006a473044022005422cf4f7a082fe931509b44aee54c3d3c80b1f0d43ed1483ffeb7248857fe402202b9c050ed0fbb9883c8ff98d8a48c33483b32ad776d6746365f9b8851e6dcda5012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd1740082357a0a00000002000000000000006b483045022100be434e16f4c83947b1a19fefbf319b7170b280c9a0d89c0786624a83bda337910220395753153ab55b21d7041705c75f42778d7846a41ca5cbb5b033f875d20a9f15012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174",
+      "hexnowit": "01000100024d5bc33e3459ed69c0ceeca74813299696f0bde150441fdcb1055aedfc586ad402000000ffffffffdd9f4dcb71296564d79ff5cc2b4a6581e497ea47a1ebb0c92d55efe1d9d3a64602000000ffffffff02003ad0b8140000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac0000000000000000",
+      "hexwit": "01000200020082357a0a00000001000000000000006a473044022005422cf4f7a082fe931509b44aee54c3d3c80b1f0d43ed1483ffeb7248857fe402202b9c050ed0fbb9883c8ff98d8a48c33483b32ad776d6746365f9b8851e6dcda5012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd1740082357a0a00000002000000000000006b483045022100be434e16f4c83947b1a19fefbf319b7170b280c9a0d89c0786624a83bda337910220395753153ab55b21d7041705c75f42778d7846a41ca5cbb5b033f875d20a9f15012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174",
+      "txid": "109ad11ddca63527dc5bbf8906c33eef958e8d585e14ac3070f5af712aae4f82",
+      "txhash": "faf8f304b793548d7487d04928ea53daa336aa981a67eab3fbb05a457b1bc756",
+      "version": 1,
+      "locktime": 0,
+      "expire": 0,
+      "vin": [
+        {
+          "txid": "d46a58fced5a05b1dc1f4450e1bdf09696291348a7eccec069ed59343ec35b4d",
+          "vout": 2,
+          "sequence": 4294967295,
+          "amountin": 45000000000,
+          "blockheight": 1,
+          "txindex": 0,
+          "scriptSig": {
+            "asm": "3044022005422cf4f7a082fe931509b44aee54c3d3c80b1f0d43ed1483ffeb7248857fe402202b9c050ed0fbb9883c8ff98d8a48c33483b32ad776d6746365f9b8851e6dcda501 02abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174",
+            "hex": "473044022005422cf4f7a082fe931509b44aee54c3d3c80b1f0d43ed1483ffeb7248857fe402202b9c050ed0fbb9883c8ff98d8a48c33483b32ad776d6746365f9b8851e6dcda5012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174"
+          }
+        },
+        {
+          "txid": "46a6d3d9e1ef552dc9b0eba147ea97e481654a2bccf59fd764652971cb4d9fdd",
+          "vout": 2,
+          "sequence": 4294967295,
+          "amountin": 45000000000,
+          "blockheight": 2,
+          "txindex": 0,
+          "scriptSig": {
+            "asm": "3045022100be434e16f4c83947b1a19fefbf319b7170b280c9a0d89c0786624a83bda337910220395753153ab55b21d7041705c75f42778d7846a41ca5cbb5b033f875d20a9f1501 02abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174",
+            "hex": "483045022100be434e16f4c83947b1a19fefbf319b7170b280c9a0d89c0786624a83bda337910220395753153ab55b21d7041705c75f42778d7846a41ca5cbb5b033f875d20a9f15012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174"
+          }
+        }
+      ],
+      "vout": [
+        {
+          "amount": 89000000000,
+          "scriptPubKey": {
+            "asm": "OP_DUP OP_HASH160 69570a6c1fcb68db1b1c50b34960e714d42c7b9c OP_EQUALVERIFY OP_CHECKSIG",
+            "hex": "76a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac",
+            "reqSigs": 1,
+            "type": "pubkeyhash",
+            "addresses": [
+              "RmFskNPMcPLn4KpDqYzkgwBoa5soPS2SDDH"
+            ]
+          }
+        },
+        {
+          "amount": 990000000,
+          "scriptPubKey": {
+            "asm": "OP_DUP OP_HASH160 c693f8fbfe6836f1fb55579b427cfc4fd2014953 OP_EQUALVERIFY OP_CHECKSIG",
+            "hex": "76a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac",
+            "reqSigs": 1,
+            "type": "pubkeyhash",
+            "addresses": [
+              "RmQNkCr8ehRUzJhmNmgQVByv7VjakuCjc3d"
+            ]
+          }
+        }
+      ],
+      "blockheight": 101,
+      "confirmations": 1
     }
   },
   "Block" : {

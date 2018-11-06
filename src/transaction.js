@@ -93,7 +93,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   if (tx._stype !== Transaction.TxSerializeFull &&
     tx._stype !== Transaction.TxSerializeNoWitness &&
     tx._stype !== Transaction.TxSerializeOnlyWitness) {
-    throw new Error('unsupported tx serialize type')
+    throw new Error('unsupported tx serialize type ' + tx._stype)
   }
   let vinLen = 0
   if (tx._stype === Transaction.TxSerializeFull ||
@@ -159,6 +159,9 @@ Transaction.prototype.byteLength = function (stype) {
   return length
 }
 
+Transaction.prototype.toHex = function () {
+  return this.toBuffer().toString('hex')
+}
 Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength(stype))
 
