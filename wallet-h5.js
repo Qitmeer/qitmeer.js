@@ -85,6 +85,41 @@ _public.walletECPrivateKey = (dprivateKey, password) => {
     return Buffer.from(ecPair.privateKey).toString('hex');
 }
 
+_public.txSign = (utxo, wifPrivateKey, to, value, fees) => {
+    const keyPair = nox.ec.fromWIF(wifPrivateKey);
+    const from = _public.walletAddress(keyPair.publicKey.toString('hex'));
+
+    const txb = nox.txsign.newSigner();
+    txb.setVersion(_network.pubKeyHashAddrId);
+
+    const fullValue = value * 100000000;
+    const fullFees = fees * 100000000;
+
+    let total = 0;
+    // utxo.map(item => {
+    //     total += item.amount;
+    //     txb.addInput(item.txid, item.vout);
+    // });
+    for (let i = 0, len = utxo.length; total < (fullValue + fullFees) && i < len; i++) {
+        total += utxo[i].amount;
+        txb.addInput(utxo[i].txid, utxo[i].vout);
+    }
+
+    txb.addOutput(to, fullValue);
+    const balance = total - fullValue - fullFees;
+    if (balance > 0) {
+        txb.addOutput(from, balance);
+    }
+
+    utxo.map((item, i) => {
+        txb.sign(i, keyPair);
+    });
+    return txb.build().toBuffer().toString('hex');
+}
+
+// _public.utxo = (uxto, value, fees) => {
+
+// }
 
 
 /**
