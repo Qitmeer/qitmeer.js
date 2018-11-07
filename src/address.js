@@ -5,7 +5,8 @@
 const Buffer = require('safe-buffer').Buffer
 const nox58check = require('./nox58check').default
 const Network = require('./networks')
-const Script = require('./script')
+const Script = require('./script');
+const hash = require('./hash');
 
 module.exports = {
   fromBase58Check: fromBase58Check,
@@ -25,11 +26,11 @@ function fromBase58Check(address) {
   return { version: version, hash: hash }
 }
 
-function toBase58Check(hash, version) {
+function toBase58Check(publicHash, version) {
   let v = new Buffer(2);
   v.writeUInt16BE(version, 0);
 
-  const ripeMd160 = hash.rmd160(hash.blake2b256(pubHash));
+  const ripeMd160 = hash.rmd160(hash.blake2b256(publicHash));
   const concatBuffer = Buffer.concat([v, ripeMd160]);
 
   return nox58check.encode(concatBuffer);
