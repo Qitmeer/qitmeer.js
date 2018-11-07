@@ -13,7 +13,7 @@ module.exports = {
   toOutputScript: toOutputScript
 }
 
-function fromBase58Check (address) {
+function fromBase58Check(address) {
   const payload = nox58check.decode(address)
 
   if (payload.length < 22) throw new TypeError(address + ' is too short')
@@ -25,15 +25,17 @@ function fromBase58Check (address) {
   return { version: version, hash: hash }
 }
 
-function toBase58Check (hash, version) {
-  const payload = Buffer.allocUnsafe(22)
-  payload.writeUInt16BE(version, 0)
-  hash.copy(payload, 2)
+function toBase58Check(hash, version) {
+  let v = new Buffer(2);
+  v.writeUInt16BE(version, 0);
 
-  return nox58check.encode(payload)
+  const ripeMd160 = hash.rmd160(hash.blake2b256(pubHash));
+  const concatBuffer = Buffer.concat([v, ripeMd160]);
+
+  return nox58check.encode(concatBuffer);
 }
 
-function toOutputScript (address, network) {
+function toOutputScript(address, network) {
   network = network || Network.privnet
   const decode = fromBase58Check(address)
   if (decode) {
