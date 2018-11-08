@@ -31,6 +31,13 @@
         "coin": "nox",
         "network": "privnet"
       }
+    ],
+    [
+      "65ffb166a5eb252285b207a5639f97f9dbc42dfb","RmFa5hnPd3uQRpzr3xWTfr8EFZdX7dS1qzV",
+      {
+        "coin": "nox",
+        "network": "privnet"
+      }
     ]
   ],
   "hash" : {

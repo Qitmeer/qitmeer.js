@@ -6,6 +6,8 @@ const Buffer = require('safe-buffer').Buffer
 const nox58check = require('./nox58check').default
 const Network = require('./networks')
 const Script = require('./script')
+const types = require('./types')
+const typecheck = require('./typecheck')
 
 module.exports = {
   fromBase58Check: fromBase58Check,
@@ -26,6 +28,7 @@ function fromBase58Check (address) {
 }
 
 function toBase58Check (hash, version) {
+  typecheck(types.Hash160, hash)
   const payload = Buffer.allocUnsafe(22)
   payload.writeUInt16BE(version, 0)
   hash.copy(payload, 2)
