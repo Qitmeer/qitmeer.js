@@ -5,8 +5,8 @@
 const Buffer = require('safe-buffer').Buffer
 const nox58check = require('./nox58check').default
 const Network = require('./networks')
-const Script = require('./script');
-const hash = require('./hash');
+const Script = require('./script')
+const hash = require('./hash')
 
 module.exports = {
   fromBase58Check: fromBase58Check,
@@ -15,7 +15,7 @@ module.exports = {
   ecPubKeyToAddress: ecPubKeyToAddress
 }
 
-function fromBase58Check(address) {
+function fromBase58Check (address) {
   const payload = nox58check.decode(address)
 
   if (payload.length < 22) throw new TypeError(address + ' is too short')
@@ -31,22 +31,29 @@ function fromBase58Check(address) {
 }
 
 /**
- * 私钥生成地址
- * @param {*} public string类型私钥
+ * 公钥生成地址
+ * @param {*} publicString string类型公钥
  * @param {*} version 版本
  */
-function ecPubKeyToAddress(public, version) {
-  let v = new Buffer(2);
-  v.writeUInt16BE(version, 0);
+function ecPubKeyToAddress (publicString, version) {
+  // let v = new Buffer(2)
+  let v = Buffer.alloc(2)
+  v.writeUInt16BE(version, 0)
 
-  const ripeMd160 = hash.rmd160(hash.blake2b256(Buffer.from(public, 'hex')));
-  console.log(ripeMd160.length);
-  const concatBuffer = Buffer.concat([v, ripeMd160]);
+  const ripeMd160 = hash.rmd160(hash.blake2b256(Buffer.from(publicString, 'hex')))
+  console.log(ripeMd160.length)
+  const concatBuffer = Buffer.concat([v, ripeMd160])
 
-  return nox58check.encode(concatBuffer);
+  return nox58check.encode(concatBuffer)
 }
 
-function toBase58Check(hash, version) {
+/**
+ *  hash160公钥 转换地址
+ * @param hash  hash160公钥
+ * @param version 版本
+ * @returns {*|string}
+ */
+function toBase58Check (hash, version) {
   const payload = Buffer.allocUnsafe(22)
   payload.writeUInt16BE(version, 0)
   hash.copy(payload, 2)
@@ -54,7 +61,7 @@ function toBase58Check(hash, version) {
   return nox58check.encode(payload)
 }
 
-function toOutputScript(address, network) {
+function toOutputScript (address, network) {
   network = network || Network.privnet
   const decode = fromBase58Check(address)
   if (decode) {
