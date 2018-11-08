@@ -11,7 +11,8 @@ const hash = require('./hash');
 module.exports = {
   fromBase58Check: fromBase58Check,
   toBase58Check: toBase58Check,
-  toOutputScript: toOutputScript
+  toOutputScript: toOutputScript,
+  ecPubKeyToAddress: ecPubKeyToAddress
 }
 
 function fromBase58Check(address) {
@@ -23,17 +24,34 @@ function fromBase58Check(address) {
   const version = payload.readUInt16BE(0)
   const hash = payload.slice(2)
 
-  return { version: version, hash: hash }
+  return {
+    version: version,
+    hash: hash
+  }
 }
 
-function toBase58Check(publicHash, version) {
+/**
+ * 私钥生成地址
+ * @param {*} public string类型私钥
+ * @param {*} version 版本
+ */
+function ecPubKeyToAddress(public, version) {
   let v = new Buffer(2);
   v.writeUInt16BE(version, 0);
 
-  const ripeMd160 = hash.rmd160(hash.blake2b256(publicHash));
+  const ripeMd160 = hash.rmd160(hash.blake2b256(Buffer.from(public, 'hex')));
+  console.log(ripeMd160.length);
   const concatBuffer = Buffer.concat([v, ripeMd160]);
 
   return nox58check.encode(concatBuffer);
+}
+
+function toBase58Check(hash, version) {
+  const payload = Buffer.allocUnsafe(22)
+  payload.writeUInt16BE(version, 0)
+  hash.copy(payload, 2)
+
+  return nox58check.encode(payload)
 }
 
 function toOutputScript(address, network) {
