@@ -1,4 +1,3 @@
-
 // https://github.com/feross/buffer/blob/master/index.js#L1127
 function verifyUInt (value, max) {
   if (typeof value !== 'number') throw new Error('cannot write a non-number as a number')
