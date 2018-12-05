@@ -1,4 +1,3 @@
-
 module.exports = {
   mainnet: {
     pubKeyHashAddrId: 0x0c41

@@ -29,6 +29,7 @@ Block.fromBuffer = function (buffer) {
   if (buffer.length < 80) throw new Error('Buffer too small (< 80 bytes)')
 
   let offset = 0
+
   function readSlice (n) {
     offset += n
     return buffer.slice(offset - n, offset)
@@ -102,14 +103,17 @@ Block.prototype.toBuffer = function (headersOnly) {
     slice.copy(buffer, offset)
     offset += slice.length
   }
+
   function writeInt32 (i) {
     buffer.writeInt32LE(i, offset)
     offset += 4
   }
+
   function writeUInt32 (i) {
     buffer.writeUInt32LE(i, offset)
     offset += 4
   }
+
   function writeUInt64 (i) {
     utils.writeUInt64LE(buffer, i, offset)
     offset += 8

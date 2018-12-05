@@ -148,7 +148,7 @@ Script.prototype.toBuffer = function () {
       chunk.copy(buffer, offset)
       offset += chunk.length
 
-    // opcode
+      // opcode
     } else {
       buffer.writeUInt8(chunk, offset)
       offset += 1

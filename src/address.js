@@ -32,15 +32,14 @@ function fromBase58Check (address) {
 
 /**
  * 公钥生成地址
- * @param {*} publicString string类型公钥
- * @param {*} version 版本
+ * @param {Buffer类型公钥} publicBuffer
+ * @param {版本} version
  */
-function ecPubKeyToAddress (publicString, version) {
-  // let v = new Buffer(2)
+function ecPubKeyToAddress (publicBuffer, version) {
   let v = Buffer.alloc(2)
   v.writeUInt16BE(version, 0)
 
-  const ripeMd160 = hash.rmd160(hash.blake2b256(Buffer.from(publicString, 'hex')))
+  const ripeMd160 = hash.rmd160(hash.blake2b256(publicBuffer))
   console.log(ripeMd160.length)
   const concatBuffer = Buffer.concat([v, ripeMd160])
 
