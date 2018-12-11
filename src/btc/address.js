@@ -1,3 +1,4 @@
+//btc
 const public_address = require('./../public/address')
 const bs58check = require('bs58check')
 const hash = require('./../public/hash')

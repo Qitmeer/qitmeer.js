@@ -9,7 +9,8 @@ module.exports = {
     toAddress,
     importPrivatyKey,
     importWords,
-    words
+    words,
+    toWIF
 }
 
 /**
@@ -19,6 +20,14 @@ function createKeyPair() {
     return btc.EC.fromEntropy({
         network: _network
     });
+}
+
+/**
+ * 导出wif格式私钥
+ * @param {*} keyPair 
+ */
+function toWIF(keyPair){
+    return hlc.EC.toWIF(keyPair)
 }
 
 /**

@@ -6,7 +6,8 @@ module.exports = {
     fromEntropy,
     fromPrivateKey,
     fromPublicKey,
-    fromWIF
+    fromWIF,
+    EC
 }
 
 
@@ -14,7 +15,7 @@ function EC(priv, pub, options) {
     options = options || {}
 
     this.compressed = options.compressed === undefined ? true : options.compressed
-    this.network = options.network || network.mainnet
+    this.network = options.network
 
     this.__priv = priv || null
     this.__pub = null
@@ -30,12 +31,24 @@ Object.defineProperty(EC.prototype, 'privateKey', {
 
 Object.defineProperty(EC.prototype, 'publicKey', {
     get: function () {
-        if (!this.__pub) this.pub = secp256k1.pointFromScalar(this.__priv, this.compressed)
+        if (!this.__pub) this.__pub = secp256k1.pointFromScalar(this.__priv, this.compressed)
         return this.__pub
     }
 })
 
+EC.prototype.toWIF = function (wif) {
+    if (!this.__priv) throw new Error('Missing private key')
+    return wif.encode(this.__priv, this.compressed)
+}
 
+EC.prototype.sign = function (hash) {
+    if (!this.__priv) throw new Error('Missing private key')
+    return secp256k1.sign(hash, this.__priv)
+}
+
+EC.prototype.verify = function (hash, signature) {
+    return secp256k1.verify(hash, this.publicKey, signature)
+}
 
 /**
  * 生成随机数

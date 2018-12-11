@@ -1,12 +1,12 @@
 'use strict'
-
+//hlc
 const base58 = require('bs58')
 const Buffer = require('safe-buffer').Buffer
 const hash = require('./../public/hash')
 
 module.exports = {
     default: Nox58checkBase(hash.dblake2b256),
-    Nox58checkdsha256: Nox58checkBase(hash.dsha256),
+    Nox58checkdsha256: Nox58checkBase(hash.hash256_btc),
     Nox58checkBase: Nox58checkBase
 }
 

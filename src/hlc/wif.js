@@ -1,3 +1,4 @@
+//hlc
 const nox58check = require('./nox58check').Nox58checkdsha256
 const types = require('./types')
 

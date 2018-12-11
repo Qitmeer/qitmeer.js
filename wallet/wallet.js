@@ -110,11 +110,12 @@ function decipherWordsBTC(dprivatekey, password) {
  */
 const walletJson = (keyPair, typeName, account, password, tips) => {
     const publicKey = keyPair.publicKey;
+    const privateKey = hlc.toWIF(keyPair)
     let result = {
         account: account,
         password: password,
         address: '',
-        privateKey: keyPair.toWIF(),
+        privateKey: '',
         publicKey: publicKey.toString('hex'),
         tips: tips
     }
@@ -123,8 +124,10 @@ const walletJson = (keyPair, typeName, account, password, tips) => {
     switch (typeName) {
         case 'BTC':
             result.address = btc.toAddress(publicKey)
+            result.privateKey = btc.toWIF(keyPair)
             break;
         case 'HLC':
+            result.privateKey = hlc.toWIF(keyPair)
             result.address = hlc.toAddress(publicKey)
             break;
     }
@@ -151,7 +154,7 @@ const cipher = (key, password) => {
     result += cyo.final('hex');
     return result;
 }
- /**
+/**
  * 解密
  * @param {*} key 
  * @param {*} password 

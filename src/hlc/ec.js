@@ -12,7 +12,16 @@ module.exports = {
     fromEntropy,
     fromPrivateKey,
     fromPublicKey,
-    fromWIF
+    fromWIF,
+    toWIF
+}
+
+/**
+ * wif格式私钥
+ * @param {*} keyPair 
+ */
+function toWIF(keyPair) {
+    return keyPair.toWIF(wif);
 }
 
 /**
@@ -20,7 +29,7 @@ module.exports = {
  * @param {json} options {network|rng}
  */
 function fromEntropy(options) {
-    options = options.network || networks
+    options.network = options.network || networks
     return public_EC.fromEntropy(options)
 }
 

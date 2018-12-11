@@ -12,7 +12,16 @@ module.exports = {
     fromEntropy,
     fromPrivateKey,
     fromPublicKey,
-    fromWIF
+    fromWIF,
+    toWIF
+}
+
+/**
+ * wif格式私钥
+ * @param {*} keyPair 
+ */
+function toWIF(keyPair) {
+    return keyPair.toWIF(wif);
 }
 
 /**
