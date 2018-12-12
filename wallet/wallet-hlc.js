@@ -10,14 +10,15 @@ module.exports = {
     importPrivatyKey,
     importWords,
     words,
-    toWIF
+    toWIF,
+    txSign
 }
 
 /**
  * 生成随机数
  */
 function createKeyPair() {
-    return hlc.EC.fromEntropy({
+    return hlc.ec.fromEntropy({
         network: _network
     });
 }
@@ -26,8 +27,8 @@ function createKeyPair() {
  * 导出wif格式私钥
  * @param {*} keyPair 
  */
-function toWIF(keyPair){
-    return hlc.EC.toWIF(keyPair)
+function toWIF(keyPair) {
+    return hlc.ec.toWIF(keyPair)
 }
 
 /**
@@ -39,15 +40,49 @@ function toAddress(pubkey) {
 }
 
 function importPrivatyKey(key) {
-    return keyPair = hlc.EC.fromWIF(key);
+    return keyPair = hlc.ec.fromWIF(key);
 }
 
 function importWords(key) {
     const privHex = bip39.mnemonicToEntropy(key);
-    return keyPair = hlc.EC.fromPrivateKey(Buffer.from(privHex, 'hex'));
+    return keyPair = hlc.ec.fromPrivateKey(Buffer.from(privHex, 'hex'), {
+        network: _network
+    });
 }
 
 function words(privkey) {
-    const keyPair = hlc.EC.fromWIF(privatekey, _network);
+    const keyPair = hlc.ec.fromWIF(privkey, _network);
     return bip39.entropyToMnemonic(keyPair.privateKey.toString('hex'));
+}
+
+function txSign(utxo, privkey, to, value, fees) {
+    const keyPair = hlc.ec.fromWIF(privkey)
+    const from = toAddress(keyPair.publicKey)
+    const txb = hlc.txsign.newSigner()
+    // txb.setVersion(_network.pubKeyHashAddrId);
+    txb.setVersion(1);
+
+    const fullValue = parseFloat(value) * 100000000
+    const fullFees = parseFloat(fees) * 100000000
+
+    let [total, utxoArr] = [0, []]
+    for (let i = 0, len = utxo.length; total < (fullValue + fullFees) && i < len; i++) {
+        total += utxo[i].amount
+        utxoArr.push(utxo[i])
+        txb.addInput(utxo[i].txid, utxo[i].vout)
+    }
+
+    txb.addOutput(to, fullValue)
+    const balance = total - fullValue - fullFees
+    if (balance > 0) {
+        txb.addOutput(from, balance)
+    } else {
+        return -1
+    }
+
+    for (let i = 0, len = utxoArr.length; i < len; i++) {
+        txb.sign(i, keyPair)
+    }
+
+    return txb.build().toBuffer().toString('hex')
 }

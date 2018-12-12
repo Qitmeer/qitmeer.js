@@ -36,10 +36,10 @@ Object.defineProperty(EC.prototype, 'publicKey', {
     }
 })
 
-EC.prototype.toWIF = function (wif) {
-    if (!this.__priv) throw new Error('Missing private key')
-    return wif.encode(this.__priv, this.compressed)
-}
+// EC.prototype.toWIF = function (wif) {
+//     if (!this.__priv) throw new Error('Missing private key')
+//     return wif.encode(this.__priv, this.compressed)
+// }
 
 EC.prototype.sign = function (hash) {
     if (!this.__priv) throw new Error('Missing private key')

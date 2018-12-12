@@ -1,6 +1,6 @@
 const hlc = require('./wallet-hlc')
 const btc = require('./wallet-btc')
-
+const crypto = require('crypto')
 
 module.exports = {
     createHLC,
@@ -15,7 +15,9 @@ module.exports = {
     wordsHLC,
     wordsBTC,
     decipherWordsHLC,
-    decipherWordsBTC
+    decipherWordsBTC,
+    txSignHLC,
+    txSignBTC
 }
 
 /**
@@ -61,7 +63,7 @@ function createEncryptHLC(privkey, account, password, tips) {
     return {
         account: account,
         address: hlc.toAddress(publicKey),
-        privateKey: cipher(keyPair.toWIF(), toMD5(password)),
+        privateKey: cipher(hlc.toWIF(keyPair), toMD5(password)),
         publicKey: publicKey.toString('hex'),
         tips: tips
     }
@@ -73,7 +75,7 @@ function createEncryptBTC(privkey, account, password, tips) {
     return {
         account: account,
         address: btc.toAddress(publicKey),
-        privateKey: cipher(keyPair.toWIF(), toMD5(password)),
+        privateKey: cipher(btc.toWIF(keyPair), toMD5(password)),
         publicKey: publicKey.toString('hex'),
         tips: tips
     }
@@ -100,6 +102,17 @@ function decipherWordsBTC(dprivatekey, password) {
     const privkey = decipherPivateKey(dprivatekey, password)
     return wordsBTC(privkey)
 }
+
+function txSignHLC(utxo, privkey, to, value, fees) {
+    return hlc.txSign(utxo, privkey, to, value, fees)
+}
+
+function txSignBTC(utxo, privkey, to, value, fees) {
+    return btc.txSign(utxo, privkey, to, value, fees)
+}
+
+
+
 /**
  * 返回json集合
  * @param {*} keyPair
@@ -110,7 +123,6 @@ function decipherWordsBTC(dprivatekey, password) {
  */
 const walletJson = (keyPair, typeName, account, password, tips) => {
     const publicKey = keyPair.publicKey;
-    const privateKey = hlc.toWIF(keyPair)
     let result = {
         account: account,
         password: password,
@@ -123,8 +135,8 @@ const walletJson = (keyPair, typeName, account, password, tips) => {
     if (typeName) typeName = typeName.toUpperCase()
     switch (typeName) {
         case 'BTC':
-            result.address = btc.toAddress(publicKey)
             result.privateKey = btc.toWIF(keyPair)
+            result.address = btc.toAddress(publicKey)
             break;
         case 'HLC':
             result.privateKey = hlc.toWIF(keyPair)

@@ -1,6 +1,8 @@
 //hlc
 module.exports = {
     networks: require('./networks'),
-    EC: require('./ec'),
-    address: require('./address')
+    ec: require('./ec'),
+    address: require('./address'),
+    tx: require('./transaction'),
+    txsign: require('./txsign'),
 }
