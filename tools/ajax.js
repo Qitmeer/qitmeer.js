@@ -4,13 +4,19 @@ const _url = require('url')
 
 
 module.exports = {
-
+    Get,
+    Post
 }
 
-function Get(url, data, success) {
-
+async function Get(url, data, success) {
+    const result = await requestPromise(url, 'GET', data)
+    return success(result)
 }
 
+async function Post(url, data, success) {
+    const result = await requestPromise(url, 'POST', data)
+    return success(result)
+}
 
 
 
@@ -28,8 +34,48 @@ const requestPromise = (url, method, data) => {
     const location = _url.parse(url)
     let _HTTP = http
     let port = location.port === undefined ? 80 : location.port
-    if (url.indexOf('https://' >= 0)){
-        
+    if (url.indexOf('https://') >= 0) {
+        port = 443
+        _HTTP = https
+    }
+    let _result = ''
+    let options = {
+        method: method,
+        host: location.hostname,
+        port: port,
+        path: location.path
     }
 
+    if (method === 'POST') {
+        options['headers'] = {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Length': Buffer.byteLength(data, 'utf8')
+        }
+    } else if (method === 'GET') {
+        options['headers'] = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+    }
+
+    return new Promise((resolve, reject) => {
+        let req = _HTTP.request(options, (res) => {
+            if (res.statusCode === 200) {
+                res.on('data', (result) => {
+                    _result += result
+                })
+            } else {
+                console.log('请求返回：' + res.statusCode)
+            }
+            res.on('end', () => {
+                console.log('响应结束')
+                _result = JSON.parse(_result.toString())
+                resolve(_result)
+            })
+        })
+        req.on('error', (err) => {
+            console.log(err)
+        })
+        req.write(data)
+        req.end()
+    })
 }

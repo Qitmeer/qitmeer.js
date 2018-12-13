@@ -1,16 +1,17 @@
-
 //hlc
 const public_address = require('./../public/address')
 const nox58check = require('./nox58check').default
-const network = require('./networks')
+const Network = require('./networks')
 const hash = require('./../public/hash')
+const Script = require('./script')
 
 
 
 module.exports = {
     fromBase58Check,
     toBase58Check,
-    ecPubKeyToAddress
+    ecPubKeyToAddress,
+    toOutputScript
 }
 
 
@@ -53,4 +54,14 @@ function ecPubKeyToAddress(publickey, version) {
     const concatBuffer = Buffer.concat([v, ripeMd160])
 
     return nox58check.encode(concatBuffer)
+}
+
+function toOutputScript(address, network) {
+    network = network || Network.privnet
+    const decode = fromBase58Check(address)
+    if (decode) {
+        if (decode.version === network.pubKeyHashAddrId) return Script.Output.P2PKH(decode.hash)
+        throw Error('Unknown version ' + decode.version)
+    }
+    throw Error('fail to base58check decode ' + address)
 }
