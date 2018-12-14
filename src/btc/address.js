@@ -2,17 +2,19 @@
 const public_address = require('./../public/address')
 const bs58check = require('bs58check')
 const hash = require('./../public/hash')
+const payments = require('./payments')
 
 
 
 module.exports = {
     fromBase58Check,
     toBase58Check,
-    ecPubKeyToAddress
+    ecPubKeyToAddress,
+    toOutputScript
 }
 
 
-function fromBase58Check() {
+function fromBase58Check(address) {
     const payload = bs58check.decode(address)
 
     // TODO: 4.0.0, move to "toOutputScript"
@@ -41,4 +43,39 @@ function ecPubKeyToAddress(publickey, version) {
     const concatBuffer = Buffer.concat([v, hash160])
 
     return bs58check.encode(concatBuffer)
+}
+
+
+function toOutputScript(address, network) {
+    let decode
+    try {
+        decode = fromBase58Check(address)
+    } catch (e) {}
+
+    if (decode) {
+        if (decode.version === network.pubKeyHash) return payments.p2pkh({
+            hash: decode.hash
+        }).output
+        if (decode.version === network.scriptHash) return payments.p2sh({
+            hash: decode.hash
+        }).output
+    } else {
+        try {
+            decode = fromBech32(address)
+        } catch (e) {}
+
+        if (decode) {
+            if (decode.prefix !== network.bech32) throw new Error(address + ' has an invalid prefix')
+            if (decode.version === 0) {
+                if (decode.data.length === 20) return payments.p2wpkh({
+                    hash: decode.data
+                }).output
+                if (decode.data.length === 32) return payments.p2wsh({
+                    hash: decode.data
+                }).output
+            }
+        }
+    }
+
+    throw new Error(address + ' has no matching Script')
 }

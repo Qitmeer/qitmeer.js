@@ -3,7 +3,7 @@ const bip39 = require('bip39')
 
 
 //
-const _network = btc.networks.bitcoin
+const _network = btc.networks.testnet
 
 module.exports = {
     createKeyPair,
@@ -37,12 +37,12 @@ function toWIF(keyPair) {
  * @param {buffer} pubkey 
  */
 function toAddress(pubkey) {
-    return btc.address.ecPubKeyToAddress(pubkey, _network.pubKeyHashAddrId)
+    return btc.address.ecPubKeyToAddress(pubkey, _network.pubKeyHash)
 }
 
 
 function importPrivatyKey(key) {
-    return keyPair = btc.ec.fromWIF(key);
+    return keyPair = btc.ec.fromWIF(key, _network);
 }
 
 function importWords(key) {
@@ -60,7 +60,7 @@ function words(privkey) {
 function txSign(utxo, privkey, to, value, fees) {
     const keyPair = btc.ec.fromWIF(privkey, _network)
     const from = toAddress(keyPair.publicKey)
-    const txb = btc.TransactionBuilder(_network)
+    const txb = new btc.TransactionBuilder(_network)
 
     const fullValue = parseFloat(value) * 100000000
     const fullFees = parseFloat(fees) * 100000000

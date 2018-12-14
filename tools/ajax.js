@@ -10,11 +10,13 @@ module.exports = {
 
 async function Get(url, data, success) {
     const result = await requestPromise(url, 'GET', data)
+    if (typeof success !== 'function') return success
     return success(result)
 }
 
 async function Post(url, data, success) {
     const result = await requestPromise(url, 'POST', data)
+    if (typeof success !== 'function') return result
     return success(result)
 }
 
