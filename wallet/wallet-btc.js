@@ -1,5 +1,5 @@
 const btc = require('./../src/btc')
-const bip39 = require('bip39')
+// const bip39 = require('bip39')
 
 
 //
@@ -8,20 +8,19 @@ const _network = btc.networks.testnet
 module.exports = {
     createKeyPair,
     toAddress,
-    importPrivatyKey,
-    importWords,
-    words,
     toWIF,
-    txSign
+    txSign,
+    importPrivatyKey,
+    importWords
 }
 
 /**
  * 生成随机数
  */
-function createKeyPair() {
-    return btc.ec.fromEntropy({
-        network: _network
-    });
+function createKeyPair(options) {
+    if (!options) options = {}
+    options.network = options.network || _network
+    return btc.ec.fromEntropy(options);
 }
 
 /**

@@ -3,6 +3,7 @@ const randomBytes = require('randombytes')
 
 
 module.exports = {
+    entropy,
     fromEntropy,
     fromPrivateKey,
     fromPublicKey,
@@ -52,16 +53,29 @@ EC.prototype.verify = function (hash, signature) {
 
 /**
  * 生成随机数
+ * @param {int} number 
+ */
+function entropy(number) {
+    let x
+    do {
+        x = randomBytes(32)
+    } while (!secp256k1.isPrivate(x))
+    return x;
+}
+
+/**
+ * 生成随机数
  * @param {json} options {network|rng}
  */
 function fromEntropy(options) {
     options = options || {}
     const rng = options.rng || randomBytes
-    let x
-    do {
-        x = rng(32)
-    } while (!secp256k1.isPrivate(x))
-
+    let x = options.x || undefined
+    if (x === undefined) {
+        do {
+            x = rng(32)
+        } while (!secp256k1.isPrivate(x))
+    }
     return fromPrivateKey(x, options)
 }
 

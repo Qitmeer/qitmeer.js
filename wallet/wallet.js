@@ -1,106 +1,57 @@
 const hlc = require('./wallet-hlc')
 const btc = require('./wallet-btc')
+const public_EC = require('./../src/public/ec')
+const bip39 = require('bip39')
 const crypto = require('crypto')
 
 module.exports = {
-    createHLC,
-    createBTC,
-    importPrivatyKeyHLC,
-    importPrivatyKeyBTC,
-    importWordsHLC,
-    importWordsBTC,
-    createEncryptHLC,
-    createEncryptBTC,
-    decipherPivateKey,
-    wordsHLC,
-    wordsBTC,
-    decipherWordsHLC,
-    decipherWordsBTC,
+    create,
+    createEncrypt,
+    decipherWords,
     txSignHLC,
     txSignBTC
 }
 
+
 /**
- * 创建hlc钱包
- * @param {*} account 账号
- * @param {*} password 密码
- * @param {*} tips 密码提示词
+ * 生成钱包 
+ * @param {string} account 账户名称
+ * @param {string} password 密码
+ * @param {string} tips 提示
  */
-function createHLC(account, password, tips) {
-    const keyPair = hlc.createKeyPair();
-    return walletJson(keyPair, 'HLC', account, password, tips);
+function create(account, password, tips) {
+    const x = public_EC.entropy()
+    let result = walletJson({
+        x: x
+    })
+    result['account'] = account
+    result['password'] = password
+    result['tips'] = tips
+    return result
 }
+
 /**
- * 创建btc钱包
- * @param {*} account 账号
- * @param {*} password 密码
- * @param {*} tips 密码提示词
+ * 生成正式钱包
+ * @param {string} key 助记词
+ * @param {string} account 账户名称
+ * @param {string} password 密码
+ * @param {string} tips 提示
  */
-function createBTC(account, password, tips) {
-    const keyPair = btc.createKeyPair();
-    return walletJson(keyPair, 'BTC', account, password, tips);
+function createEncrypt(key, account, password, tips) {
+    const x = bip39.mnemonicToEntropy(key)
+    let result = walletJson({
+        x: x
+    })
+    result['account'] = account
+    result['tips'] = tips
+    result['words'] = cipher(key, toMD5(password))
+    result.hlc['privateKey'] = cipher(result.hlc.privateKey, toMD5(password))
+    result.btc['privateKey'] = cipher(result.btc.privateKey, toMD5(password))
+    return result
 }
 
-function importPrivatyKeyHLC(key, account, password, tips) {
-    return walletJson(hlc.importPrivatyKey(key), 'HLC', account, password, tips);
-}
-
-function importPrivatyKeyBTC(key, account, password, tips) {
-    return walletJson(btc.importPrivatyKey(key), 'BTC', account, password, tips);
-}
-
-function importWordsHLC(key, account, password, tips) {
-    return walletJson(hlc.importWords(key), 'HLC', account, password, tips);
-}
-
-function importWordsBTC(key, account, password, tips) {
-    return walletJson(btc.importWords(key), 'BTC', account, password, tips);
-}
-
-function createEncryptHLC(privkey, account, password, tips) {
-    const keyPair = hlc.importPrivatyKey(privkey)
-    const publicKey = keyPair.publicKey
-    return {
-        account: account,
-        address: hlc.toAddress(publicKey),
-        privateKey: cipher(hlc.toWIF(keyPair), toMD5(password)),
-        publicKey: publicKey.toString('hex'),
-        tips: tips
-    }
-}
-
-function createEncryptBTC(privkey, account, password, tips) {
-    const keyPair = btc.importPrivatyKey(privkey)
-    const publicKey = keyPair.publicKey
-    return {
-        account: account,
-        address: btc.toAddress(publicKey),
-        privateKey: cipher(btc.toWIF(keyPair), toMD5(password)),
-        publicKey: publicKey.toString('hex'),
-        tips: tips
-    }
-}
-
-function decipherPivateKey(dprivatekey, password) {
-    return decipher(dprivatekey, toMD5(password));
-}
-
-function wordsHLC(privkey) {
-    return hlc.words(privkey)
-}
-
-function wordsBTC(privkey) {
-    return btc.words(privkey)
-}
-
-function decipherWordsHLC(dprivatekey, password) {
-    const privkey = decipherPivateKey(dprivatekey, password)
-    return wordsHLC(privkey)
-}
-
-function decipherWordsBTC(dprivatekey, password) {
-    const privkey = decipherPivateKey(dprivatekey, password)
-    return wordsBTC(privkey)
+function decipherWords(dwords, password) {
+    return decipher(dwords, toMD5(password));
 }
 
 function txSignHLC(utxo, privkey, to, value, fees) {
@@ -112,40 +63,27 @@ function txSignBTC(utxo, privkey, to, value, fees) {
 }
 
 
-
 /**
  * 返回json集合
- * @param {*} keyPair
- * @param {string} typeName 类型名称 {BTC|HLC}
- * @param {string} account 账号
- * @param {string} password 密码
- * @param {string} tips 提示词
+ * @param {json} x 
  */
-const walletJson = (keyPair, typeName, account, password, tips) => {
-    const publicKey = keyPair.publicKey;
-    let result = {
-        account: account,
-        password: password,
-        address: '',
-        privateKey: '',
-        publicKey: publicKey.toString('hex'),
-        tips: tips
+function walletJson(x) {
+    const keyPair = {
+        hlc: hlc.createKeyPair(x),
+        btc: btc.createKeyPair(x)
     }
-
-    if (typeName) typeName = typeName.toUpperCase()
-    switch (typeName) {
-        case 'BTC':
-            result.privateKey = btc.toWIF(keyPair)
-            result.address = btc.toAddress(publicKey)
-            break;
-        case 'HLC':
-            result.privateKey = hlc.toWIF(keyPair)
-            result.address = hlc.toAddress(publicKey)
-            break;
+    return {
+        words: bip39.entropyToMnemonic(x.x.toString('hex')),
+        hlc: {
+            address: hlc.toAddress(keyPair.hlc.publicKey),
+            privateKey: hlc.toWIF(keyPair.hlc)
+        },
+        btc: {
+            address: btc.toAddress(keyPair.btc.publicKey),
+            privateKey: btc.toWIF(keyPair.btc)
+        },
     }
-
-    return result
-};
+}
 /**
  * md5加密
  * @param {*} key 
