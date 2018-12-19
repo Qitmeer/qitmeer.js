@@ -27,6 +27,7 @@ function create(account, password, tips) {
     result['account'] = account
     result['password'] = password
     result['tips'] = tips
+    result['md5'] = toMD5('111111')
     return result
 }
 
