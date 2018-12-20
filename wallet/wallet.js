@@ -15,35 +15,30 @@ module.exports = {
 
 /**
  * 生成钱包 
- * @param {string} account 账户名称
  * @param {string} password 密码
  * @param {string} tips 提示
  */
-function create(account, password, tips) {
+function create(password, tips) {
     const x = public_EC.entropy()
     let result = walletJson({
         x: x
     })
-    result['account'] = account
     result['password'] = password
     result['tips'] = tips
-    result['md5'] = toMD5('111111')
     return result
 }
 
 /**
  * 生成正式钱包
  * @param {string} key 助记词
- * @param {string} account 账户名称
  * @param {string} password 密码
  * @param {string} tips 提示
  */
-function createEncrypt(key, account, password, tips) {
+function createEncrypt(key, password, tips) {
     const x = bip39.mnemonicToEntropy(key)
     let result = walletJson({
         x: x
     })
-    result['account'] = account
     result['tips'] = tips
     result['words'] = cipher(key, toMD5(password))
     result.hlc['privateKey'] = cipher(result.hlc.privateKey, toMD5(password))
