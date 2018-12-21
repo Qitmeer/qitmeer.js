@@ -20,9 +20,7 @@ module.exports = {
  */
 function create(password, tips) {
     const x = public_EC.entropy()
-    let result = walletJson({
-        x: x
-    })
+    let result = walletJson(x)
     result['password'] = password
     result['tips'] = tips
     return result
@@ -35,10 +33,26 @@ function create(password, tips) {
  * @param {string} tips 提示
  */
 function createEncrypt(key, password, tips) {
-    const x = bip39.mnemonicToEntropy(key)
-    let result = walletJson({
-        x: x
-    })
+
+    const keyPair = {
+        hlc: hlc.importWords(key),
+        btc: btc.importWords(key)
+    }
+    let result = {
+        words: key,
+        hlc: {
+            address: hlc.toAddress(keyPair.hlc.publicKey),
+            privateKey: hlc.toWIF(keyPair.hlc)
+        },
+        btc: {
+            address: btc.toAddress(keyPair.btc.publicKey),
+            privateKey: btc.toWIF(keyPair.btc)
+        },
+    }
+
+    // const x = bip39.mnemonicToEntropy(key)
+    // // const a = new Uint8Array(Buffer.from(x, 'hex'))
+    // let result = walletJson(x)
     result['tips'] = tips
     result['words'] = cipher(key, toMD5(password))
     result.hlc['privateKey'] = cipher(result.hlc.privateKey, toMD5(password))
@@ -63,13 +77,14 @@ function txSignBTC(utxo, privkey, to, value, fees) {
  * 返回json集合
  * @param {json} x 
  */
-function walletJson(x) {
+function walletJson(optionsX) {
+    const x = optionsX
     const keyPair = {
         hlc: hlc.createKeyPair(x),
         btc: btc.createKeyPair(x)
     }
     return {
-        words: bip39.entropyToMnemonic(x.x.toString('hex')),
+        words: bip39.entropyToMnemonic(x.toString('hex')),
         hlc: {
             address: hlc.toAddress(keyPair.hlc.publicKey),
             privateKey: hlc.toWIF(keyPair.hlc)

@@ -1,5 +1,5 @@
 const btc = require('./../src/btc')
-// const bip39 = require('bip39')
+const bip39 = require('bip39')
 
 
 //
@@ -11,15 +11,18 @@ module.exports = {
     toWIF,
     txSign,
     importPrivatyKey,
-    importWords
+    importWords,
+    words
 }
 
 /**
  * 生成随机数
  */
-function createKeyPair(options) {
-    if (!options) options = {}
+function createKeyPair(x) {
+    const options = {}
+    if (x) options.x = x
     options.network = options.network || _network
+
     return btc.ec.fromEntropy(options);
 }
 
@@ -28,7 +31,7 @@ function createKeyPair(options) {
  * @param {*} keyPair 
  */
 function toWIF(keyPair) {
-    return btc.ec.toWIF(keyPair)
+    return btc.ec.toWIF(keyPair, _network)
 }
 
 /**

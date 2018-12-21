@@ -1,5 +1,5 @@
 const hlc = require('./../src/hlc')
-// const bip39 = require('bip39')
+const bip39 = require('bip39')
 
 //
 const _network = hlc.networks.privnet
@@ -16,9 +16,11 @@ module.exports = {
 /**
  * 生成随机数
  */
-function createKeyPair(options) {
-    if (!options) options = {}
+function createKeyPair(x) {
+    const options = {}
+    if (x) options.x = x
     options.network = options.network || _network
+
     return hlc.ec.fromEntropy(options);
 }
 
@@ -39,7 +41,7 @@ function toAddress(pubkey) {
 }
 
 function importPrivatyKey(key) {
-    return keyPair = hlc.ec.fromWIF(key);
+    return keyPair = hlc.ec.fromWIF(key, _network);
 }
 
 function importWords(key) {

@@ -20,8 +20,9 @@ module.exports = {
  * wif格式私钥
  * @param {*} keyPair 
  */
-function toWIF(keyPair) {
-    return wif.encode(_networks.wif, keyPair.privateKey, keyPair.compressed)
+function toWIF(keyPair, network) {
+    network = network || _networks
+    return wif.encode(network.wif, keyPair.privateKey, keyPair.compressed)
 }
 
 /**
@@ -29,7 +30,7 @@ function toWIF(keyPair) {
  * @param {json} options {network|rng}
  */
 function fromEntropy(options) {
-    options = options.network || _networks
+    options.network = options.network || _networks
     return public_EC.fromEntropy(options)
 }
 
