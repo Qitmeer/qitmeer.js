@@ -1,5 +1,7 @@
 const hlc = require('./../src/hlc');
 const btc = require('./../src/btc');
+const phlc = require('./wallet-hlc')
+const pbtc = require('./wallet-btc')
 const bip39 = require('bip39');
 const crypto = require('crypto');
 
@@ -10,36 +12,6 @@ module.exports = {
     toMnemonic
 };
 
-function create(random, type, password) {
-    let rng = () => {
-        return Buffer.from(random, 'hex');
-    };
-    const mnemonic = bip39.generateMnemonic(18, rng);
-    return fromMnemonic(mnemonic, password);
-}
-
-function toMnemonic(value, password) {
-    return Wallet.decrypt(value, password).mnemonic;
-}
-
-function fromMnemonic(mnemonic, type, password) {
-
-    if (bip39.validateMnemonic(mnemonic)) {
-        return false;
-    }
-
-    const entropy = bip39.mnemonicToEntropy(mnemonic);
-    const wallet = Wallet(entropy, type, password);
-
-    return {
-        "key": wallet.address,
-        "value": wallet.encrypt(password)
-    };
-}
-
-function txSign() {
-
-}
 
 function Wallet(entropy, type) {
     this.encrypt = entropy;
@@ -60,7 +32,7 @@ function Wallet(entropy, type) {
 
 Object.defineProperty(Wallet.prototype, 'mnemonic', {
     enumerable: false,
-    get: function(){
+    get: function () {
         return bip39.entropyToMnemonic(this.__priv.toString('hex'));
     }
 });
@@ -79,7 +51,7 @@ Wallet.prototype.encrypt = function (password) {
     return JSON.stringify(json).cipher(password.toMD5());
 };
 
-Wallet.prototype.decrypt = function (value, password) {
+Wallet.decrypt = function (value, password) {
     value = value.decipher(password.toMD5());
     if (typeof (value) === 'boolean') {
         return false
@@ -89,8 +61,13 @@ Wallet.prototype.decrypt = function (value, password) {
     return Wallet(bip39.mnemonicToEntropy(value.mnemonic), value.chainType);
 };
 
-Wallet.prototype.txsign = function () {
-
+Wallet.prototype.txsign = function (utxos, to, value, fees) {
+    switch (this.chainType) {
+        case 'BTC':
+            return pbtc.txSign(utxos, this.__priv, to, value, fees);
+        default:
+            return phlc.txSign(utxos, this.__priv, to, value, fees);
+    }
 };
 
 
