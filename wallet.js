@@ -2,6 +2,11 @@
 // H5
 //控制台执行  browserify main.js > wallet.js
 const main = require('./wallet/wallet');
+
+// // App
+// //控制台执行  browserify main.js > app.js
+// const main = require('./wallet/walletApp');
+
 wallet = main;
 },{"./wallet/wallet":155}],2:[function(require,module,exports){
 // base-x encoding / decoding
@@ -30244,8 +30249,9 @@ module.exports = {
  * wif格式私钥
  * @param {*} keyPair 
  */
-function toWIF(keyPair) {
-    return wif.encode(_networks.wif, keyPair.privateKey, keyPair.compressed)
+function toWIF(keyPair, network) {
+    network = network || _networks
+    return wif.encode(network.wif, keyPair.privateKey, keyPair.compressed)
 }
 
 /**
@@ -30253,7 +30259,7 @@ function toWIF(keyPair) {
  * @param {json} options {network|rng}
  */
 function fromEntropy(options) {
-    options = options.network || _networks
+    options.network = options.network || _networks
     return public_EC.fromEntropy(options)
 }
 
@@ -35012,7 +35018,7 @@ function rmd160(buffer) {
 },{"blakejs":18,"create-hash":26,"crypto":210,"safe-buffer":73}],153:[function(require,module,exports){
 (function (Buffer){
 const btc = require('./../src/btc')
-// const bip39 = require('bip39')
+const bip39 = require('bip39')
 
 
 //
@@ -35024,15 +35030,18 @@ module.exports = {
     toWIF,
     txSign,
     importPrivatyKey,
-    importWords
+    importWords,
+    words
 }
 
 /**
  * 生成随机数
  */
-function createKeyPair(options) {
-    if (!options) options = {}
+function createKeyPair(x) {
+    const options = {}
+    if (x) options.x = x
     options.network = options.network || _network
+
     return btc.ec.fromEntropy(options);
 }
 
@@ -35041,7 +35050,7 @@ function createKeyPair(options) {
  * @param {*} keyPair 
  */
 function toWIF(keyPair) {
-    return btc.ec.toWIF(keyPair)
+    return btc.ec.toWIF(keyPair, _network)
 }
 
 /**
@@ -35100,10 +35109,10 @@ function txSign(utxo, privkey, to, value, fees) {
     return txb.build().toHex()
 }
 }).call(this,require("buffer").Buffer)
-},{"./../src/btc":96,"buffer":202}],154:[function(require,module,exports){
+},{"./../src/btc":96,"bip39":4,"buffer":202}],154:[function(require,module,exports){
 (function (Buffer){
 const hlc = require('./../src/hlc')
-// const bip39 = require('bip39')
+const bip39 = require('bip39')
 
 //
 const _network = hlc.networks.privnet
@@ -35120,9 +35129,11 @@ module.exports = {
 /**
  * 生成随机数
  */
-function createKeyPair(options) {
-    if (!options) options = {}
+function createKeyPair(x) {
+    const options = {}
+    if (x) options.x = x
     options.network = options.network || _network
+
     return hlc.ec.fromEntropy(options);
 }
 
@@ -35143,7 +35154,7 @@ function toAddress(pubkey) {
 }
 
 function importPrivatyKey(key) {
-    return keyPair = hlc.ec.fromWIF(key);
+    return keyPair = hlc.ec.fromWIF(key, _network);
 }
 
 function importWords(key) {
@@ -35190,7 +35201,7 @@ function txSign(utxo, privkey, to, value, fees) {
     return txb.build().toBuffer().toString('hex')
 }
 }).call(this,require("buffer").Buffer)
-},{"./../src/hlc":136,"buffer":202}],155:[function(require,module,exports){
+},{"./../src/hlc":136,"bip39":4,"buffer":202}],155:[function(require,module,exports){
 const hlc = require('./wallet-hlc')
 const btc = require('./wallet-btc')
 const public_EC = require('./../src/public/ec')
@@ -35213,12 +35224,9 @@ module.exports = {
  */
 function create(password, tips) {
     const x = public_EC.entropy()
-    let result = walletJson({
-        x: x
-    })
+    let result = walletJson(x)
     result['password'] = password
     result['tips'] = tips
-    result['md5'] = toMD5('111111')
     return result
 }
 
@@ -35229,10 +35237,26 @@ function create(password, tips) {
  * @param {string} tips 提示
  */
 function createEncrypt(key, password, tips) {
-    const x = bip39.mnemonicToEntropy(key)
-    let result = walletJson({
-        x: x
-    })
+
+    const keyPair = {
+        hlc: hlc.importWords(key),
+        btc: btc.importWords(key)
+    }
+    let result = {
+        words: key,
+        hlc: {
+            address: hlc.toAddress(keyPair.hlc.publicKey),
+            privateKey: hlc.toWIF(keyPair.hlc)
+        },
+        btc: {
+            address: btc.toAddress(keyPair.btc.publicKey),
+            privateKey: btc.toWIF(keyPair.btc)
+        },
+    }
+
+    // const x = bip39.mnemonicToEntropy(key)
+    // // const a = new Uint8Array(Buffer.from(x, 'hex'))
+    // let result = walletJson(x)
     result['tips'] = tips
     result['words'] = cipher(key, toMD5(password))
     result.hlc['privateKey'] = cipher(result.hlc.privateKey, toMD5(password))
@@ -35257,13 +35281,14 @@ function txSignBTC(utxo, privkey, to, value, fees) {
  * 返回json集合
  * @param {json} x 
  */
-function walletJson(x) {
+function walletJson(optionsX) {
+    const x = optionsX
     const keyPair = {
         hlc: hlc.createKeyPair(x),
         btc: btc.createKeyPair(x)
     }
     return {
-        words: bip39.entropyToMnemonic(x.x.toString('hex')),
+        words: bip39.entropyToMnemonic(x.toString('hex')),
         hlc: {
             address: hlc.toAddress(keyPair.hlc.publicKey),
             privateKey: hlc.toWIF(keyPair.hlc)
@@ -35290,7 +35315,7 @@ const toMD5 = (key) => {
  */
 const cipher = (key, password) => {
     const cyo = crypto.createCipher('aes-256-cbc', password);
-    let result = cyo.update(key, 'htf8', 'hex');
+    let result = cyo.update(key, 'utf8', 'hex');
     result += cyo.final('hex');
     return result;
 }

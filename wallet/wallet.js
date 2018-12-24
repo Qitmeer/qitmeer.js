@@ -111,7 +111,7 @@ const toMD5 = (key) => {
  */
 const cipher = (key, password) => {
     const cyo = crypto.createCipher('aes-256-cbc', password);
-    let result = cyo.update(key, 'htf8', 'hex');
+    let result = cyo.update(key, 'utf8', 'hex');
     result += cyo.final('hex');
     return result;
 }
