@@ -1,69 +1,101 @@
 const hlc = require('./../src/hlc');
+const pubHLC = require('./wallet-hlc');
 const btc = require('./../src/btc');
-const phlc = require('./wallet-hlc')
-const pbtc = require('./wallet-btc')
+const pubBTC = require('./wallet-btc');
 const bip39 = require('bip39');
 const crypto = require('crypto');
 
 module.exports = {
     create,
-    txsign,
+    transaction,
     fromMnemonic,
     toMnemonic
 };
 
-function create(password, type, rngHex) {
-    const rng = function() {
-        return Buffer.from(rngHex, 'hex');
+function create(password, type, entropy) {
+    const wallet = new Wallet(entropy, type);
+    return {
+        "address": wallet.address,
+        "value": wallet.encrypt(password)
     };
+}
 
-    const mnemonic = bip39.generateMnemonic(96, rng);
-    const entropy = bip39.mnemonicToEntropy(mnemonic);
-    const wallet  = Wallet(entropy, type);
+function transaction(password, value, data) {
+    const wallet = Wallet.decrypt(password, value);
+
+    if (typeof (wallet) === 'boolean') {
+        return wallet
+    }
+    return wallet.txSign(data.utxos, data.to, data.value, data.fees);
+}
+
+function fromMnemonic(password, type, mnemonic) {
+
+    if (!bip39.validateMnemonic(mnemonic)) {
+        return false;
+    }
+
+    const wallet = new Wallet(bip39.mnemonicToEntropy(mnemonic), type);
     return {
         "address": wallet.address,
         "value": wallet.encrypt(password)
     }
-};
-
-function txsign() {
-
-};
-
-function fromMnemonic(password, type, mnemonic) {
-    if (!bip39.validateMnemonic(mnemonic)) {
-        return false;
-    }
-    const wallet = Wallet(bip39.mnemonicToEntropy(mnemonic), type);
-    return {
-        "address": wallet.address,
-        "value": wallet.encrypt()
-    }
-};
+}
 
 function toMnemonic(password, value) {
     const wallet = Wallet.decrypt(password, value);
+
     if (typeof (wallet) === 'boolean') {
         return wallet
     }
     return wallet.mnemonic;
-};
+}
 
-function Wallet(entropy, type) {
-    this.encrypt = entropy;
-    this.chainType = type;
+class Wallet {
 
-    let ec = null;
-    switch (type) {
-        case 'BTC':
-            ec = btc.ec.fromEntropy(entropy);
-            break;
-        default:
-            ec = hlc.ec.fromEntropy(entropy);
-            break;
+    constructor(entropy, type) {
+        const rng = () => {
+            return Buffer.from(entropy, 'hex');
+        };
+        let ec = null;
+        switch (type) {
+            case 'BTC':
+                ec = btc.ec.fromEntropy({ rng: rng });
+                break;
+            default:
+                ec = hlc.ec.fromEntropy({ rng: rng });
+                break;
+        }
+        this.chainType = type;
+        this.__priv = ec.privateKey;
+        this.__pub = ec.publicKey;
     }
-    this.__priv = ec.privateKey;
-    this.__pub = ec.publicKey;
+
+    txSign(utxos, to, value, fees) {
+        switch (this.chainType) {
+            case 'BTC':
+                return pubBTC.txSign(utxos, this.__priv, to, value, fees);
+            default:
+                return pubHLC.txSign(utxos, this.__priv, to, value, fees);
+        }
+    }
+
+    encrypt(password) {
+        const json = {
+            chainType: this.chainType,
+            mnemonic: bip39.entropyToMnemonic(this.__priv.toString('hex'))
+        };
+        return JSON.stringify(json).cipher(password.toMD5());
+    }
+
+    static decrypt(password, value) {
+        value = value.decipher(password.toMD5());
+        if (typeof (value) === 'boolean') {
+            return false;
+        }
+        value = JSON.parse(value);
+        return new Wallet(bip39.mnemonicToEntropy(value.mnemonic), value.chainType);
+    }
 }
 
 Object.defineProperty(Wallet.prototype, 'mnemonic', {
@@ -75,57 +107,33 @@ Object.defineProperty(Wallet.prototype, 'mnemonic', {
 
 Object.defineProperty(Wallet.prototype, 'address', {
     get: function () {
-        return ec.toAddress(this.__pub);
+        switch (this.chainType) {
+            case 'BTC':
+                return pubBTC.toAddress(this.__pub);
+            default:
+                return pubHLC.toAddress(this.__pub);
+        }
     }
 });
 
-Wallet.prototype.encrypt = function (password) {
-    const json = {
-        chainType: this.chainType,
-        mnemonic: bip39.entropyToMnemonic(this.__priv.toString('hex'))
-    };
-    return JSON.stringify(json).cipher(password.toMD5());
-};
-
-Wallet.decrypt = function (password, value) {
-    value = value.decipher(password.toMD5());
-    if (typeof (value) === 'boolean') {
-        return false
+Object.assign(String.prototype, {
+    toMD5() {
+        return crypto.createHash('md5').update(this.valueOf()).digest('hex');
+    },
+    cipher(password) {
+        const cyo = crypto.createCipher('aes-256-cbc', password);
+        let result = cyo.update(this.valueOf(), 'htf8', 'hex');
+        result += cyo.final('hex');
+        return result;
+    },
+    decipher(password) {
+        const cyo = crypto.createDecipher('aes-256-cbc', password);
+        let result = cyo.update(this.valueOf(), 'hex', 'utf8');
+        try {
+            result += cyo.final('utf8');
+        } catch (e) {
+            return false;
+        }
+        return result;
     }
-
-    value = JSON.parse(value);
-    return Wallet(bip39.mnemonicToEntropy(value.mnemonic), value.chainType);
-};
-
-Wallet.prototype.txsign = function (utxos, to, value, fees) {
-    switch (this.chainType) {
-        case 'BTC':
-            return pbtc.txSign(utxos, this.__priv, to, value, fees);
-        default:
-            return phlc.txSign(utxos, this.__priv, to, value, fees);
-    }
-};
-
-String.prototype.toMD5 = function () {
-    const md5 = crypto.createHash('md5');
-    md5.update(this);
-    return md5.digest('hex');
-};
-
-String.prototype.cipher = function (password) {
-    const cyo = crypto.createCipher('aes-256-cbc', password);
-    let result = cyo.update(this, 'htf8', 'hex');
-    result += cyo.final('hex');
-    return result;
-};
-
-String.prototype.decipher = function (password) {
-    const cyo = crypto.createDecipher('aes-256-cbc', password);
-    let result = cyo.update(this, 'hex', 'utf8');
-    try {
-        result += cyo.final('utf8');
-    } catch (e) {
-        return '';
-    }
-    return result;
-};
+});
