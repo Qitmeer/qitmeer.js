@@ -7,11 +7,47 @@ const crypto = require('crypto');
 
 module.exports = {
     create,
-    txSign,
+    txsign,
     fromMnemonic,
     toMnemonic
 };
 
+function create(password, type, rngHex) {
+    const rng = function() {
+        return Buffer.from(rngHex, 'hex');
+    };
+
+    const mnemonic = bip39.generateMnemonic(96, rng);
+    const entropy = bip39.mnemonicToEntropy(mnemonic);
+    const wallet  = Wallet(entropy, type);
+    return {
+        "address": wallet.address,
+        "value": wallet.encrypt(password)
+    }
+};
+
+function txsign() {
+
+};
+
+function fromMnemonic(password, type, mnemonic) {
+    if (!bip39.validateMnemonic(mnemonic)) {
+        return false;
+    }
+    const wallet = Wallet(bip39.mnemonicToEntropy(mnemonic), type);
+    return {
+        "address": wallet.address,
+        "value": wallet.encrypt()
+    }
+};
+
+function toMnemonic(password, value) {
+    const wallet = Wallet.decrypt(password, value);
+    if (typeof (wallet) === 'boolean') {
+        return wallet
+    }
+    return wallet.mnemonic;
+};
 
 function Wallet(entropy, type) {
     this.encrypt = entropy;
@@ -51,7 +87,7 @@ Wallet.prototype.encrypt = function (password) {
     return JSON.stringify(json).cipher(password.toMD5());
 };
 
-Wallet.decrypt = function (value, password) {
+Wallet.decrypt = function (password, value) {
     value = value.decipher(password.toMD5());
     if (typeof (value) === 'boolean') {
         return false
@@ -69,7 +105,6 @@ Wallet.prototype.txsign = function (utxos, to, value, fees) {
             return phlc.txSign(utxos, this.__priv, to, value, fees);
     }
 };
-
 
 String.prototype.toMD5 = function () {
     const md5 = crypto.createHash('md5');
