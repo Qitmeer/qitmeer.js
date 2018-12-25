@@ -1,12 +1,11 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-// // H5
-// //控制台执行  browserify main.js > wallet.js
-// const main = require('./wallet/wallet');
+// H5
+//控制台执行  browserify main.js > wallet.js
+//const main = require('./wallet/wallet');
 
 // App
 //控制台执行  browserify main.js > app.js
 const main = require('./wallet/walletApp');
-
 wallet = main;
 },{"./wallet/walletApp":154}],2:[function(require,module,exports){
 // base-x encoding / decoding
@@ -30222,8 +30221,9 @@ module.exports = {
  * wif格式私钥
  * @param {*} keyPair 
  */
-function toWIF(keyPair) {
-    return wif.encode(_networks.wif, keyPair.privateKey, keyPair.compressed)
+function toWIF(keyPair, network) {
+    network = network || _networks
+    return wif.encode(network.wif, keyPair.privateKey, keyPair.compressed)
 }
 
 /**
@@ -30231,7 +30231,7 @@ function toWIF(keyPair) {
  * @param {json} options {network|rng}
  */
 function fromEntropy(options) {
-    options = options.network || _networks
+    options.network = options.network || _networks
     return public_EC.fromEntropy(options)
 }
 
@@ -34990,7 +34990,7 @@ function rmd160(buffer) {
 },{"blakejs":18,"create-hash":26,"crypto":209,"safe-buffer":72}],152:[function(require,module,exports){
 (function (Buffer){
 const btc = require('./../src/btc')
-// const bip39 = require('bip39')
+const bip39 = require('bip39')
 
 
 //
@@ -35002,15 +35002,18 @@ module.exports = {
     toWIF,
     txSign,
     importPrivatyKey,
-    importWords
+    importWords,
+    words
 }
 
 /**
  * 生成随机数
  */
-function createKeyPair(options) {
-    if (!options) options = {}
+function createKeyPair(x) {
+    const options = {}
+    if (x) options.x = x
     options.network = options.network || _network
+
     return btc.ec.fromEntropy(options);
 }
 
@@ -35019,7 +35022,7 @@ function createKeyPair(options) {
  * @param {*} keyPair 
  */
 function toWIF(keyPair) {
-    return btc.ec.toWIF(keyPair)
+    return btc.ec.toWIF(keyPair, _network)
 }
 
 /**
@@ -35078,10 +35081,10 @@ function txSign(utxo, privkey, to, value, fees) {
     return txb.build().toHex()
 }
 }).call(this,require("buffer").Buffer)
-},{"./../src/btc":95,"buffer":201}],153:[function(require,module,exports){
+},{"./../src/btc":95,"bip39":4,"buffer":201}],153:[function(require,module,exports){
 (function (Buffer){
 const hlc = require('./../src/hlc')
-// const bip39 = require('bip39')
+const bip39 = require('bip39')
 
 //
 const _network = hlc.networks.privnet
@@ -35098,9 +35101,11 @@ module.exports = {
 /**
  * 生成随机数
  */
-function createKeyPair(options) {
-    if (!options) options = {}
+function createKeyPair(x) {
+    const options = {}
+    if (x) options.x = x
     options.network = options.network || _network
+
     return hlc.ec.fromEntropy(options);
 }
 
@@ -35121,7 +35126,7 @@ function toAddress(pubkey) {
 }
 
 function importPrivatyKey(key) {
-    return keyPair = hlc.ec.fromWIF(key);
+    return keyPair = hlc.ec.fromWIF(key, _network);
 }
 
 function importWords(key) {
@@ -35168,37 +35173,106 @@ function txSign(utxo, privkey, to, value, fees) {
     return txb.build().toBuffer().toString('hex')
 }
 }).call(this,require("buffer").Buffer)
-},{"./../src/hlc":135,"buffer":201}],154:[function(require,module,exports){
+},{"./../src/hlc":135,"bip39":4,"buffer":201}],154:[function(require,module,exports){
+(function (Buffer){
 const hlc = require('./../src/hlc');
+const pubHLC = require('./wallet-hlc');
 const btc = require('./../src/btc');
-const phlc = require('./wallet-hlc')
-const pbtc = require('./wallet-btc')
+const pubBTC = require('./wallet-btc');
 const bip39 = require('bip39');
 const crypto = require('crypto');
 
 module.exports = {
     create,
-    txSign,
+    transaction,
     fromMnemonic,
     toMnemonic
 };
 
+function create(password, type, entropy) {
+    const wallet = new Wallet(entropy, type);
+    return {
+        "address": wallet.address,
+        "value": wallet.encrypt(password)
+    };
+}
 
-function Wallet(entropy, type) {
-    this.encrypt = entropy;
-    this.chainType = type;
+function transaction(password, value, data) {
+    const wallet = Wallet.decrypt(password, value);
 
-    let ec = null;
-    switch (type) {
-        case 'BTC':
-            ec = btc.ec.fromEntropy(entropy);
-            break;
-        default:
-            ec = hlc.ec.fromEntropy(entropy);
-            break;
+    if (typeof (wallet) === 'boolean') {
+        return wallet
     }
-    this.__priv = ec.privateKey;
-    this.__pub = ec.publicKey;
+    return wallet.txSign(data.utxos, data.to, data.value, data.fees);
+}
+
+function fromMnemonic(password, type, mnemonic) {
+
+    if (!bip39.validateMnemonic(mnemonic)) {
+        return false;
+    }
+
+    const wallet = new Wallet(bip39.mnemonicToEntropy(mnemonic), type);
+    return {
+        "address": wallet.address,
+        "value": wallet.encrypt(password)
+    }
+}
+
+function toMnemonic(password, value) {
+    const wallet = Wallet.decrypt(password, value);
+
+    if (typeof (wallet) === 'boolean') {
+        return wallet
+    }
+    return wallet.mnemonic;
+}
+
+class Wallet {
+
+    constructor(entropy, type) {
+        const rng = () => {
+            return Buffer.from(entropy, 'hex');
+        };
+        let ec = null;
+        switch (type) {
+            case 'BTC':
+                ec = btc.ec.fromEntropy({ rng: rng });
+                break;
+            default:
+                ec = hlc.ec.fromEntropy({ rng: rng });
+                break;
+        }
+        this.chainType = type;
+        this.__priv = ec.privateKey;
+        this.__pub = ec.publicKey;
+    }
+
+    txSign(utxos, to, value, fees) {
+        switch (this.chainType) {
+            case 'BTC':
+                return pubBTC.txSign(utxos, this.__priv, to, value, fees);
+            default:
+                return pubHLC.txSign(utxos, this.__priv, to, value, fees);
+        }
+    }
+
+    encrypt(password) {
+        const json = {
+            chainType: this.chainType,
+            mnemonic: bip39.entropyToMnemonic(this.__priv.toString('hex'))
+        };
+        return JSON.stringify(json).cipher(password.toMD5());
+    }
+
+    static decrypt(password, value) {
+        value = value.decipher(password.toMD5());
+        if (typeof (value) === 'boolean') {
+            return false;
+        }
+        value = JSON.parse(value);
+        return new Wallet(bip39.mnemonicToEntropy(value.mnemonic), value.chainType);
+    }
 }
 
 Object.defineProperty(Wallet.prototype, 'mnemonic', {
@@ -35210,62 +35284,38 @@ Object.defineProperty(Wallet.prototype, 'mnemonic', {
 
 Object.defineProperty(Wallet.prototype, 'address', {
     get: function () {
-        return ec.toAddress(this.__pub);
+        switch (this.chainType) {
+            case 'BTC':
+                return pubBTC.toAddress(this.__pub);
+            default:
+                return pubHLC.toAddress(this.__pub);
+        }
     }
 });
 
-Wallet.prototype.encrypt = function (password) {
-    const json = {
-        chainType: this.chainType,
-        mnemonic: bip39.entropyToMnemonic(this.__priv.toString('hex'))
-    };
-    return JSON.stringify(json).cipher(password.toMD5());
-};
-
-Wallet.decrypt = function (value, password) {
-    value = value.decipher(password.toMD5());
-    if (typeof (value) === 'boolean') {
-        return false
+Object.assign(String.prototype, {
+    toMD5() {
+        return crypto.createHash('md5').update(this.valueOf()).digest('hex');
+    },
+    cipher(password) {
+        const cyo = crypto.createCipher('aes-256-cbc', password);
+        let result = cyo.update(this.valueOf(), 'htf8', 'hex');
+        result += cyo.final('hex');
+        return result;
+    },
+    decipher(password) {
+        const cyo = crypto.createDecipher('aes-256-cbc', password);
+        let result = cyo.update(this.valueOf(), 'hex', 'utf8');
+        try {
+            result += cyo.final('utf8');
+        } catch (e) {
+            return false;
+        }
+        return result;
     }
-
-    value = JSON.parse(value);
-    return Wallet(bip39.mnemonicToEntropy(value.mnemonic), value.chainType);
-};
-
-Wallet.prototype.txsign = function (utxos, to, value, fees) {
-    switch (this.chainType) {
-        case 'BTC':
-            return pbtc.txSign(utxos, this.__priv, to, value, fees);
-        default:
-            return phlc.txSign(utxos, this.__priv, to, value, fees);
-    }
-};
-
-
-String.prototype.toMD5 = function () {
-    const md5 = crypto.createHash('md5');
-    md5.update(this);
-    return md5.digest('hex');
-};
-
-String.prototype.cipher = function (password) {
-    const cyo = crypto.createCipher('aes-256-cbc', password);
-    let result = cyo.update(this, 'htf8', 'hex');
-    result += cyo.final('hex');
-    return result;
-};
-
-String.prototype.decipher = function (password) {
-    const cyo = crypto.createDecipher('aes-256-cbc', password);
-    let result = cyo.update(this, 'hex', 'utf8');
-    try {
-        result += cyo.final('utf8');
-    } catch (e) {
-        return '';
-    }
-    return result;
-};
-},{"./../src/btc":95,"./../src/hlc":135,"./wallet-btc":152,"./wallet-hlc":153,"bip39":4,"crypto":209}],155:[function(require,module,exports){
+});
+}).call(this,require("buffer").Buffer)
+},{"./../src/btc":95,"./../src/hlc":135,"./wallet-btc":152,"./wallet-hlc":153,"bip39":4,"buffer":201,"crypto":209}],155:[function(require,module,exports){
 var asn1 = exports;
 
 asn1.bignum = require('bn.js');
