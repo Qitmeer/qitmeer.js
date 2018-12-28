@@ -35211,7 +35211,7 @@ const crypto = require('crypto')
 module.exports = {
     create,
     createEncrypt,
-    decipherWords,
+    decipherWallet,
     txSignHLC,
     txSignBTC
 }
@@ -35264,7 +35264,7 @@ function createEncrypt(key, password, tips) {
     return result
 }
 
-function decipherWords(dwords, password) {
+function decipherWallet(dwords, password) {
     return decipher(dwords, toMD5(password));
 }
 
