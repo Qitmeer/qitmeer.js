@@ -7,7 +7,7 @@ const crypto = require('crypto')
 module.exports = {
     create,
     createEncrypt,
-    decipherWords,
+    decipherWallet,
     txSignHLC,
     txSignBTC
 }
@@ -60,7 +60,7 @@ function createEncrypt(key, password, tips) {
     return result
 }
 
-function decipherWords(dwords, password) {
+function decipherWallet(dwords, password) {
     return decipher(dwords, toMD5(password));
 }
 
@@ -83,8 +83,9 @@ function walletJson(optionsX) {
         hlc: hlc.createKeyPair(x),
         btc: btc.createKeyPair(x)
     }
+    // const mnemonic = bip39.generateMnemonic(96, rng);
     return {
-        words: bip39.entropyToMnemonic(x.toString('hex')),
+        words: bip39.entropyToMnemonic(x),
         hlc: {
             address: hlc.toAddress(keyPair.hlc.publicKey),
             privateKey: hlc.toWIF(keyPair.hlc)
