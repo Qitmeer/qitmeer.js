@@ -35189,12 +35189,18 @@ module.exports = {
     toMnemonic
 };
 
-function create(password, type, entropy) {
-    const wallet = new Wallet(entropy, type);
-    return {
-        "address": wallet.address,
-        "value": wallet.encrypt(password)
-    };
+function create(password, entropy) {
+    const types = ["Bitcoin", "HalalChain"];
+    const wallets = [];
+    types.forEach(item => {
+        const wallet = new Wallet(entropy, item);
+        wallets.push({
+            "address": wallet.address,
+            "chainType": wallet.chainType,
+            "value": wallet.encrypt(password)
+        });
+    });
+    return wallets;
 }
 
 function transaction(password, value, data) {
@@ -35236,7 +35242,7 @@ class Wallet {
         };
         let ec = null;
         switch (type) {
-            case 'BTC':
+            case 'Bitcoin':
                 ec = btc.ec.fromEntropy({ rng: rng });
                 break;
             default:
@@ -35250,7 +35256,7 @@ class Wallet {
 
     txSign(utxos, to, value, fees) {
         switch (this.chainType) {
-            case 'BTC':
+            case 'Bitcoin':
                 return pubBTC.txSign(utxos, this.__priv, to, value, fees);
             default:
                 return pubHLC.txSign(utxos, this.__priv, to, value, fees);
@@ -35285,7 +35291,7 @@ Object.defineProperty(Wallet.prototype, 'mnemonic', {
 Object.defineProperty(Wallet.prototype, 'address', {
     get: function () {
         switch (this.chainType) {
-            case 'BTC':
+            case 'Bitcoin':
                 return pubBTC.toAddress(this.__pub);
             default:
                 return pubHLC.toAddress(this.__pub);
