@@ -35182,6 +35182,8 @@ const pubBTC = require('./wallet-btc');
 const bip39 = require('bip39');
 const crypto = require('crypto');
 
+const walletTypes = ["Bitcoin", "HalalChain"];
+
 module.exports = {
     create,
     transaction,
@@ -35190,9 +35192,8 @@ module.exports = {
 };
 
 function create(password, entropy) {
-    const types = ["Bitcoin", "HalalChain"];
     const wallets = [];
-    types.forEach(item => {
+    walletTypes.forEach(item => {
         const wallet = new Wallet(entropy, item);
         wallets.push({
             "address": wallet.address,
@@ -35212,17 +35213,22 @@ function transaction(password, value, data) {
     return wallet.txSign(data.utxos, data.to, data.value, data.fees);
 }
 
-function fromMnemonic(password, type, mnemonic) {
+function fromMnemonic(password, mnemonic) {
 
     if (!bip39.validateMnemonic(mnemonic)) {
         return false;
     }
 
-    const wallet = new Wallet(bip39.mnemonicToEntropy(mnemonic), type);
-    return {
-        "address": wallet.address,
-        "value": wallet.encrypt(password)
-    }
+    const wallets = [];
+    walletTypes.forEach(item => {
+        const wallet = new Wallet(bip39.mnemonicToEntropy(mnemonic), item);
+        wallets.push({
+            "address": wallet.address,
+            "chainType": wallet.chainType,
+            "value": wallet.encrypt(password)
+        });
+    });
+    return wallets;
 }
 
 function toMnemonic(password, value) {
@@ -35304,12 +35310,14 @@ Object.assign(String.prototype, {
         return crypto.createHash('md5').update(this.valueOf()).digest('hex');
     },
     cipher(password) {
+        password = password.toMD5();
         const cyo = crypto.createCipher('aes-256-cbc', password);
-        let result = cyo.update(this.valueOf(), 'htf8', 'hex');
+        let result = cyo.update(this.valueOf(), 'utf8', 'hex');
         result += cyo.final('hex');
         return result;
     },
     decipher(password) {
+        password = password.toMD5();
         const cyo = crypto.createDecipher('aes-256-cbc', password);
         let result = cyo.update(this.valueOf(), 'hex', 'utf8');
         try {
