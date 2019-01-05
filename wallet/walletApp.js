@@ -28,6 +28,7 @@ function create(password, entropy) {
 }
 
 function transaction(password, value, data) {
+    data = typeof (data) === 'string' ? JSON.parse(data) : data;
     const wallet = Wallet.decrypt(password, value);
 
     if (typeof (wallet) === 'boolean') {
@@ -73,9 +74,11 @@ class Wallet {
         switch (type) {
             case 'Bitcoin':
                 ec = btc.ec.fromEntropy({ rng: rng });
+                this.__wif = btc.ec.toWIF(ec);
                 break;
             default:
                 ec = hlc.ec.fromEntropy({ rng: rng });
+                this.__wif = hlc.ec.toWIF(ec);
                 break;
         }
         this.chainType = type;
@@ -86,9 +89,9 @@ class Wallet {
     txSign(utxos, to, value, fees) {
         switch (this.chainType) {
             case 'Bitcoin':
-                return pubBTC.txSign(utxos, this.__priv, to, value, fees);
+                return pubBTC.txSign(utxos, this.__wif, to, value, fees);
             default:
-                return pubHLC.txSign(utxos, this.__priv, to, value, fees);
+                return pubHLC.txSign(utxos, this.__wif, to, value, fees);
         }
     }
 

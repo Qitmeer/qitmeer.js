@@ -19,5 +19,24 @@ const wallet = require('../wallet/walletApp');
 // const w4 = wallet.fromMnemonic('111111','BTC', 'zebra slim surface deny tiny talk lock paper dose noodle salmon time number remain hill explain defy crack cover pear volcano used taste cram');
 // console.log(w4);
 
-const temp = "b3b4681d03d6d70065c834c79cbf384f2a15b256a4af0c977edc6fdb973b131f741b65ef8ee99daa2cdedc88db226d5b3e9b572eaa605e9e5762e338ac5a99b1c766e8235f156c4367ddfb8657a07f359a79457cb224ab15e48841fff24dd50f7595b599bd290f2339d1f4f16b89ee38312e7a640d4e70068f9b63c66a3a84368dc1d49f763e73860f2291abb032fa01c9ab6499b684a585c792cb5809518f8ba9c8d2fd328a68b8021143fefe4afe83d32c8cd22456875c2cb9d79e11e27840".decipher("111111");
-console.log(temp);
+// const temp = "35e16a3165dd689dcf74185a20caa9fde617878d2d03cb4d164323a4591aac1fcb280d87f454ed6e9f786e9d307664ebcbf5dd4d973116ee058025a112674d512b1054a62637437077d8d1864f98378d7863549328e9acec74b65d9808f0442da2df461259922f0f3e3edef55ca0612c7921b40a9b651148ba161e202714b44298f18ed32de9871e0dc15596aade219dd0bea3c7274e6fe32eb517b30b128d3069d7794eb2c341ef55f444625a3ef19eab7f6bc798098d297f124a9b098c5b5ba29f3cd2d4430da6e5173ae7d86a8142".decipher("111111");
+// console.log(temp);
+
+let data = {
+    "utxos" : [
+        {
+            "vout" : 1,
+            "amount" : 7957200000,
+            "confirmations" : 2,
+            "address" : "RmJWrmDQywFjEHTnAdWkvJq3CXZqvZRfMCo",
+            "txid" : "8e65b63d60285819314c4ff7fbd7529833bc5aef43ba37d8f3f7d814cf3b78aa"
+        }
+    ],
+    "to" : "Rm9U3KnWfbyMzUiW1mKYjf1rvnhye35cG6H",
+    "value" : 10,
+    "fees" : 0.214
+};
+let row = wallet.transaction('111111'
+    ,'35e16a3165dd689dcf74185a20caa9fde617878d2d03cb4d164323a4591aac1ff68dfd31b5d0c727b64ac7fb6709836376bd8923fad3ba059b4d2a9a0ad995e0126bd1ed6879dd7a00249996ab6130c8d5df98b08e853394cb0dfd182022b034b6913df89e0c79443373b3c7bce5873d170b0cf3dda39bc101eaea755c45d5e608a5d8fbc514e592de48ecb3e5d0414450d951b8a5d0a9c1af45a113d045ebd139ef80c6f37d6ff2907043d8fc791af170b0c91b938a7a748dd9f9caa35f787db8773be9ed6c5fbec77b24892f4ce5b8'
+    ,data);
+console.log(row);
