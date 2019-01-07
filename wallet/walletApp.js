@@ -89,7 +89,20 @@ class Wallet {
     txSign(utxos, to, value, fees) {
         switch (this.chainType) {
             case 'Bitcoin':
-                return pubBTC.txSign(utxos, this.__wif, to, value, fees);
+                const vouts = [];
+                utxos.map(v => {
+                    const vout = v.vout;
+                    vout.map((item, i) => {
+                        if (this.address === item.scriptPubKey.addresses[0] && item.spentTxId === null) {
+                            vouts.push({
+                                txid: v.txid,
+                                vout: i,
+                                amount: (item.value * 100000000).toFixed(0)
+                            });
+                        }
+                    })
+                });
+                return pubBTC.txSign(vouts, this.__wif, to, value, fees);
             default:
                 return pubHLC.txSign(utxos, this.__wif, to, value, fees);
         }
