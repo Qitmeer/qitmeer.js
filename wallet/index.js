@@ -23,9 +23,9 @@ class Wallet {
         return {
             words: words,
             tips: tips,
-            btc: new btc().keyPair(words),
-            hlc: new hlc().keyPair(words),
-            eth: new eth().keyPair(words),
+            btc:  btc.keyPair(words),
+            hlc:  hlc.keyPair(words),
+            eth:  eth.keyPair(words),
             hlcToken: {}
         }
     }

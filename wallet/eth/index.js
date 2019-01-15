@@ -12,7 +12,7 @@ class ETH {
         this.path = "m/44'/60'/0'/0/0";
     }
 
-    keyPair(words) {
+    static keyPair(words) {
         const wallet = ethers.Wallet.fromMnemonic(words, this.path);
         const address = wallet.address;
         const privateKey = wallet.privateKey;
