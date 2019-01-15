@@ -9,8 +9,8 @@ const bs58check = require('bs58check');
 
 const bitcoin = require('bitcoinjs-lib');
 
-// const _network = bitcoin.networks.bitcoin;
-const _network = bitcoin.networks.testnet;
+const _network = bitcoin.networks.bitcoin;
+// const _network = bitcoin.networks.testnet;
 
 class BTC {
     static getInstance() {
@@ -24,8 +24,8 @@ class BTC {
     }
 
     static keyPair(words) {
-        const path = "m/0/1";
-        // const path = "m/44'/0'/0'/0/0";
+        // const path = "m/44'/1'/0'/0/0";
+        const path = "m/44'/0'/0'/0/0";
         const seed = bip39.mnemonicToSeed(words);
         const root = bip32.fromSeed(seed, _network);
         const keyPair = root.derivePath(path);

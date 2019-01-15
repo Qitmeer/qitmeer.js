@@ -3,6 +3,8 @@ const btc = require('./btc/index');
 const hlc = require('./hlc/index');
 const eth = require('./eth/index');
 
+module.exports = Wallet;
+
 class Wallet {
     static getInstance() {
         if (!Wallet.instance) {
@@ -24,7 +26,7 @@ class Wallet {
             btc: new btc().keyPair(words),
             hlc: new hlc().keyPair(words),
             eth: new eth().keyPair(words),
-            hlcToken:{}
+            hlcToken: {}
         }
     }
 }
