@@ -8,9 +8,6 @@ const ethers = require('ethers');
  * @type {BaseProvider}
  */
 // const provider = ethers.getDefaultProvider();
-const provider = ethers.getDefaultProvider('ropsten');
-const path = "m/44'/60'/0'/0/0";
-
 
 class ETH {
     static getInstance() {
@@ -20,32 +17,48 @@ class ETH {
         return ETH.instance;
     };
 
-    constructor() {
-        this.path = "m/44'/60'/0'/0/0";
+    constructor({words, encryptPwd, path, network}) {
+        const main = ETH.testnet();
+        this.path = path || main.path;
+        this.network = network || main.network;
+        this.encryptPwd = encryptPwd;
+        return this.init(words);
     }
 
-    static keyPair(words) {
-        const w = ethers.Wallet.fromMnemonic(words, path);
-        const wallet = new ethers.Wallet(w.privateKey, provider);
+    init(words) {
+        const w = ethers.Wallet.fromMnemonic(words, this.path);
+        const wallet = new ethers.Wallet(w.privateKey, this.network);
         const address = wallet.address;
-        const privateKey = wallet.privateKey;
-
-        // const balance = wallet.getBalance();
-        // balance.then(function (b) {
-        //     const total = b / 1000000000000000000;
-        //     console.log(total);
-        //     console.log(b);
-        // });
-
+        let privateKey = wallet.privateKey;
+        if (this.encryptPwd) privateKey = privateKey.encrypt(this.encryptPwd);
         return {
             address: address,
             privateKey: privateKey
         }
     }
 
-    static txSign({privateKey, to, value, fees, success, error}) {
-        const provider = ethers.getDefaultProvider('ropsten');
-        const wallet = new ethers.Wallet(privateKey, provider);
+    //主网
+    static mainnet() {
+        const network = ethers.getDefaultProvider();
+        const path = "m/44'/60'/0'/0/0";
+        return {
+            network: network,
+            path: path
+        }
+    }
+
+    //测试网
+    static testnet() {
+        const network = ethers.getDefaultProvider('ropsten');
+        const path = "m/44'/60'/0'/0/0";
+        return {
+            network: network,
+            path: path
+        }
+    }
+
+    static txSign({privateKey, to, value, fees, success, error}, network) {
+        const wallet = new ethers.Wallet(privateKey, network);
         fees = parseFloat(fees) * 1000000000;
         const transaction = {
             nonce: 1,
@@ -70,8 +83,8 @@ class ETH {
         });
     }
 
-    static getAmount(privateKey, success) {
-        const wallet = new ethers.Wallet(privateKey, provider);
+    static getAmount(privateKey, success, network) {
+        const wallet = new ethers.Wallet(privateKey, network);
         const balance = wallet.getBalance();
         balance.then(function (b) {
             const total = b / 1000000000000000000;

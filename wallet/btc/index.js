@@ -1,16 +1,8 @@
 const wif = require('wif');
 const bip39 = require('bip39');
 const bip32 = require('bip32');
-const bs58check = require('bs58check');
-// const hash = require('./../hash');
-
-// const networks = require('./networks');
-// const ec = require('./ec');
 
 const bitcoin = require('bitcoinjs-lib');
-
-const _network = bitcoin.networks.bitcoin;
-// const _network = bitcoin.networks.testnet;
 
 class BTC {
     static getInstance() {
@@ -20,32 +12,55 @@ class BTC {
         return BTC.instance;
     };
 
-    constructor() {
+    constructor({words, encryptPwd, path, network}) {
+        const main = BTC.mainnet();
+        this.path = path || main.path;
+        this.network = network || main.network;
+        this.encryptPwd = encryptPwd;
+        return this.init(words);
     }
 
-    static keyPair(words) {
-        // const path = "m/44'/1'/0'/0/0";
-        const path = "m/44'/0'/0'/0/0";
+    init(words) {
         const seed = bip39.mnemonicToSeed(words);
-        const root = bip32.fromSeed(seed, _network);
-        const keyPair = root.derivePath(path);
-        // const address = toAddress(keyPair.publicKey, _network.pubKeyHash);
-        const address = toAddress(keyPair.publicKey, _network);
-        const privateKey = toWIF(keyPair.privateKey);
+        const root = bip32.fromSeed(seed, this.network);
+        const keyPair = root.derivePath(this.path);
+        const address = toAddress(keyPair.publicKey, this.network);
+        let privateKey = toWIF(keyPair.privateKey, this.network);
+        if (this.encryptPwd) privateKey = privateKey.encrypt(this.encryptPwd);
         return {
             address: address,
             privateKey: privateKey
         }
     }
 
-    static txSign(utxo, privateKey, to, value, fees) {
-        // const keyPair = ec.fromWIF(privateKey, _network);
-        const keyPair = bitcoin.ECPair.fromWIF(privateKey, _network);
+    //主网
+    static mainnet() {
+        const network = bitcoin.networks.bitcoin;
+        const path = "m/44'/0'/0'/0/0";
+        return {
+            network: network,
+            path: path
+        }
+    }
 
-        // const from = toAddress(keyPair.publicKey, _network.pubKeyHash);
-        const from = toAddress(keyPair.publicKey, _network);
-        // const txb = new btc.TransactionBuilder(_network);
-        const txb = new bitcoin.TransactionBuilder(_network);
+    //测试网
+    static testnet() {
+        const network = bitcoin.networks.testnet;
+        const path = "m/44'/1'/0'/0/0";
+        return {
+            network: network,
+            path: path
+        }
+    }
+
+    static txSign(utxo, privateKey, to, value, fees, network) {
+        // const keyPair = ec.fromWIF(privateKey, network);
+        const keyPair = bitcoin.ECPair.fromWIF(privateKey, network);
+
+        // const from = toAddress(keyPair.publicKey, network.pubKeyHash);
+        const from = toAddress(keyPair.publicKey, network);
+        // const txb = new btc.TransactionBuilder(network);
+        const txb = new bitcoin.TransactionBuilder(network);
 
         const fullValue = parseFloat(value) * 100000000;
         const fullFees = parseFloat(fees) * 100000000;
@@ -81,21 +96,6 @@ function toAddress(publicKey, network) {
     }).address;
 }
 
-//
-// /**
-//  * 生成地址
-//  * @param publicKey 公钥 buffer
-//  * @param version 版本
-//  * @returns {*}
-//  */
-// function toAddress(publicKey, version) {
-//     let v = Buffer.alloc(1);
-//     v.writeUInt8(version, 0);
-//     const hash160 = hash.rmd160B_sha256B(publicKey);
-//     const concatBuffer = Buffer.concat([v, hash160]);
-//     return bs58check.encode(concatBuffer);
-// }
-//
 /**
  * WIF私钥
  * @param privateKey ec私钥
@@ -103,7 +103,6 @@ function toAddress(publicKey, network) {
  * @returns {*}
  */
 function toWIF(privateKey, network) {
-    network = network || _network;
     return wif.encode(network.wif, privateKey, true);
 }
 

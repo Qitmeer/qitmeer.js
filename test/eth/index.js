@@ -6,7 +6,7 @@ const ethcoin = require('./../../wallet/eth/index');
 // const words = 'best near close scorpion fatigue olympic air enough before dinosaur nice wet';
 const words = 'future screen empower fee apology manual anxiety potato number song enable circle original curve old answer test spider vital between method expire dune energy';
 
-const a = ethcoin.keyPair(words);
+const a = new ethcoin(words);
 console.log(JSON.stringify(a));
 
 const to = '0xCF4Fe31C6E0139c15ED51EfB3Dbf658e1D401b1D';

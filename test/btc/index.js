@@ -2,13 +2,13 @@ const bitcoin = require('./../../wallet/btc/index');
 const btc = require('./../../wallet--弃用/wallet-btc');
 
 const words = 'seminar worry dune habit online shine mountain idle video range drift object similar north supreme oxygen evidence peace lift decade affair trip mother celery';
-const a = bitcoin.keyPair(words);
-console.log(JSON.stringify(a));
-
-const keypair = btc.importWords(words);
-console.log(btc.toAddress(keypair.publicKey));
-console.log(btc.toWIF(keypair));
-
+const a = new bitcoin();
+console.log(JSON.stringify(bitcoin.pathMain()));
+//
+// const keypair = btc.importWords(words);
+// console.log(btc.toAddress(keypair.publicKey));
+// console.log(btc.toWIF(keypair));
+//
 
 return;
 const data = {
