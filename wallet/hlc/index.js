@@ -72,7 +72,7 @@ class HLC {
         }
     }
 
-    static txSign(utxo, privateKey, to, value, fees, network) {
+    static txSign({utxo, privateKey, to, value, fees}, network) {
         const keyPair = ec.fromWIF(privateKey);
         const from = _address.ecPubKeyToAddress(keyPair.publicKey, network.pubKeyHashAddrId);
         const txb = txsign.newSigner();

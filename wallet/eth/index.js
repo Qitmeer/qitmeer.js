@@ -58,39 +58,68 @@ class ETH {
     }
 
     static txSign({privateKey, to, value, fees, success, error}, network) {
-        const wallet = new ethers.Wallet(privateKey, network);
         fees = parseFloat(fees) * 1000000000;
-        const transaction = {
-            nonce: 1,
-            gasLimit: 210000,
-            gasPrice: ethers.utils.bigNumberify(fees),
-            to: to,
-            value: ethers.utils.parseEther(value),
-            data: '0x'
-        };
+        const wallet = new ethers.Wallet(privateKey, network);
+        network.getTransactionCount(wallet.address).then(function (count) {
+
+            tx(wallet, count, to, value, fees, success, error);
+
+            console.log(count);
+        }).catch(function (e) {
+            console.log(e);
+        });
 
         // const sendPromise = wallet.sign(transaction);
         // sendPromise.then(function (transactionHash) {
         //     console.log(transactionHash);
         // });
 
-        wallet.sendTransaction(transaction).then((hash) => {
-            // console.log(hash);
-            if (success) success(hash);
-        }).catch((e) => {
-            console.log(e);
-            if (error) error(e);
-        });
+
     }
 
-    static getAmount(privateKey, success, network) {
+    static getAmount({privateKey, success, network}) {
         const wallet = new ethers.Wallet(privateKey, network);
         const balance = wallet.getBalance();
         balance.then(function (b) {
             const total = b / 1000000000000000000;
+            console.log(total);
             if (success) success(total);
         });
     }
+}
+
+/**
+ * 交易
+ * @param wallet 钱包对象
+ * @param count 交易个数
+ * @param to    接收地址
+ * @param value 金额
+ * @param fees  手续费（Gwei）
+ * @param success   交易成功
+ * @param error 交易失败
+ */
+function tx(wallet, count, to, value, fees, success, error) {
+    const transaction = {
+        nonce: count,
+        gasLimit: 210000,
+        gasPrice: ethers.utils.bigNumberify(fees),
+        to: to,
+        value: ethers.utils.parseEther(value),
+        data: '0x'
+    };
+    wallet.sendTransaction(transaction).then((hash) => {
+        // console.log(hash);
+        console.log(hash.data);
+        console.log(hash.hash);
+        if (success) success(hash);
+    }).catch((e) => {
+        if (e.code === -32000 && e.message.indexOf('transaction') >= 0) {
+            tx(wallet, count + 1, to, value, fees, success, error);
+        } else {
+            if (error) error(e);
+        }
+        console.log(e.code);
+    });
 }
 
 module.exports = ETH;

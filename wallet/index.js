@@ -35,7 +35,6 @@ class Wallet {
         }
 
         const params = forConfig(words, encryptPwd);
-        // const params = forConfig();
 
         params['tips'] = tips;
         if (!encryptPwd) params['password'] = password;
@@ -51,12 +50,38 @@ class Wallet {
      * @param tips
      */
     static createEncrypt(words, password, tips) {
-        return Wallet.init({words, password, tips, encryptPwd: password.toMD5()});
+        password = password.toMD5();
+        return Wallet.init({words, password, tips, encryptPwd: password});
     }
 
+    /**
+     * 生成单个钱包
+     * @param name  钱包币种名称
+     * @param words 助记词
+     * @param password  密码（选填，有密码返回私钥加密）
+     * @returns {Promise<any>}
+     */
+    static createSingle(name, words, password) {
+        const w = getConfig(name);
+        const item = w.item;
+        const param = {
+            words,
+            path: item.path,
+            network: item.network
+        };
+        if (password) param['encryptPwd'] = password.toString();
+        return new w.func(param);
+    }
 
-    static txSign(name) {
-    
+    /**
+     * 交易
+     * @param name  币种名称
+     * @param options {utxo|privateKey|to|value|fees|success|error}
+     * @returns {*|void}
+     */
+    static txSign(name, options) {
+        const w = getConfig(name);
+        return w.func.txSign(options, w.item.network);
     }
 
     /**
@@ -65,6 +90,16 @@ class Wallet {
      */
     static walletType() {
         return forConfig()
+    }
+
+    /**
+     * 解密
+     * @param key
+     * @param password
+     * @returns {*}
+     */
+    static decryptKey(key, password) {
+        return key.decrypt(password.toMD5());
     }
 
 }
@@ -133,6 +168,37 @@ function forConfig(words, encryptPwd) {
                             path: list[item].path,
                             network: list[item].network
                         });
+                    }
+
+                }
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * 根据名称获取币种配置
+ * @param name
+ * @returns
+ */
+function getConfig(name) {
+    const conJson = config();
+    let result = {};
+    for (const conf in conJson) {
+        if (conJson.hasOwnProperty(conf)) {
+            //func
+            const func = conJson[conf].func,
+                //list循环
+                list = conJson[conf].list;
+
+            for (const item in list) {
+                if (list.hasOwnProperty(item)) {
+                    if (item === name) {
+                        return {
+                            func: func,
+                            item: list[item]
+                        }
                     }
 
                 }

@@ -53,7 +53,7 @@ class BTC {
         }
     }
 
-    static txSign(utxo, privateKey, to, value, fees, network) {
+    static txSign({utxo, privateKey, to, value, fees}, network) {
         // const keyPair = ec.fromWIF(privateKey, network);
         const keyPair = bitcoin.ECPair.fromWIF(privateKey, network);
 
