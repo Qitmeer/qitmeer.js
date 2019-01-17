@@ -5,12 +5,12 @@ const wallet = require('./../wallet/index');
 // const bip39 = require('bip39')
 
 
-const w = new wallet('1', '1', 32);
-
+// const w = new wallet('1', '1', 32);
+const w = wallet.walletType();
 console.log(w);
 
-const a = wallet.createEncrypt(w.words, w.password, w.tips);
-console.log(a);
+// const a = wallet.createEncrypt(w.words, w.password, w.tips);
+// console.log(a);
 
 // let utxo = [{
 //     "txid": "6968a527754a51314c4061c4b63f682a15ca8d7f1979428dba3993b793156018",
