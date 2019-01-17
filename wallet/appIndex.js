@@ -1,35 +1,53 @@
 const bip39 = require('bip39');
 const btc = require('./btc/index');
-const hlc = require('./hlc/index');
 const eth = require('./eth/index');
+const hlc = require('./hlc/index');
 const crypto = require('crypto');
 
 class Wallet {
 
     constructor(mnemonic, password) {
-        let bitcoin = btc.keyPair(mnemonic);
-        let halalChain = hlc.keyPair(mnemonic);
-        let ethereum = eth.keyPair(mnemonic);
+        let btcMain = new btc({ words: mnemonic, encryptPwd: password.toMD5(), path: btc.mainnet().path, network: btc.mainnet().network });
+        let btcTest = new btc({ words: mnemonic, encryptPwd: password.toMD5(), path: btc.testnet().path, network: btc.testnet().network });
+        let ethMain = new eth({ words: mnemonic, encryptPwd: password.toMD5(), path: eth.mainnet().path, network: eth.mainnet().network });
+        let ethTest = new eth({ words: mnemonic, encryptPwd: password.toMD5(), path: eth.testnet().path, network: eth.testnet().network });
+        let hlcTest = new hlc({ words: mnemonic, encryptPwd: password.toMD5(), path: hlc.privnet().path, network: hlc.privnet().network });
         return {
-            "btc": bitcoin,
-            "hlc": halalChain,
-            "eth": ethereum
-        };
+            "Mnemonic": mnemonic.encrypt(password),
+            "Bitcoin": [
+                { "BTC": btcMain },
+                { "BTC-Testnet": btcTest }
+            ],
+            "Ethereum": [
+                { "ETH": ethMain },
+                { "ETH-Ropsten": ethTest }
+            ],
+            "HalalChain": [
+                { "HalalChain": hlcTest }
+            ]
+        }
     }
 
-    static create(entropy, password) {
+    transaction(privKey, data, chainType) {
+        if (typeof data === "string") {
+            data = JSON.parse(data);
+        }
+    }
+
+    static create(password, entropy) {
         let mnemonic = bip39.generateMnemonic(128, () => { return Buffer.from(entropy, "hex"); });
         return new Wallet(mnemonic, password);
     }
 
-    static fromMnemonic(mnemonic, password) {
+    static fromMnemonic(password, mnemonic) {
+        if (!bip39.validateMnemonic(mnemonic)) {
+            return "Incorrect Mnemonic Phrase";
+        }
         return new Wallet(mnemonic, password);
     }
-
-    toMnemonic(value, password) {
-        return "";
-    }
 }
+
+module.exports = Wallet;
 
 Object.assign(String.prototype, {
     toMD5() {

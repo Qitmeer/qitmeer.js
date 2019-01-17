@@ -1,4 +1,6 @@
 const wallet = require('../wallet/appIndex');
+const hlc = require('./../wallet/hlc/index');
+const h5 = require("./../wallet/index");
 
 // HLC
 /// ff997b689d5e27bb20dcff4192c2f9f129776b1aea8439a638c6510f5bdfb789 
@@ -698,6 +700,12 @@ const wallet = require('../wallet/appIndex');
 // };
 // let row = wallet.transaction('111111', 'fb3bd1d0f3f9ee38eb99d635ca633b726f0b0d7d91cbcb605aeb730debfad9ac1e8b5de8a61c857165e60c16b2eebaf7648790f02f292dd1176f4e51b8951b0079527bd469946d7c9708e31f85fa6b436eb24d4fda9ef671416da487f71c197652fd88258f73c5676c50298039fedf770fc9c0f5f4d6fc46104caddbdd97d4fbdb2fd2b49b5df17fa595819935af1b2e954b93ffa6d34d9eed527ff8ee8ea567626ac1578fded203758be8cf1d57abf88ec4c8fb13649cc599caab2cb29b747f2fe67fd947c8fc4d227e6b88fdb7ff3f',data);
 
-let r1 = "gaozhonghe".encrypt("1234567890123456789");
-console.log(r1);
-console.log(r1.decrypt("1234567890123456789"));
+// let accounts = wallet.create("ff997b689d5e27bb20dcff4192c2f9f129776b1aea8439a638c6510f5bdfb789", "111111");
+// console.log(accounts);
+
+let rs = wallet.create("111111", "9cc101d399d14711030f298caa56c140c245089d0515a47eee7c02351d2edf9f");
+console.log(rs);
+
+// new h5("111111", "1");
+let a = new hlc({ words: "silver ancient powder short burger payment average punch olympic auto absurd legal immune ordinary bright snack seminar smile labor fatigue milk federal endorse tell", encryptPwd: "111111".toMD5(), path: hlc.privnet().path, network: hlc.privnet().network });
+console.log(a);
