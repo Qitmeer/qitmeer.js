@@ -11,5 +11,5 @@ console.log(JSON.stringify(a));
 
 
 const to = '0xCF4Fe31C6E0139c15ED51EfB3Dbf658e1D401b1D';
-// ethcoin.txSign({privateKey: a.privateKey, to, value: '0.1', fees: '1.4'}, network.network);
-ethcoin.getAmount({privateKey: a.privateKey, network: network.network});
+ethcoin.txSign({privateKey: a.privateKey, to, value: '0.1', fees: '1.4'}, network.network);
+// ethcoin.getAmount({privateKey: a.privateKey, network: network.network});

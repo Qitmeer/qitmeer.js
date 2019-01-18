@@ -1,13 +1,5 @@
 const ethers = require('ethers');
 
-/**
- * homestead
- * rinkeby
- * ropsten
- * kovan
- * @type {BaseProvider}
- */
-// const provider = ethers.getDefaultProvider();
 
 class ETH {
     static getInstance() {
@@ -49,6 +41,13 @@ class ETH {
 
     //测试网
     static testnet() {
+        /**
+         * homestead
+         * rinkeby
+         * ropsten
+         * kovan
+         * @type {BaseProvider}
+         */
         const network = ethers.getDefaultProvider('ropsten');
         const path = "m/44'/60'/0'/0/0";
         return {
