@@ -12,10 +12,10 @@ class BTC {
         return BTC.instance;
     };
 
-    constructor({words, encryptPwd, path, network}) {
+    constructor({words, options, encryptPwd}) {
         const main = BTC.mainnet();
-        this.path = path || main.path;
-        this.network = network || main.network;
+        this.path = options.path || main.path;
+        this.network = options.network || main.network;
         this.encryptPwd = encryptPwd;
         return this.init(words);
     }

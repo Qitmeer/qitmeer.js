@@ -1,4 +1,5 @@
 const ethers = require('ethers');
+const config = require('./contract');
 
 
 class ETH {
@@ -9,10 +10,11 @@ class ETH {
         return ETH.instance;
     };
 
-    constructor({words, encryptPwd, path, network}) {
+    constructor({words, options, encryptPwd}) {
         const main = ETH.testnet();
-        this.path = path || main.path;
-        this.network = network || main.network;
+        this.path = options.path || main.path;
+        this.network = options.network || main.network;//网络
+        this.contract = options.contract;//合约
         this.encryptPwd = encryptPwd;
         return this.init(words);
     }
@@ -76,14 +78,24 @@ class ETH {
 
     }
 
-    static getAmount({privateKey, success, network}) {
-        const wallet = new ethers.Wallet(privateKey, network);
-        const balance = wallet.getBalance();
-        balance.then(function (b) {
-            const total = b / 1000000000000000000;
-            console.log(total);
-            if (success) success(total);
-        });
+    static getAmount({name, privateKey, success, options}) {
+        const token = config[name.toLowerCase()];
+        const wallet = new ethers.Wallet(privateKey, options.network);
+        if (token) {//有合约 是代币
+            const contract = new ethers.Contract(token.id, token.abi, options.network);
+            contract.balanceOf(wallet.address).then(function (balance) {
+                const total = balance / token.integer;
+                if (success) success(total)
+            })
+        } else {//eth 查询
+            const balance = wallet.getBalance();
+            balance.then(function (b) {
+                const total = ethers.utils.formatEther(b);
+                // const total = b / 1000000000000000000;
+                // console.log(total);
+                if (success) success(total);
+            });
+        }
     }
 }
 

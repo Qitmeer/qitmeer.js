@@ -7,12 +7,6 @@ const bip39 = require('bip39');
 new cyo();
 
 class Wallet {
-    // static getInstance() {
-    //     if (!Wallet.instance) {
-    //         Wallet.instance = new Wallet();
-    //     }
-    //     return Wallet.instance;
-    // };
 
     constructor(password, tips, byte) {
         if (typeof byte !== "number") byte = 32;
@@ -34,7 +28,13 @@ class Wallet {
             words = bip39.entropyToMnemonic(x);
         }
 
-        const params = forConfig(words, encryptPwd);
+        let params = {};
+        forConfig(words, {
+            encryptPwd: encryptPwd,
+            success: function (func, item, options) {
+                params[item] = new func(words, options, {encryptPwd: encryptPwd});
+            }
+        });
 
         params['tips'] = tips;
         if (!encryptPwd) params['password'] = password;
@@ -102,6 +102,11 @@ class Wallet {
         return key.decrypt(password.toMD5());
     }
 
+
+    static getETHTotal(name, privateKey, success) {
+        const options = getConfig(name);
+        eth.getAmount({name, privateKey, success, options: options.item});
+    }
 }
 
 /**
@@ -113,24 +118,26 @@ function config(isWalletType) {
     const btcT = btc.testnet();
     const ethT = eth.testnet();
     const hlcP = hlc.privnet();
-    const params = {btc: {}, eth: {}, hlc: {}};
+    const params = {BTC: {}, ETH: {}, HLC: {}};
 
-    params.btc.func = btc;
-    params.btc.list = {
-        'btc': {path: '', network: ''},
-        'btc-Testnet': {path: btcT.path, network: btcT.network}
+    params.BTC.func = btc;
+    params.BTC.list = {
+        'BTC': {path: '', network: ''},
+        'BTC-Testnet': {path: btcT.path, network: btcT.network}
     };
 
-    params.eth.func = eth;
-    params.eth.list = {
-        'eth': {path: '', network: ''},
-        'eth-Ropsten': {path: ethT.path, network: ethT.network}
+    params.ETH.func = eth;
+    params.ETH.list = {
+        'ETH': {path: '', network: ''},
+        'ETH-Ropsten': {path: ethT.path, network: ethT.network},
+        'HLC-Token': {path: '', network: ''},
+        'HLC-Ropsten': {path: ethT.path, network: ethT.network},
+        'GZH': {path: ethT.path, network: ethT.network}
     };
 
-    params.hlc.func = hlc;
-    params.hlc.list = {
-        'hlc': {},
-        'hlc-Privnet': {path: hlcP.path, network: hlcP.network}
+    params.HLC.func = hlc;
+    params.HLC.list = {
+        'HLC-Privnet': {path: hlcP.path, network: hlcP.network}
     };
 
     if (isWalletType) return forConfig();
@@ -139,10 +146,11 @@ function config(isWalletType) {
 
 /**
  * 循环配置文件
- * @param words 助记词
- * @param encryptPwd 加密后的密码
+ * @param words
+ * @param success
+ * @param encryptPwd
  */
-function forConfig(words, encryptPwd) {
+function forConfig(words, {success, encryptPwd}) {
     const conJson = config(),
         isType = !words;
     let result = {};
@@ -162,12 +170,7 @@ function forConfig(words, encryptPwd) {
                         result[name].push(item);
                     } else {
                         //钱包json {address|privateKey}
-                        result[item] = new func({
-                            words,
-                            encryptPwd,
-                            path: list[item].path,
-                            network: list[item].network
-                        });
+                        if (success) success(func, item, list[item]);
                     }
 
                 }
@@ -194,7 +197,7 @@ function getConfig(name) {
 
             for (const item in list) {
                 if (list.hasOwnProperty(item)) {
-                    if (item === name) {
+                    if (item.toLowerCase() === name.toLowerCase()) {
                         return {
                             func: func,
                             item: list[item]
