@@ -1,13 +1,13 @@
-const hash = require('./../hash');
+const hash = require('../_tools/hash');
 const nox58check = require('./nox58check').default;
 const bip39 = require('bip39');
-const networks = require('./networks');
 const ec = require('./ec');
 const txsign = require('./txsign');
 const _address = require('./address');
+const config = require('./config');
 
 
-const _network = networks.privnet;
+const _network = config.privnet;
 
 class HLC {
     static getInstance() {
@@ -18,17 +18,13 @@ class HLC {
     };
 
     constructor({words, options, encryptPwd}) {
-        const main = HLC.mainnet();
-        this.path = options.path || main.path;
-        this.network = options.network || main.network;
+        this.path = options.path || _network.path;
+        this.network = options.network || _network.network;
         this.encryptPwd = encryptPwd;
         return this.init(words);
     }
 
     init(words) {
-        // const seed = bip39.mnemonicToSeed(words);
-        // const root = bip32.fromSeed(seed);
-        // const keyPair = root.derivePath(this.path);
         const privateHex = bip39.mnemonicToEntropy(words);
         const keyPair = ec.fromPrivateKey(Buffer.from(privateHex, 'hex'), {
             network: this.network
@@ -42,39 +38,9 @@ class HLC {
         }
     }
 
-    //主网
-    static mainnet() {
-        const network = networks.mainnet;
-        const path = "m/44'/0'/0'/0/0";
-        return {
-            network: network,
-            path: path
-        }
-    }
-
-    //测试网
-    static testnet() {
-        const network = networks.testnet;
-        const path = "m/44'/1'/0'/0/0";
-        return {
-            network: network,
-            path: path
-        }
-    }
-
-    //私有网络
-    static privnet() {
-        const network = networks.privnet;
-        const path = "m/44'/1'/0'/0/0";
-        return {
-            network: network,
-            path: path
-        }
-    }
-
-    static txSign({utxo, privateKey, to, value, fees}, network) {
+    static txSign({utxo, privateKey, to, value, fees}, options) {
         const keyPair = ec.fromWIF(privateKey);
-        const from = _address.ecPubKeyToAddress(keyPair.publicKey, network.pubKeyHashAddrId);
+        const from = _address.ecPubKeyToAddress(keyPair.publicKey, options.network.pubKeyHashAddrId);
         const txb = txsign.newSigner();
         // txb.setVersion(network.pubKeyHashAddrId);
         txb.setVersion(1);

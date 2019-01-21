@@ -2,7 +2,7 @@ const bip39 = require('bip39');
 const btc = require('./btc/index');
 const eth = require('./eth/index');
 const hlc = require('./hlc/index');
-const crypto = require('crypto');
+const crypto = require('_tools/crypto');
 
 class Wallet {
 

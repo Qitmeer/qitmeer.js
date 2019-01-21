@@ -8,7 +8,7 @@ const typecheck = require('./typecheck');
 const Script = require('./script');
 const SCRIPT_TYPE = Script.types;
 const addr = require('./address');
-const cypto = require('./../hash');
+const cypto = require('../_tools/hash');
 const Signature = require('./signature');
 
 module.exports = TxSigner;

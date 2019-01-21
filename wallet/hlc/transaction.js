@@ -3,7 +3,7 @@
 const Buffer = require('safe-buffer').Buffer;
 const utils = require('./utils');
 const varuint = require('varuint-bitcoin');
-const hash = require('./../hash');
+const hash = require('../_tools/hash');
 const types = require('./types');
 const typecheck = require('./typecheck');
 

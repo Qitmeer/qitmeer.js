@@ -1,6 +1,7 @@
 const wif = require('wif');
 const bip39 = require('bip39');
 const bip32 = require('bip32');
+const config = require('./config');
 
 const bitcoin = require('bitcoinjs-lib');
 
@@ -13,9 +14,8 @@ class BTC {
     };
 
     constructor({words, options, encryptPwd}) {
-        const main = BTC.mainnet();
-        this.path = options.path || main.path;
-        this.network = options.network || main.network;
+        this.path = options.path;
+        this.network = options.network;
         this.encryptPwd = encryptPwd;
         return this.init(words);
     }
@@ -33,35 +33,12 @@ class BTC {
         }
     }
 
-    //主网
-    static mainnet() {
-        const network = bitcoin.networks.bitcoin;
-        const path = "m/44'/0'/0'/0/0";
-        return {
-            network: network,
-            path: path
-        }
-    }
 
-    //测试网
-    static testnet() {
-        const network = bitcoin.networks.testnet;
-        const path = "m/44'/1'/0'/0/0";
-        return {
-            network: network,
-            path: path
-        }
-    }
-
-    static txSign({utxo, privateKey, to, value, fees}, network) {
-        // const keyPair = ec.fromWIF(privateKey, network);
-        const keyPair = bitcoin.ECPair.fromWIF(privateKey, network);
-
-        // const from = toAddress(keyPair.publicKey, network.pubKeyHash);
-        const from = toAddress(keyPair.publicKey, network);
-        // const txb = new btc.TransactionBuilder(network);
-        const txb = new bitcoin.TransactionBuilder(network);
-
+    static txSign({utxo, privateKey, to, value, fees}, options) {
+        const keyPair = bitcoin.ECPair.fromWIF(privateKey, options.network);
+        const from = toAddress(keyPair.publicKey, options.network);
+        const txb = new bitcoin.TransactionBuilder(options.network);
+        utxo = formatUtxo(utxo, from);
         const fullValue = parseFloat(value) * 100000000;
         const fullFees = parseFloat(fees) * 100000000;
 
@@ -88,6 +65,24 @@ class BTC {
     }
 
 }
+
+function formatUtxo(data, address) {
+    let utxoArr = [];
+    data.map(v => {
+        const vout = v.vout;
+        vout.map((v1, i) => {
+            if (address === v1.scriptPubKey.addresses[0] && v1.spentTxId === null) {
+                utxoArr.push({
+                    txid: v.txid,
+                    vout: i,
+                    amount: (v1.value * 100000000).toFixed(0)
+                });
+            }
+        })
+    });
+    return utxoArr;
+}
+
 
 function toAddress(publicKey, network) {
     return bitcoin.payments.p2pkh({

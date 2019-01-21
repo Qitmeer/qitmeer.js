@@ -1,7 +1,7 @@
 //hlc
 const nox58check = require('./nox58check').default;
 const Network = require('./networks');
-const cypto = require('./../hash');
+const cypto = require('../_tools/hash');
 const Script = require('./script');
 
 

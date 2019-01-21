@@ -6,7 +6,7 @@
 
 const base58 = require('bs58');
 const Buffer = require('safe-buffer').Buffer;
-const hash = require('./../hash');
+const hash = require('../_tools/hash');
 
 module.exports = {
     default: Nox58checkBase(hash.dblake2b256B),
