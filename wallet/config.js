@@ -19,30 +19,28 @@ params.eth.func = paramsTest.eth.func = eth;
 params.hlc.func = paramsTest.hlc.func = hlc;
 //正式
 params.btc.list = {
-    'btc': {network: btcMain.network, path: btcMain.path}
+    'btc': {config: btcMain}
 };
 params.eth.list = {
-    'eth': {network: ethMain.network, path: ethMain.path},
+    'eth': {config: ethMain},
     'hlc-token': {
-        network: ethMain.network, path: ethMain.path,
-        contract: contracts['hlc-token']
+        config: ethMain, contract: contracts['hlc-token']
     }
 };
 params.hlc.list = {};
 
 //测试
 paramsTest.btc.list = {
-    'btc-testnet': {network: btcTest.network, path: btcTest.path}
+    'btc-testnet': {config: btcTest}
 };
 paramsTest.eth.list = {
-    'eth-ropsten': {network: ethTest.network, path: ethTest.path},
+    'eth-ropsten': {config: ethTest},
     'gzh-token-ropsten': {
-        network: ethTest.network, path: ethTest.path,
-        contract: contracts['gzh-token-ropsten']
+        config: ethTest, contract: contracts['gzh-token-ropsten']
     }
 };
 paramsTest.hlc.list = {
-    'hlc-privnet': {network: hlcPriv.network, path: hlcPriv.path}
+    'hlc-privnet': {config: hlcPriv}
 };
 
 let paramsList = paramsTest;

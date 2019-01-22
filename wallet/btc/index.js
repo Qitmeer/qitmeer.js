@@ -1,7 +1,7 @@
 const wif = require('wif');
 const bip39 = require('bip39');
 const bip32 = require('bip32');
-const config = require('./config');
+const ajax = require('./../_tools/ajax');
 
 const bitcoin = require('bitcoinjs-lib');
 
@@ -14,8 +14,9 @@ class BTC {
     };
 
     constructor({words, options, encryptPwd}) {
-        this.path = options.path;
-        this.network = options.network;
+        const config = options.config;
+        this.path = config.path;
+        this.network = config.network;
         this.encryptPwd = encryptPwd;
         return this.init(words);
     }
@@ -34,11 +35,13 @@ class BTC {
     }
 
 
-    static txSign({utxo, privateKey, to, value, fees}, options) {
-        const keyPair = bitcoin.ECPair.fromWIF(privateKey, options.network);
-        const from = toAddress(keyPair.publicKey, options.network);
-        const txb = new bitcoin.TransactionBuilder(options.network);
-        utxo = formatUtxo(utxo, from);
+    static async txSign({privateKey, to, value, fees, success, error}, options) {
+        const config = options.config;
+        const keyPair = bitcoin.ECPair.fromWIF(privateKey, config.network);
+        const from = toAddress(keyPair.publicKey, config.network);
+        const txb = new bitcoin.TransactionBuilder(config.network);
+        const utxo = await getUtxoArr(from, config);
+
         const fullValue = parseFloat(value) * 100000000;
         const fullFees = parseFloat(fees) * 100000000;
 
@@ -61,9 +64,19 @@ class BTC {
             txb.sign(i, keyPair);
         }
 
-        return txb.build().toHex();
+        const tx = txb.build().toHex();
+        const data = await postSendTx(tx, config);
+        if (data.txid) {
+            if (success) success(data);
+        } else {
+            if (error) error(data);
+        }
     }
 
+    static async getBalance(address, success, options) {
+        const data = await getBalance(address, options.config);
+        if (success) success(data.balance);
+    }
 }
 
 function formatUtxo(data, address) {
@@ -83,6 +96,18 @@ function formatUtxo(data, address) {
     return utxoArr;
 }
 
+async function getUtxoArr(address, config) {
+    const data = await ajax.Get(config.getUtxoArr, {address: address});
+    return formatUtxo(data.txs, address)
+}
+
+async function postSendTx(tx, config) {
+    return await ajax.Post(config.postSendTx, {rawtx: tx});
+}
+
+async function getBalance(address, config) {
+    return await ajax.Get(config.getBalance, {address: address});
+}
 
 function toAddress(publicKey, network) {
     return bitcoin.payments.p2pkh({

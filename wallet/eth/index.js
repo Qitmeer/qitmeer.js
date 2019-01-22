@@ -1,6 +1,4 @@
 const ethers = require('ethers');
-const contracts = require('./contracts');
-const config = require('./config');
 
 
 class ETH {
@@ -12,9 +10,8 @@ class ETH {
     };
 
     constructor({words, options, encryptPwd}) {
-        const main = config.mainnet;
-        this.path = options.path || main.path;
-        this.network = options.network || main.network;//网络
+        this.path = options.path;
+        this.network = options.network;//网络
         this.contract = options.contract;//合约
         this.encryptPwd = encryptPwd;
         return this.init(words);
@@ -34,13 +31,14 @@ class ETH {
 
 
     static txSign({privateKey, to, value, fees, success, error}, options) {
-        const wallet = new ethers.Wallet(privateKey, options.network);
+        const config = options.config;
+        const wallet = new ethers.Wallet(privateKey, config.network);
         if (options.contract) {
             const contract = new ethers.Contract(options.contract.id, options.contract.abi, wallet);
             value = parseFloat(value) * options.contract.integer;
             tx(contract, {token: true, to, value, fees, success, error})
         } else {
-            options.network.getTransactionCount(wallet.address).then(function (count) {
+            config.network.getTransactionCount(wallet.address).then(function (count) {
                 fees = parseFloat(fees) * 1000000000;
                 tx(wallet, {count, to, value, fees, success, error});
             });
@@ -48,21 +46,19 @@ class ETH {
 
     }
 
-    static getAmount({name, privateKey, success, options}) {
-        const token = contracts[name.toLowerCase()];
-        const wallet = new ethers.Wallet(privateKey, options.network);
+    static getBalance(address, success, options) {
+        const config = options.config,
+            token = options.contract;
+
         if (token) {//有合约 是代币
-            const contract = new ethers.Contract(token.id, token.abi, options.network);
-            contract.balanceOf(wallet.address).then(function (balance) {
+            const contract = new ethers.Contract(token.id, token.abi, config.network);
+            contract.balanceOf(address).then(function (balance) {
                 const total = balance / token.integer;
                 if (success) success(total)
             })
         } else {//eth 查询
-            const balance = wallet.getBalance();
-            balance.then(function (b) {
+            config.network.getBalance(address).then(function (b) {
                 const total = ethers.utils.formatEther(b);
-                // const total = b / 1000000000000000000;
-                // console.log(total);
                 if (success) success(total);
             });
         }

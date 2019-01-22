@@ -12,9 +12,12 @@ params.testnet = {
     path: "m/44'/1'/0'/0/0"
 };
 
+const hostPriv = 'http://api.wallet.fulingjie.com/';
 params.privnet = {
     network: networks.privnet,
-    path: "m/44'/1'/0'/0/0"
+    path: "m/44'/1'/0'/0/0",
+    getUtxoArr: hostPriv + 'api/v1/wallet/utxos?address={address}',
+    postSendTx: hostPriv + 'api/v1/tx/sendrawtx'
 };
 
 module.exports = params;

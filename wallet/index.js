@@ -101,13 +101,11 @@ class Wallet {
     }
 
 
-    static getETHTotal(name, privateKey, success) {
-        const param = config.get(name);
-        eth.getAmount({
-            name, privateKey, success,
-            options: param.options
-        });
+    static getBalance(name, address, success) {
+        const conf = config.get(name);
+        conf.func.getBalance(address, success, conf.options);
     }
+
 }
 
 

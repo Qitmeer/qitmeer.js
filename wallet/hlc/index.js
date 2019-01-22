@@ -1,10 +1,9 @@
-const hash = require('../_tools/hash');
-const nox58check = require('./nox58check').default;
 const bip39 = require('bip39');
 const ec = require('./ec');
-const txsign = require('./txsign');
+const _txsign = require('./txsign');
 const _address = require('./address');
 const config = require('./config');
+const ajax = require('./../_tools/ajax');
 
 
 const _network = config.privnet;
@@ -38,12 +37,15 @@ class HLC {
         }
     }
 
-    static txSign({utxo, privateKey, to, value, fees}, options) {
+    static async txSign({privateKey, to, value, fees, success, error}, options) {
+        const config = options.config;
         const keyPair = ec.fromWIF(privateKey);
-        const from = _address.ecPubKeyToAddress(keyPair.publicKey, options.network.pubKeyHashAddrId);
-        const txb = txsign.newSigner();
+        const from = _address.ecPubKeyToAddress(keyPair.publicKey, config.network.pubKeyHashAddrId);
+        const txb = _txsign.newSigner();
         // txb.setVersion(network.pubKeyHashAddrId);
         txb.setVersion(1);
+
+        const utxo = await getUtxoArr(from, config);
 
         const fullValue = parseFloat(value) * 100000000;
         const fullFees = parseFloat(fees) * 100000000;
@@ -67,9 +69,36 @@ class HLC {
             txb.sign(i, keyPair)
         }
 
-        return txb.build().toBuffer().toString('hex')
+        const tx = txb.build().toBuffer().toString('hex');
+        const data = await postSendTx(tx, config);
+        if (data.code === 0) {
+            if (success) success(data)
+        } else {
+            if (error) error(data)
+        }
+    }
+
+    static async getBalance(address, success, options) {
+        const data = await getBalance(address, options.config);
+        if (success) success(data);
     }
 }
 
+async function getUtxoArr(address, config) {
+    return await ajax.Get(config.getUtxoArr, {address: address});
+}
+
+async function postSendTx(tx, config) {
+    return await ajax.Post(config.postSendTx, {tx: tx});
+}
+
+async function getBalance(address, config) {
+    const data = await getUtxoArr(address, config);
+    let total = 0;
+    data.result.forEach(utxo => {
+        total += parseFloat(utxo.amount);
+    });
+    return total;
+}
 
 module.exports = HLC;
