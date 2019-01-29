@@ -3,6 +3,7 @@ const cyo = require('./_tools/crypto');
 const eth = require('./eth/index');
 const bip39 = require('bip39');
 const config = require('./config');
+
 new cyo();
 
 class Wallet {
@@ -29,7 +30,15 @@ class Wallet {
 
         let params = {};
         config.foreach(function (func, typeName, name, options) {
-            params[name] = new func({words, options, encryptPwd});
+            let isFirst = false;
+            if (!params[typeName]) {
+                params[typeName] = {};
+                isFirst = true;
+            }
+            params[typeName][name] = new func({words, options, encryptPwd});
+            if (isFirst) {
+                params[typeName][name].display = true;
+            }
         });
 
         params['tips'] = tips;
@@ -103,7 +112,17 @@ class Wallet {
 
     static getBalance(name, address, success) {
         const conf = config.get(name);
-        conf.func.getBalance(address, success, conf.options);
+        if (conf.options)
+            conf.func.getBalance(address, success, conf.options)
+    }
+
+    static getABI(address, success) {
+        eth.getABI(address, success);
+    }
+
+    static getEthFees(name, privateKey, to, value, success) {
+        const conf = config.get(name);
+        eth.getFees(privateKey, to, value, success, conf.options)
     }
 
 }

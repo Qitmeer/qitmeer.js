@@ -1,4 +1,5 @@
 const ethers = require('ethers');
+const ajax = require('./../_tools/ajax');
 
 
 class ETH {
@@ -30,28 +31,32 @@ class ETH {
     }
 
 
-    static txSign({privateKey, to, value, fees, success, error}, options) {
+    static async txSign({privateKey, to, value, fees, success, error}, options) {
         const config = options.config;
         const wallet = new ethers.Wallet(privateKey, config.network);
         if (options.contract) {
-            const contract = new ethers.Contract(options.contract.id, options.contract.abi, wallet);
+            let abi = await getABI(options.contract.id);
+            if (abi.status === '0') abi.result = options.contract.abi;
+            const contract = new ethers.Contract(options.contract.id, abi.result, wallet);
             value = parseFloat(value) * options.contract.integer;
             tx(contract, {token: true, to, value, fees, success, error})
         } else {
             config.network.getTransactionCount(wallet.address).then(function (count) {
-                fees = parseFloat(fees) * 1000000000;
+                // fees = parseFloat(fees) * 1000000000;
                 tx(wallet, {count, to, value, fees, success, error});
             });
         }
 
     }
 
-    static getBalance(address, success, options) {
+    static async getBalance(address, success, options) {
         const config = options.config,
             token = options.contract;
 
         if (token) {//有合约 是代币
-            const contract = new ethers.Contract(token.id, token.abi, config.network);
+            let abi = await getABI(token.id);
+            if (abi.status === '0') abi.result = token.abi;
+            const contract = new ethers.Contract(token.id, abi.result, config.network);
             contract.balanceOf(address).then(function (balance) {
                 const total = balance / token.integer;
                 if (success) success(total)
@@ -63,6 +68,39 @@ class ETH {
             });
         }
     }
+
+    static async getABI(address, success) {
+        const data = await getABI(address);
+        if (success) success(data);
+    }
+
+    static async getFees(privateKey, to, value, success, options) {
+        const config = options.config,
+            token = options.contract;
+
+        let result = {
+            gasPrice: ethers.utils.parseUnits('20', 'gwei'),
+            gasLimit: 21000
+        };
+        const wallet = new ethers.Wallet(privateKey, config.network);
+
+        if (token) {
+            let abi = await getABI(options.contract.id);
+            if (abi.status === '0') abi.result = options.contract.abi;
+            const contract = new ethers.Contract(options.contract.id, abi.result, wallet);
+            value = parseFloat(value) * options.contract.integer;
+
+            contract.estimate.transfer(to, value).then(function (gas) {
+                result.gasLimit = gas;
+                result.fees = result.gasPrice * result.gasLimit / 1000000000000000000;
+                if (success) success(result)
+            });
+            return;
+        }
+        result.fees = result.gasPrice * result.gasLimit / 1000000000000000000;
+        if (success) success(result)
+    }
+
 }
 
 /**
@@ -72,29 +110,27 @@ class ETH {
  * @param count 交易个数
  * @param to    接收地址
  * @param value 金额
- * @param fees  手续费（Gwei）
+ * @param fees
  * @param success   交易成功
  * @param error 交易失败
  */
 function tx(wallet, {token, count, to, value, fees, success, error}) {
     if (token) {
         if (typeof value !== "number") value = parseFloat(value);
-        wallet.estimate.transfer(to, value).then(function (gas) {
-            wallet.transfer(to, value, {
-                gasLimit: gas,
-                gasPrice: ethers.utils.parseUnits(fees.toString(), 'gwei')
-            }).then(function (tx) {
-                console.log(tx);
-                if (success) success(tx);
-            }).catch(function (e) {
-                if (error) error(e);
-            });
+        const param = {
+            gasLimit: fees.gasLimit,
+            gasPrice: fees.gasPrice
+        };
+        wallet.transfer(to, value, param).then(function (tx) {
+            if (success) success(tx);
+        }).catch(function (e) {
+            if (error) error(e);
         });
     } else {
         const transaction = {
             nonce: count,
-            gasLimit: 210000,
-            gasPrice: ethers.utils.bigNumberify(fees),
+            gasLimit: fees.gasLimit,
+            gasPrice: fees.gasPrice,
             to: to,
             value: ethers.utils.parseEther(value.toString()),
             data: '0x'
@@ -113,6 +149,12 @@ function tx(wallet, {token, count, to, value, fees, success, error}) {
         });
     }
 
+}
+
+
+async function getABI(address) {
+    const url = 'https://api.etherscan.io/api?module=contract&action=getabi&address={address}&apikey=E8EJGX2ES48CPMUT2TT7NQZKNTHEUC5G4F';
+    return await ajax.Get(url, {address: address});
 }
 
 module.exports = ETH;

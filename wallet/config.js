@@ -18,9 +18,9 @@ params.btc.func = paramsTest.btc.func = btc;
 params.eth.func = paramsTest.eth.func = eth;
 params.hlc.func = paramsTest.hlc.func = hlc;
 //正式
-params.btc.list = {
-    'btc': {config: btcMain}
-};
+// params.btc.list = {
+//     'btc': {config: btcMain}
+// };
 params.eth.list = {
     'eth': {config: ethMain},
     'hlc-token': {
@@ -43,7 +43,9 @@ paramsTest.hlc.list = {
     'hlc-privnet': {config: hlcPriv}
 };
 
-let paramsList = paramsTest;
+
+
+let paramsList = params;
 
 /**
  * 循环

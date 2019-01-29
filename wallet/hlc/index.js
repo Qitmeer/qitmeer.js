@@ -32,7 +32,7 @@ class HLC {
         let privateKey = keyPair.toWIF();
         if (this.encryptPwd) privateKey = privateKey.encrypt(this.encryptPwd);
         return {
-            address: address,
+            address: 'h' + address,
             privateKey: privateKey
         }
     }
@@ -45,7 +45,7 @@ class HLC {
         // txb.setVersion(network.pubKeyHashAddrId);
         txb.setVersion(1);
 
-        const utxo = await getUtxoArr(from, config);
+        const utxo = await getUtxoArr('h' + from, config);
 
         const fullValue = parseFloat(value) * 100000000;
         const fullFees = parseFloat(fees) * 100000000;
@@ -56,6 +56,8 @@ class HLC {
             utxoArr.push(utxo[i]);
             txb.addInput(utxo[i].txid, utxo[i].vout)
         }
+        //去掉前面的小h
+        to = to.substring(1, to.length);
 
         txb.addOutput(to, fullValue);
         const balance = total - fullValue - fullFees;
@@ -85,7 +87,10 @@ class HLC {
 }
 
 async function getUtxoArr(address, config) {
-    return await ajax.Get(config.getUtxoArr, {address: address});
+    //去掉小h
+    address = address.substring(1, address.length);
+    const data = await ajax.Get(config.getUtxoArr, {address: address});
+    return data.result;
 }
 
 async function postSendTx(tx, config) {
@@ -95,9 +100,10 @@ async function postSendTx(tx, config) {
 async function getBalance(address, config) {
     const data = await getUtxoArr(address, config);
     let total = 0;
-    data.result.forEach(utxo => {
+    data.forEach(utxo => {
         total += parseFloat(utxo.amount);
     });
+    if (total > 0) total = total / 100000000;
     return total;
 }
 

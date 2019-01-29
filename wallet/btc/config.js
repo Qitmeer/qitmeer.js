@@ -2,13 +2,13 @@ const bitcoin = require('bitcoinjs-lib');
 
 const params = {};
 
-const mainTest = 'https://test-insight.bitpay.com/';
+const mainTest = 'https://chain.api.btc.com/';
 params.mainnet = {
     network: bitcoin.networks.bitcoin,
     path: "m/44'/0'/0'/0/0",
-    getUtxoArr: mainTest + 'api/txs?address={address}&pageNum=0',
-    getBalance: mainTest + 'api/addr/{address}/?noTxList=2',
-    postSendTx: mainTest + 'api/tx/send'
+    getUtxoArr: mainTest + 'v3/address/{address}/unspent',
+    getBalance: mainTest + 'v3/address/{address}',
+    postSendTx: mainTest + 'v3/tools/tx-publish'
 };
 
 const hostTest = 'https://test-insight.bitpay.com/';
