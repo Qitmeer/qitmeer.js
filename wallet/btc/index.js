@@ -75,6 +75,7 @@ class BTC {
 
     static async getBalance(address, success, options) {
         const data = await getBalance(address, options.config);
+
         if (success) success(data.balance);
     }
 }

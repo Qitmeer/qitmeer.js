@@ -12,7 +12,7 @@ params.testnet = {
     path: "m/44'/1'/0'/0/0"
 };
 
-const hostPriv = 'http://api.wallet.fulingjie.com/';
+const hostPriv = 'http://test.wallet.hlchub.org/';
 params.privnet = {
     network: networks.privnet,
     path: "m/44'/1'/0'/0/0",

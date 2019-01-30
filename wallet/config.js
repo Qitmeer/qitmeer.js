@@ -14,13 +14,10 @@ const btcMain = btcConfig.mainnet,
 
 const params = {btc: {}, eth: {}, hlc: {}};
 const paramsTest = {btc: {}, eth: {}, hlc: {}};
-params.btc.func = paramsTest.btc.func = btc;
 params.eth.func = paramsTest.eth.func = eth;
 params.hlc.func = paramsTest.hlc.func = hlc;
+params.btc.func = paramsTest.btc.func = btc;
 //正式
-// params.btc.list = {
-//     'btc': {config: btcMain}
-// };
 params.eth.list = {
     'eth': {config: ethMain},
     'hlc-token': {
@@ -28,24 +25,28 @@ params.eth.list = {
     }
 };
 params.hlc.list = {};
+// params.btc.list = {
+//     'btc': {config: btcMain}
+// };
+
 
 //测试
-paramsTest.btc.list = {
-    'btc-testnet': {config: btcTest}
-};
 paramsTest.eth.list = {
-    'eth-ropsten': {config: ethTest},
-    'gzh-token-ropsten': {
-        config: ethTest, contract: contracts['gzh-token-ropsten']
+    'eth': {config: ethTest},
+    'hlc-token': {
+        config: ethTest, contract: contracts['hlc-token']
     }
 };
 paramsTest.hlc.list = {
-    'hlc-privnet': {config: hlcPriv}
+    'hlc-coin': {config: hlcPriv}
+};
+paramsTest.btc.list = {
+    'btc': {config: btcTest}
 };
 
 
 
-let paramsList = params;
+let paramsList = paramsTest;
 
 /**
  * 循环

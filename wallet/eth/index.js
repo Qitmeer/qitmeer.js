@@ -79,7 +79,7 @@ class ETH {
             token = options.contract;
 
         let result = {
-            gasPrice: ethers.utils.parseUnits('20', 'gwei'),
+            gasPrice: ethers.utils.parseUnits('10', 'gwei'),
             gasLimit: 21000
         };
         const wallet = new ethers.Wallet(privateKey, config.network);

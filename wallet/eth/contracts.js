@@ -9,8 +9,11 @@ const params = {
     'hlc-token': {
         id: '0x58c69ed6cd6887c0225d1fccecc055127843c69b',
         integer: 1000000000
-    },
-    'gzh-token-ropsten': {
+    }
+};
+
+const paramsTest = {
+    'hlc-token': {
         id: '0xA732A941aC1D92aB4aD7234f0eb26e079ec45f85',
         integer: 100,
         abi: [{
@@ -113,4 +116,5 @@ const params = {
     }
 };
 
-module.exports = params;
+
+module.exports = paramsTest;

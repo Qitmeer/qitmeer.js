@@ -34114,13 +34114,13 @@ const bitcoin = require('bitcoinjs-lib');
 
 const params = {};
 
-const mainTest = 'https://test-insight.bitpay.com/';
+const mainTest = 'https://chain.api.btc.com/';
 params.mainnet = {
     network: bitcoin.networks.bitcoin,
     path: "m/44'/0'/0'/0/0",
-    getUtxoArr: mainTest + 'api/txs?address={address}&pageNum=0',
-    getBalance: mainTest + 'api/addr/{address}/?noTxList=2',
-    postSendTx: mainTest + 'api/tx/send'
+    getUtxoArr: mainTest + 'v3/address/{address}/unspent',
+    getBalance: mainTest + 'v3/address/{address}',
+    postSendTx: mainTest + 'v3/tools/tx-publish'
 };
 
 const hostTest = 'https://test-insight.bitpay.com/';
@@ -34211,6 +34211,7 @@ class BTC {
 
     static async getBalance(address, success, options) {
         const data = await getBalance(address, options.config);
+
         if (success) success(data.balance);
     }
 }
@@ -34297,21 +34298,21 @@ params.hlc.list = {};
 
 //测试
 paramsTest.btc.list = {
-    'btc-testnet': {config: btcTest}
+    'btc': {config: btcTest}
 };
 paramsTest.eth.list = {
-    'eth-ropsten': {config: ethTest},
-    'gzh-token-ropsten': {
-        config: ethTest, contract: contracts['gzh-token-ropsten']
+    'eth': {config: ethTest},
+    'hlc-token': {
+        config: ethTest, contract: contracts['hlc-token']
     }
 };
 paramsTest.hlc.list = {
-    'hlc-privnet': {config: hlcPriv}
+    'hlc-coin': {config: hlcPriv}
 };
 
 
 
-let paramsList = params;
+let paramsList = paramsTest;
 
 /**
  * 循环
@@ -34403,137 +34404,12 @@ module.exports = params;
 const params = {
     'hlc-token': {
         id: '0x58c69ed6cd6887c0225d1fccecc055127843c69b',
-        integer: 1000000000,
-        abi: [{
-            "constant": true,
-            "inputs": [],
-            "name": "name",
-            "outputs": [{"name": "", "type": "string"}],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "_spender", "type": "address"}, {"name": "_value", "type": "uint256"}],
-            "name": "approve",
-            "outputs": [{"name": "success", "type": "bool"}],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "totalSupply",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "_from", "type": "address"}, {"name": "_to", "type": "address"}, {
-                "name": "_value",
-                "type": "uint256"
-            }],
-            "name": "transferFrom",
-            "outputs": [{"name": "success", "type": "bool"}],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "decimals",
-            "outputs": [{"name": "", "type": "uint8"}],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "burnAmount", "type": "uint256"}],
-            "name": "burn",
-            "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [{"name": "_owner", "type": "address"}],
-            "name": "balanceOf",
-            "outputs": [{"name": "balance", "type": "uint256"}],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "symbol",
-            "outputs": [{"name": "", "type": "string"}],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "_to", "type": "address"}, {"name": "_value", "type": "uint256"}],
-            "name": "transfer",
-            "outputs": [{"name": "success", "type": "bool"}],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [{"name": "_owner", "type": "address"}, {"name": "_spender", "type": "address"}],
-            "name": "allowance",
-            "outputs": [{"name": "remaining", "type": "uint256"}],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "BURN_ADDRESS",
-            "outputs": [{"name": "", "type": "address"}],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }, {
-            "inputs": [{"name": "_owner", "type": "address"}, {"name": "_name", "type": "string"}, {
-                "name": "_symbol",
-                "type": "string"
-            }, {"name": "_totalSupply", "type": "uint256"}, {"name": "_decimals", "type": "uint8"}],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "constructor"
-        }, {
-            "anonymous": false,
-            "inputs": [{"indexed": false, "name": "burner", "type": "address"}, {
-                "indexed": false,
-                "name": "burnedAmount",
-                "type": "uint256"
-            }],
-            "name": "Burned",
-            "type": "event"
-        }, {
-            "anonymous": false,
-            "inputs": [{"indexed": true, "name": "_from", "type": "address"}, {
-                "indexed": true,
-                "name": "_to",
-                "type": "address"
-            }, {"indexed": false, "name": "_value", "type": "uint256"}],
-            "name": "Transfer",
-            "type": "event"
-        }, {
-            "anonymous": false,
-            "inputs": [{"indexed": true, "name": "_owner", "type": "address"}, {
-                "indexed": true,
-                "name": "_spender",
-                "type": "address"
-            }, {"indexed": false, "name": "_value", "type": "uint256"}],
-            "name": "Approval",
-            "type": "event"
-        }]
+        integer: 1000000000
+    }
+};
 
-    },
-    'gzh-token-ropsten': {
+const paramsTest = {
+    'hlc-token': {
         id: '0xA732A941aC1D92aB4aD7234f0eb26e079ec45f85',
         integer: 100,
         abi: [{
@@ -34636,7 +34512,8 @@ const params = {
     }
 };
 
-module.exports = params;
+
+module.exports = paramsTest;
 },{}],148:[function(require,module,exports){
 const ethers = require('ethers');
 const ajax = require('./../_tools/ajax');
@@ -34719,7 +34596,7 @@ class ETH {
             token = options.contract;
 
         let result = {
-            gasPrice: ethers.utils.parseUnits('20', 'gwei'),
+            gasPrice: ethers.utils.parseUnits('10', 'gwei'),
             gasLimit: 21000
         };
         const wallet = new ethers.Wallet(privateKey, config.network);
