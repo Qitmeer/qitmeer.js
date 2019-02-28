@@ -12,7 +12,7 @@ console.log(JSON.stringify(a));
 
 const to = '0x5d2e279654C34536c33AcB36B74e3C20b8DeD08D';
 
-const tokens = require('./../../wallet/eth/contract');
+const tokens = require('./../../wallet/eth/contracts');
 
 
 const amount = 100 * 100;
@@ -20,7 +20,7 @@ const fees = '1';
 
 var targetAddress = ethers.utils.getAddress(to);
 const wallet = new ethers.Wallet(a.privateKey, options.network);
-const gzh = tokens.gzh;
+const gzh = tokens['hlc-token'];
 const contract = new ethers.Contract(gzh.id, gzh.abi, wallet);
 
 // ethcoin.txSign({

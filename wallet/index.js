@@ -84,7 +84,34 @@ class Wallet {
      */
     static txSign(name, options) {
         const param = config.get(name);
-        return param.func.txSign(options, param.options);
+        try {
+            return param.func.txSign(options, param.options)
+        } catch (e) {
+            return false
+        }
+
+    }
+
+    static checkAddr(name, address) {
+        let result = false;
+
+        switch (name) {
+            case 'btc':
+                if (address.length !== 34) return result;
+                result = true;
+                break;
+            case 'eth':
+                if (address.length !== 42) return result;
+                if (address.indexOf('0x') !== 0) return result;
+                result = true;
+                break;
+            case 'hlc':
+                if (address.length !== 36) return result;
+                if (address.indexOf('hRm') !== 0) return result;
+                result = true;
+                break;
+        }
+        return result
     }
 
     /**

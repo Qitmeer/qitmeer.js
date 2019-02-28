@@ -48048,9 +48048,13 @@ class Crypto {
             },
             decrypt(password) {
                 let result = "";
-                const cipher = crypto.createDecipheriv("aes-128-cbc", Buffer.from(password.toMD5(), "hex"), Buffer.from("Wallet App".toMD5(), "hex"));
-                result += cipher.update(this.valueOf(), "hex", "utf8");
-                result += cipher.final("utf8");
+                try {
+                    const cipher = crypto.createDecipheriv("aes-128-cbc", Buffer.from(password.toMD5(), "hex"), Buffer.from("Wallet App".toMD5(), "hex"));
+                    result += cipher.update(this.valueOf(), "hex", "utf8");
+                    result += cipher.final("utf8");
+                } catch (e) {
+                    result = false;
+                }
                 return result;
             }
         });
@@ -48631,6 +48635,7 @@ class ETH {
                 result.fees = result.gasPrice * result.gasLimit / 1000000000000000000;
                 if (success) success(result)
             });
+
             return;
         }
         result.fees = result.gasPrice * result.gasLimit / 1000000000000000000;
@@ -50436,7 +50441,34 @@ class Wallet {
      */
     static txSign(name, options) {
         const param = config.get(name);
-        return param.func.txSign(options, param.options);
+        try {
+            return param.func.txSign(options, param.options)
+        } catch (e) {
+            return false
+        }
+
+    }
+
+    static checkAddr(name, address) {
+        let result = false;
+
+        switch (name) {
+            case 'btc':
+                if (address.length !== 34) return result;
+                result = true;
+                break;
+            case 'eth':
+                if (address.length !== 42) return result;
+                if (address.indexOf('0x') !== 0) return result;
+                result = true;
+                break;
+            case 'hlc':
+                if (address.length !== 36) return result;
+                if (address.indexOf('hRm') !== 0) return result;
+                result = true;
+                break;
+        }
+        return result
     }
 
     /**

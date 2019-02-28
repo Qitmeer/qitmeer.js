@@ -95,6 +95,7 @@ class ETH {
                 result.fees = result.gasPrice * result.gasLimit / 1000000000000000000;
                 if (success) success(result)
             });
+
             return;
         }
         result.fees = result.gasPrice * result.gasLimit / 1000000000000000000;
