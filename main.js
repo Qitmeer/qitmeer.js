@@ -5,4 +5,4 @@ const main = require('./wallet/index');
 // // App
 // //控制台执行  browserify main.js > app.js
 // const main = require('./wallet/appIndex');
-window.Wallet = main;
+window.w = main;

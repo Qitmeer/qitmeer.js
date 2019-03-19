@@ -6,7 +6,7 @@ const main = require('./wallet/index');
 // // App
 // //控制台执行  browserify main.js > app.js
 // const main = require('./wallet/appIndex');
-window.Wallet = main;
+window.w = main;
 },{"./wallet/index":277}],2:[function(require,module,exports){
 var asn1 = exports;
 
@@ -48233,7 +48233,6 @@ class BTC {
 
     static async getBalance(address, success, options) {
         const data = await getBalance(address, options.config);
-
         if (success) success(data.balance);
     }
 }
@@ -48241,8 +48240,7 @@ class BTC {
 function formatUtxo(data, address) {
     let utxoArr = [];
     data.map(v => {
-        const vout = v.vout;
-        vout.map((v1, i) => {
+        v.vout.map((v1, i) => {
             if (address === v1.scriptPubKey.addresses[0] && v1.spentTxId === null) {
                 utxoArr.push({
                     txid: v.txid,
@@ -48293,7 +48291,7 @@ const btc = require('./btc/index'),
     btcConfig = require('./btc/config'),
     ethConfig = require('./eth/config'),
     hlcConfig = require('./hlc/config'),
-    contracts = require('./eth/contracts');
+    contracts = require('./eth/contracts');//合约
 
 const btcMain = btcConfig.mainnet,
     btcTest = btcConfig.testnet,
@@ -48301,11 +48299,11 @@ const btcMain = btcConfig.mainnet,
     ethTest = ethConfig.testnet,
     hlcPriv = hlcConfig.privnet;
 
-const params = {btc: {}, eth: {}, hlc: {}};
-const paramsTest = {btc: {}, eth: {}, hlc: {}};
+const params = paramsTest = {btc: {}, eth: {}, hlc: {}};
 params.eth.func = paramsTest.eth.func = eth;
 params.hlc.func = paramsTest.hlc.func = hlc;
 params.btc.func = paramsTest.btc.func = btc;
+
 //正式
 params.eth.list = {
     'eth': {config: ethMain},
@@ -48334,7 +48332,6 @@ paramsTest.btc.list = {
 };
 
 
-
 let paramsList = paramsTest;
 
 /**
@@ -48343,7 +48340,7 @@ let paramsList = paramsTest;
  */
 function foreach(success) {
     for (const typeName in paramsList) {
-        if (params.hasOwnProperty(typeName)) {
+        if (paramsList.hasOwnProperty(typeName)) {
             const func = paramsList[typeName].func,
                 list = paramsList[typeName].list;
             let isFirst = true;
@@ -48891,7 +48888,7 @@ function fromWIF(string, network) {
 (function (Buffer){
 const bip39 = require('bip39');
 const ec = require('./ec');
-const _txsign = require('./txsign');
+const txsign = require('./txsign');
 const _address = require('./address');
 const config = require('./config');
 const ajax = require('./../_tools/ajax');
@@ -48932,7 +48929,7 @@ class HLC {
         const config = options.config;
         const keyPair = ec.fromWIF(privateKey);
         const from = _address.ecPubKeyToAddress(keyPair.publicKey, config.network.pubKeyHashAddrId);
-        const txb = _txsign.newSigner();
+        const txb = txsign.newSigner();
         // txb.setVersion(network.pubKeyHashAddrId);
         txb.setVersion(1);
 
@@ -50387,7 +50384,7 @@ class Wallet {
 
         let params = {};
         config.foreach(function (func, typeName, name, options) {
-            let isFirst = false;
+            let isFirst =  true;
             if (!params[typeName]) {
                 params[typeName] = {};
                 isFirst = true;
