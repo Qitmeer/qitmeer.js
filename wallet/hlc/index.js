@@ -1,6 +1,6 @@
 const bip39 = require('bip39');
 const ec = require('./ec');
-const _txsign = require('./txsign');
+const txsign = require('./txsign');
 const _address = require('./address');
 const config = require('./config');
 const ajax = require('./../_tools/ajax');
@@ -41,7 +41,7 @@ class HLC {
         const config = options.config;
         const keyPair = ec.fromWIF(privateKey);
         const from = _address.ecPubKeyToAddress(keyPair.publicKey, config.network.pubKeyHashAddrId);
-        const txb = _txsign.newSigner();
+        const txb = txsign.newSigner();
         // txb.setVersion(network.pubKeyHashAddrId);
         txb.setVersion(1);
 

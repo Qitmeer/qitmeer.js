@@ -30,7 +30,7 @@ class Wallet {
 
         let params = {};
         config.foreach(function (func, typeName, name, options) {
-            let isFirst = false;
+            let isFirst =  true;
             if (!params[typeName]) {
                 params[typeName] = {};
                 isFirst = true;

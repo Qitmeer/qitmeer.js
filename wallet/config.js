@@ -4,7 +4,7 @@ const btc = require('./btc/index'),
     btcConfig = require('./btc/config'),
     ethConfig = require('./eth/config'),
     hlcConfig = require('./hlc/config'),
-    contracts = require('./eth/contracts');
+    contracts = require('./eth/contracts');//合约
 
 const btcMain = btcConfig.mainnet,
     btcTest = btcConfig.testnet,
@@ -12,11 +12,11 @@ const btcMain = btcConfig.mainnet,
     ethTest = ethConfig.testnet,
     hlcPriv = hlcConfig.privnet;
 
-const params = {btc: {}, eth: {}, hlc: {}};
-const paramsTest = {btc: {}, eth: {}, hlc: {}};
+const params = paramsTest = {btc: {}, eth: {}, hlc: {}};
 params.eth.func = paramsTest.eth.func = eth;
 params.hlc.func = paramsTest.hlc.func = hlc;
 params.btc.func = paramsTest.btc.func = btc;
+
 //正式
 params.eth.list = {
     'eth': {config: ethMain},
@@ -45,7 +45,6 @@ paramsTest.btc.list = {
 };
 
 
-
 let paramsList = paramsTest;
 
 /**
@@ -54,7 +53,7 @@ let paramsList = paramsTest;
  */
 function foreach(success) {
     for (const typeName in paramsList) {
-        if (params.hasOwnProperty(typeName)) {
+        if (paramsList.hasOwnProperty(typeName)) {
             const func = paramsList[typeName].func,
                 list = paramsList[typeName].list;
             let isFirst = true;

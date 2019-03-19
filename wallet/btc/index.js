@@ -75,7 +75,6 @@ class BTC {
 
     static async getBalance(address, success, options) {
         const data = await getBalance(address, options.config);
-
         if (success) success(data.balance);
     }
 }
@@ -83,8 +82,7 @@ class BTC {
 function formatUtxo(data, address) {
     let utxoArr = [];
     data.map(v => {
-        const vout = v.vout;
-        vout.map((v1, i) => {
+        v.vout.map((v1, i) => {
             if (address === v1.scriptPubKey.addresses[0] && v1.spentTxId === null) {
                 utxoArr.push({
                     txid: v.txid,
