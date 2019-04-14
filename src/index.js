@@ -15,5 +15,6 @@ module.exports = {
   block: require('./block'),
   OPS: _OPS,
   OPS_MAP: require('./ops/map'),
-  script: require('./script')
+  script: require('./script'),
+  signature: require('./signature')
 }

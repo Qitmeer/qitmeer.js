@@ -340,6 +340,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   // handle the passed scriptCode, skipping the OP_CODESEPARATOR
   // In case concatenating two scripts ends up with two code-separators,
   // or an extra one at the end, this prevents all those possible incompatibilities.
+  // console.log(prevOutScript)
   const ourScript = prevOutScript.removeCodeSeparator().toBuffer()
 
   const txTmp = this.clone()
