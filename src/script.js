@@ -34,6 +34,16 @@ const __publicKeyScript = function (hash) {
   return script
 }
 
+const __scriptHash = function (hash) {
+  const script = new Script()
+  script.stack = [
+    OPS.OP_HASH160,
+    hash,
+    OPS.OP_EQUAL
+  ]
+  return script
+}
+
 const __signatureScript = function (signature, pubkey) {
   const script = new Script()
   script.stack = [
@@ -44,7 +54,8 @@ const __signatureScript = function (signature, pubkey) {
 }
 
 Script.Output = {
-  P2PKH: __publicKeyScript
+  P2PKH: __publicKeyScript,
+  P2SH: __scriptHash
 }
 
 Script.Input = {
