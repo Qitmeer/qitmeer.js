@@ -39,7 +39,6 @@ function toBase58Check (hash, version) {
 function toOutputScript (address, network) {
   network = network || Network.privnet
   const decode = fromBase58Check(address)
-  console.log(decode,'decodedecodedecodedecode')
   if (decode) {
     if (decode.version === network.pubKeyHashAddrId) return Script.Output.P2PKH(decode.hash)
     throw Error('Unknown version ' + decode.version)
