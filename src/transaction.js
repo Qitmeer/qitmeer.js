@@ -495,7 +495,6 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   // 1) the hash type (as little-endian uint32)
   // 2) prefix hash (as produced by hash function)
   // 3) witness hash (as produced by hash function)
-  
   const typeBuffer = Buffer.allocUnsafe(4)
   typeBuffer.writeUInt32LE(hashType)
   const prefixHash = hash.blake2b256(prefixBuffer)

@@ -76,7 +76,6 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
     const hash = cypto.hash160(ourPubKey)
     input.prevOutScript = Script.Output.P2PKH(hash)
   }
-  console.log(input.prevOutScript)
   // signHash
   const signHash = this.__tx.hashForSignature(vin, input.prevOutScript, hashType)
   const signature = keyPair.sign(signHash)
