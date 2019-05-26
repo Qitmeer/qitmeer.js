@@ -1,6 +1,6 @@
 var qitmeerJs = require('../../src')
 var { hexToTime, timeToHex } = require('./tools/union')
-var randomBytes = require('randombytes')
+var randomBytes = require('./node_modules/randombytes')
 
 /**
  * @param num number
@@ -202,11 +202,15 @@ function lockTimecontractTransaction ( {_wifPrivateKey, _locktimeAddress, amount
     if ( network === undefined ) throw new Error( networkStr + ' is not network')
     const p2pkhAddress = qitmeerJs.address.toBase58Check(hash160, network.pubKeyHashAddrId)
     const txb = qitmeerJs.txsign.newSigner();
-    utxo = utxo.split(':')
-    txb.addInput(utxo[0], utxo[1]*1);
+    utxo.map( v => {
+        const u = v.split(':')
+        txb.addInput(u[0], u[1]*1);
+    })
     txb.addOutput(_locktimeAddress, HLCunit( amount - 0.0001 ));
     txb.addOutput(p2pkhAddress, HLCunit( 450 - amount ));
-    txb.sign(0, keyPair);
+    utxo.map( (v,i) => {
+        txb.sign(i, keyPair);
+    })
     const transaction = txb.build()
     return {
         transaction: transaction.toBuffer().toString('hex'),
@@ -234,7 +238,7 @@ function creatLocktimeTrand() {
     const _redeemAddress = 'RmRYWLhtA3dkgd3vF3bEqZvsriTufMFPBRK'
     const amount = 1
     const fee = 0.0001
-    const utxo = '1e944324c5d5664d45cd182f08278715a1bbbe354d6d233015601916a3ea66c7:2'
+    const utxo = ['1e944324c5d5664d45cd182f08278715a1bbbe354d6d233015601916a3ea66c7:2']
 
     const lockcontract = creatLockTimecontract( _refundAddress, _redeemAddress, lockTime );
     const initiatecontract = lockTimecontractTransaction ( {
