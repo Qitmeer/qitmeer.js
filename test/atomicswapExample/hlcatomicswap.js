@@ -1,6 +1,6 @@
 var qitmeerJs = require('../../src')
 var { hexToTime, timeToHex } = require('./tools/union')
-var randomBytes = require('./node_modules/randombytes')
+var randomBytes = require('randombytes')
 
 /**
  * @param num number
@@ -58,6 +58,7 @@ function lockTimeOpScript( secretHash, _redeempublikeyHash, _refundPublikeyHash,
         lockTime,
         'OP_CHECKLOCKTIMEVERIFY',
         'OP_DROP',
+        'OP_DUP',
         'OP_HASH160',
         _refundPublikeyHash,
         'OP_ENDIF',
