@@ -60,6 +60,6 @@ const bytesToNum = function(bytes) {
 
 
 const hexToTime = hex => bytesToNum(hex.match(/(..)/g).map( v => parseInt( v,16 ) ))
-const timeToHex = num => numToByteArray(num).map( v => DectoHex(v).substring(2)).join('')*1
+const timeToHex = num => numToByteArray(num).map( v => DectoHex(v).substring(2)).join('')
 
 module.exports = { hexToTime, timeToHex }
