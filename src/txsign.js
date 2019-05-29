@@ -27,7 +27,7 @@ TxSigner.prototype.setVersion = function (version) {
   this.__tx.version = version
 }
 
-TxSigner.prototype.addInput = function (txHash, vout, options) {
+TxSigner.prototype.addInput = function (txHash, vout, options = {} ) {
   typecheck(types.Hex32, txHash)
   typecheck(types.UInt32, vout)
 
@@ -49,7 +49,7 @@ TxSigner.prototype.addInput = function (txHash, vout, options) {
     prevOutScript: options && options.prevOutScript
   })
 
-  this.__tx.addInput(hash, vout)
+  this.__tx.addInput( hash, vout, options.sequence )
 }
 
 TxSigner.prototype.addOutput = function (address, amount) {
@@ -76,7 +76,6 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
     const hash = cypto.hash160(ourPubKey)
     input.prevOutScript = Script.Output.P2PKH(hash)
   }
-
   // signHash
   const signHash = this.__tx.hashForSignature(vin, input.prevOutScript, hashType)
   const signature = keyPair.sign(signHash)
@@ -92,4 +91,9 @@ TxSigner.prototype.build = function () {
     tx.setInputScript(i, Script.Input.P2PKH(input.signature, input.pubkey).toBuffer())
   })
   return tx
+}
+
+
+TxSigner.prototype.getId = function () {
+  return this.__tx.getId()
 }

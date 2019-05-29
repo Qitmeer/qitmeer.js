@@ -29,7 +29,6 @@ function Nox58checkBase (checksumFn) {
     var payload = buffer.slice(0, -4)
     var checksum = buffer.slice(-4)
     var newChecksum = checksumFn(payload)
-
     if (checksum[0] ^ newChecksum[0] |
       checksum[1] ^ newChecksum[1] |
       checksum[2] ^ newChecksum[2] |

@@ -1,18 +1,10 @@
-# noxjs-lib
+# qitmeer.js
+The qitmeer JavaScript API &amp; library
 
-The NOX client-side JavaScript library
 
-
-## Install
-
-```
-npm install noxjs-lib
+## install
 
 ```
-
-## Test
-
+git clone https://github.com/HalalChain/qitmeer.js.git qitmeerJs
+cd qitmeerJs && npm i
 ```
-npm run test
-```
-

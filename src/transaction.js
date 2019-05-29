@@ -290,7 +290,6 @@ Transaction.prototype.clone = function () {
   const newTx = new Transaction()
   newTx._stype = this._stype
   newTx.version = this.version
-
   newTx.vin = this.vin.map(function (txIn) {
     return {
       txid: txIn.txid,
@@ -302,7 +301,6 @@ Transaction.prototype.clone = function () {
       script: txIn.script
     }
   })
-
   newTx.vout = this.vout.map(function (txOut) {
     return {
       amount: txOut.amount,
@@ -378,8 +376,8 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
       if (y === inIndex) return
       input.sequence = 0
     })
-  }
 
+  }
   // Serialize and Hash
   function sigHashPrefixSerializeSize (txIns, txOuts, inIndex) {
     // 1) 4 bytes version/serialization type
