@@ -281,11 +281,3 @@ module.exports = {
     initiatecontract,
     lockcontract
 } = creatLocktimeTrand();
-
-
-console.log({
-    refundecontract,
-    redeemcontract,
-    initiatecontract,
-    lockcontract
-})
