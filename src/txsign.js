@@ -19,8 +19,8 @@ function TxSigner ( network = Network.privnet ) {
   this.__tx = new Transaction()
 }
 
-TxSigner.newSigner = function () {
-  return new TxSigner()
+TxSigner.newSigner = function ( network ) {
+  return new TxSigner( network )
 }
 
 TxSigner.prototype.setVersion = function (version) {
