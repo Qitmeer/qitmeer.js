@@ -115,15 +115,14 @@ function creatRefundRaw( { _wifPrivateKey, _refundAddress , amount, locktimeTxid
     const keyPair = qitmeerJs.ec.fromWIF(_wifPrivateKey);
     const publickey = keyPair.publicKey.toString('hex')
     const txb = qitmeerJs.txsign.newSigner(); 
-    txb.locktime = lockTime
+    txb.setLockTime(lockTime)
     txb.addInput( locktimeTxid, 0 ,{
         prevOutScript: qitmeerJs.script.fromBuffer(Buffer(contractScript,'hex')),
         sequence: 0
     });
     txb.addOutput( _refundAddress, HLCunit( amount ) );
     txb.sign(0, keyPair);
-    const transaction = txb.build();
-    const transactionSign = transaction.vin[0].script.toString('hex');
+    const transactionSign = txb.__inputs[0].signature.toString('hex');
     txb.__tx.vin[0].script = qitmeerJs.script.fromAsm(refundOpScript( transactionSign, publickey, contractScript )).toBuffer()
     const newTransaction = txb.__tx.clone();
     return {
@@ -152,8 +151,7 @@ function creatRedeemRaw({ _wifPrivateKeyByRedeemAddress, _redeemAddress, amount,
     });
     txb.addOutput( _redeemAddress, HLCunit( amount ) );
     txb.sign(0, keyPair);
-    const transaction = txb.build();
-    const transactionSign = transaction.vin[0].script.toString('hex');
+    const transactionSign = txb.__inputs[0].signature.toString('hex');
     txb.__tx.vin[0].script = qitmeerJs.script.fromAsm(redeemOpScript( transactionSign, publickey, secret, contractScript )).toBuffer()
     const newTransaction = txb.__tx.clone();
     return {
@@ -174,10 +172,10 @@ function creatRedeemRaw({ _wifPrivateKeyByRedeemAddress, _redeemAddress, amount,
  */
 function creatLockTimecontract( _redeemAddress, _refundAddress, lockTime ) {
     const secret = randomBytes(32).toString('hex');
-    const secretHash = qitmeerJs.hash.ripemd160(secret).toString('hex');
+    const secretHash = qitmeerJs.hash.ripemd160( Buffer(secret, 'hex')).toString('hex');
     const _redeemlikeyHash = qitmeerJs.address.fromBase58Check(_redeemAddress).hash.toString('hex')
     const _refundPublikeyHash = qitmeerJs.address.fromBase58Check(_refundAddress).hash.toString('hex')
-    lockTime = timeToHex(new Date(lockTime));
+    lockTime = timeToHex( new Date(lockTime) / 1000 );
     const contract = lockTimeOpScript( secretHash, _refundPublikeyHash, _redeemlikeyHash, lockTime );
     const { p2shAddress, contractScript } = creatP2SHAddress(contract)
     return {
@@ -235,11 +233,11 @@ function creatLocktimeTrand() {
     const lockTime = '2019.5.25 9:00:00'
     const _wifPrivateKey = 'L4bEH6dwo2tkuD8yN3uoR5ZxQ1kNzdJneEVHV5nYhevAPfjGzsea'
     const _wifPrivateKeyByRedeemAddress = 'KxRwz4CVQGg15ADMmAePDLtWoDWtXheCbd8DCSE9yp1kQBfBhuun'
-    const _refundAddress = 'RmR2zsqYawJw4byM5qrPXsDrBAThUx545Ru'
+    const _refundAddress = 'RmCYoUMqKZopUkai2YhUFHR9UeqjeyjTAgW'
     const _redeemAddress = 'RmRYWLhtA3dkgd3vF3bEqZvsriTufMFPBRK'
     const amount = 1
     const fee = 0.0001
-    const utxo = ['1e944324c5d5664d45cd182f08278715a1bbbe354d6d233015601916a3ea66c7:2']
+    const utxo = ['8d8368f72733ed1607741902dcf54f6342e98bc0dce2fe56fe24bb6f8d9c5ba2:2']
 
     const lockcontract = creatLockTimecontract( _refundAddress, _redeemAddress, lockTime );
     const initiatecontract = lockTimecontractTransaction ( {
