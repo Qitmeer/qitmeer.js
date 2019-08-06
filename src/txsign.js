@@ -12,14 +12,15 @@ const Signature = require('./signature')
 
 module.exports = TxSigner
 
-function TxSigner () {
+function TxSigner ( network = Network.privnet ) {
   this.__version = 1
   this.__inputs = []
+  this.__network = network
   this.__tx = new Transaction()
 }
 
-TxSigner.newSigner = function () {
-  return new TxSigner()
+TxSigner.newSigner = function ( network ) {
+  return new TxSigner( network )
 }
 
 TxSigner.prototype.setVersion = function (version) {
@@ -55,7 +56,7 @@ TxSigner.prototype.addInput = function (txHash, vout, options = {} ) {
 TxSigner.prototype.addOutput = function (address, amount) {
   typecheck(types.Base58, address)
   typecheck(types.Amount, amount)
-  const scriptPubKey = addr.toOutputScript(address).toBuffer()
+  const scriptPubKey = addr.toOutputScript(address, this.__network).toBuffer()
   return this.__tx.addOutput(scriptPubKey, amount)
 }
 
