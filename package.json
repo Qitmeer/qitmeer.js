@@ -1,7 +1,7 @@
 {
-  "name": "noxjs-lib",
+  "name": "qitmeer-js",
   "version": "1.0.0",
-  "description": "NOX client-side JavaScript library",
+  "description": "Qirmeer client-side JavaScript library",
   "main": "./src/index.js",
   "scripts": {
     "test": "npm run standard && npm run unit",
@@ -10,19 +10,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dindinw/noxjs-lib.git"
+    "url": "git+https://github.com/HalalChain/qitmeer.js"
   },
   "keywords": [
-    "noxjs",
-    "noxjs-lib",
-    "nox"
+    "qitmeer.js",
+    "qitmeer-lib",
+    "qitmeer",
+    "qitmeer-js"
   ],
   "author": "dindinw",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dindinw/noxjs-lib/issues"
+    "url": "https://github.com/HalalChain/qitmeer.js/issues"
   },
-  "homepage": "https://github.com/dindinw/noxjs-lib#readme",
+  "homepage": "https://github.com/HalalChain/qitmeer.js#readme",
   "devDependencies": {
     "bs58": "^4.0.1",
     "mocha": "^5.2.0",
@@ -36,5 +37,7 @@
     "randombytes": "^2.0.6",
     "tiny-secp256k1": "^1.0.1",
     "varuint-bitcoin": "^1.1.0"
-  }
+  },
+  "_from": "qitmeer-js@1.0.0",
+  "_resolved": "https://registry.npm.taobao.org/qitmeer-js/download/qitmeer-js-1.0.0.tgz"
 }
