@@ -154,7 +154,7 @@ Transaction.prototype.byteLength = function (stype) {
     (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
-    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + 8 + 4 + 4 + varSliceSize(input.script) }, 0) : 0)
+    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + varSliceSize(input.script) }, 0) : 0)
   // amountin + blockheight + txindex + script
   return length
 }
@@ -164,7 +164,6 @@ Transaction.prototype.toHex = function () {
 }
 Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength(stype))
-
   let offset = initialOffset || 0
 
   function writeSlice (slice) { offset += slice.copy(buffer, offset) }
@@ -218,9 +217,9 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   if (serializeType !== Transaction.TxSerializeNoWitness) {
     writeVarInt(this.vin.length)
     this.vin.forEach(function (input) {
-      writeUInt64(input.amountin)
-      writeUInt32(input.blockheight)
-      writeUInt32(input.txindex)
+      // writeUInt64(input.amountin)
+      // writeUInt32(input.blockheight)
+      // writeUInt32(input.txindex)
       writeVarSlice(input.script)
     })
   }
