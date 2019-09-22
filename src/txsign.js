@@ -23,6 +23,21 @@ TxSigner.newSigner = function ( network ) {
   return new TxSigner( network )
 }
 
+TxSigner.prototype.setLockTime = function (locktime) {
+  typecheck(types.UInt32, locktime)
+
+  // if any signatures exist, throw
+  if (this.__inputs.some(function (input) {
+    if (!input.signatures) return false
+
+    return input.signatures.some(function (s) { return s })
+  })) {
+    throw new Error('No, this would invalidate signatures')
+  }
+
+  this.__tx.locktime = locktime
+}
+
 TxSigner.prototype.setVersion = function (version) {
   typecheck(types.UInt32, version)
   this.__tx.version = version
@@ -68,7 +83,6 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
   }
   // default hashType is SIGHASH_ALL
   hashType = hashType || Transaction.SIGHASH_ALL
-
   // public key
   const ourPubKey = keyPair.publicKey || keyPair.getPublicKey()
 
@@ -80,7 +94,7 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
   // signHash
   const signHash = this.__tx.hashForSignature(vin, input.prevOutScript, hashType)
   const signature = keyPair.sign(signHash)
-
+  
   // signature
   input.signature = Signature.encode(signature, hashType)
   input.pubkey = ourPubKey
