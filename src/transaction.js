@@ -124,9 +124,9 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     vinLen = witnessLen
   }
   for (i = 0; i < vinLen; ++i) {
-    tx.vin[i].amountin = hasWitnesses ? readUInt64() : 0
-    tx.vin[i].blockheight = hasWitnesses ? readUInt32() : 0
-    tx.vin[i].txindex = hasWitnesses ? readUInt32() : 0
+    // tx.vin[i].amountin = hasWitnesses ? readUInt64() : 0
+    // tx.vin[i].blockheight = hasWitnesses ? readUInt32() : 0
+    // tx.vin[i].txindex = hasWitnesses ? readUInt32() : 0
     tx.vin[i].script = hasWitnesses ? readVarSlice() : Buffer.from('', 'hex')
   }
 
