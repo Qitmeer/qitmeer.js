@@ -228,24 +228,23 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   return buffer
 }
 
-Transaction.prototype.getHash = function () {
+
+Transaction.prototype.getTxIdBuffer = function () {
   return hash.dblake2b256(this.toBuffer(undefined, undefined, Transaction.TxSerializeNoWitness))
 }
 
-Transaction.prototype.getId = function () {
+Transaction.prototype.getTxId = function () {
   // transaction hash's are displayed in reverse order
   return this.getHash().reverse().toString('hex')
 }
 
-Transaction.prototype.getHashFull = function () {
-  const prefixHash = this.getHash()
-  const witnessHash = hash.dblake2b256(this.toBuffer(undefined, undefined, Transaction.TxSerializeOnlyWitness))
-  return hash.dblake2b256(Buffer.concat([prefixHash, witnessHash]))
+Transaction.prototype.getTxHash = function () {
+  return this.getHashBuffer().reverse().toString('hex')
 }
 
-Transaction.prototype.getHashFullId = function () {
+Transaction.prototype.getHashBuffer = function () {
   // transaction hash's are displayed in reverse order
-  return this.getHashFull().reverse().toString('hex')
+  return hash.dblake2b256(Buffer.concat([this.toBuffer(undefined, undefined, Transaction.TxSerializeFull)]))
 }
 
 Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
