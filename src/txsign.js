@@ -9,6 +9,7 @@ const SCRIPT_TYPE = Script.types
 const addr = require('./address')
 const cypto = require('./hash')
 const Signature = require('./signature')
+const Network = require('./networks')
 
 module.exports = TxSigner
 
