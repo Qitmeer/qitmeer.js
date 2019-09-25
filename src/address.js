@@ -1,9 +1,9 @@
-// Copyright 2017-2018 The nox developers
+// Copyright 2017-2018 The qitmeer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
 const Buffer = require('safe-buffer').Buffer
-const nox58check = require('./nox58check').default
+const qitmeer58check = require('./qitmeer58check').default
 const Network = require('./networks')
 const Script = require('./script')
 const types = require('./types')
@@ -16,7 +16,7 @@ module.exports = {
 }
 
 function fromBase58Check (address) {
-  const payload = nox58check.decode(address)
+  const payload = qitmeer58check.decode(address)
   if (payload.length < 22) throw new TypeError(address + ' is too short')
   if (payload.length > 22) throw new TypeError(address + ' is too long')
 
@@ -31,7 +31,7 @@ function toBase58Check (hash, version) {
   const payload = Buffer.allocUnsafe(22)
   payload.writeUInt16BE(version, 0)
   hash.copy(payload, 2)
-  return nox58check.encode(payload)
+  return qitmeer58check.encode(payload)
 }
 
 function toOutputScript (address, network) {
