@@ -44,7 +44,7 @@ const privte = 'd7e11af4918fbefaa21fdc49d531099c6b30cc30e19560fe8a337a467b00ab93
 
     // get raw Tx
     const rawTx = txsnr.build()//.toBuffer()
-    console.log ( rawTx.getHashFullId().toString('hex'), rawTx.toBuffer().toString('hex') )
+    console.log ( rawTx.getTxHash(), rawTx.toBuffer().toString('hex') )
 // return
     // const txra = '01000000010ce5c5a80d3f20d07fe6715832845eca4ad3f7febd70951362c7e91f37ff0d5c02000000ffffffff0200b89a3e0a0000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac0000000000000000016a473044022061e957624fc53e9be6217845ed9c7251c04de33fd5143dab84e73c27193effe40220231ba5e6365277af20d41e8e08413147247070b7022f0cbbe9cbb35dc16e24d8012102abb13cd5260d3e9f8bc3db8687147ace7b6e5b63b061afe37d09a8e4550cd174'
     const txra =  rawTx.toBuffer().toString('hex')
