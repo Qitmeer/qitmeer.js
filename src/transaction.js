@@ -154,7 +154,9 @@ Transaction.prototype.byteLength = function (stype) {
     (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
-    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + varSliceSize(input.script) }, 0) : 0)
+    (hasWitnesses ? this.vin.reduce(function (sum, input) { 
+      return sum + ( Buffer.from( '0000', 'hex' ).compare( input.script ) === 0 ? 1 : varSliceSize(input.script) )
+    }, 0) : 0)
   // amountin + blockheight + txindex + script
   return length
 }
@@ -163,7 +165,7 @@ Transaction.prototype.toHex = function () {
   return this.toBuffer().toString('hex')
 }
 Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
-  if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength(stype))
+  if (!buffer) buffer = Buffer.alloc(this.byteLength(stype))
   let offset = initialOffset || 0
 
   function writeSlice (slice) { offset += slice.copy(buffer, offset) }
@@ -220,7 +222,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
       // writeUInt64(input.amountin)
       // writeUInt32(input.blockheight)
       // writeUInt32(input.txindex)
-      writeVarSlice(input.script)
+      Buffer.from('0000','hex').compare( input.script ) !== 0?writeVarSlice(input.script):''
     })
   }
   // avoid slicing unless necessary
@@ -239,10 +241,10 @@ Transaction.prototype.getTxId = function () {
 }
 
 Transaction.prototype.getTxHash = function () {
-  return this.getHashBuffer().reverse().toString('hex')
+  return this.getTxHashBuffer().reverse().toString('hex')
 }
 
-Transaction.prototype.getHashBuffer = function () {
+Transaction.prototype.getTxHashBuffer = function () {
   // transaction hash's are displayed in reverse order
   return hash.dblake2b256(Buffer.concat([this.toBuffer(undefined, undefined, Transaction.TxSerializeFull)]))
 }

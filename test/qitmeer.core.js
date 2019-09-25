@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-const { describe, it } = require('mocha')
+// const { describe, it } = require('mocha')
 const assert = require('assert')
 const base58 = require('bs58')
 const qitmeer = require('../src')
@@ -237,7 +237,7 @@ describe('qitmeer-core', function () {
       it('getHash', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.deepStrictEqual(tx.toBuffer(undefined, undefined, qitmeer.tx.TxSerializeNoWitness), Buffer.from(data.TX.nowitness.hex, 'hex'))
-        assert.deepStrictEqual(tx.getHash().reverse(), Buffer.from(data.TX.nowitness.tx.txid, 'hex'))
+        assert.deepStrictEqual(tx.getTxHashBuffer(), Buffer.from(data.TX.nowitness.tx.txid, 'hex'))
       })
       it('getId ' + data.TX.nowitness.tx.txid, function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
