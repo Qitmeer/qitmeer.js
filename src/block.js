@@ -88,7 +88,7 @@ Block.fromBuffer = function (buffer) {
 
 Block.prototype.byteLength = function (headersOnly) {
   if (headersOnly || !this.transactions) return BlockHeaderSize
-
+  console.log  ( this.transactions.length )
   return BlockHeaderSize + varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
     return a + x.byteLength()
   }, 0)

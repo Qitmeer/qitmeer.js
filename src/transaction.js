@@ -29,7 +29,6 @@ Transaction.SIGHASH_ANYONECANPAY = 0x80
 const SigHashMask = 0x1f
 const SigHashSerializePrefix = 1
 const SigHashSerializeWitness = 3
-
 const EMPTY_SCRIPT = Buffer.allocUnsafe(0)
 const BLANK_OUTPUT = {
   amount: 0,
@@ -295,9 +294,9 @@ Transaction.prototype.clone = function () {
       txid: txIn.txid,
       vout: txIn.vout,
       sequence: txIn.sequence,
-      amountin: txIn.amountin || 0,
-      blockheight: txIn.blockheight || 0,
-      txindex: txIn.txindex || 0,
+      // amountin: txIn.amountin || 0,
+      // blockheight: txIn.blockheight || 0,
+      // txindex: txIn.txindex || 0,
       script: txIn.script
     }
   })

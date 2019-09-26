@@ -234,14 +234,14 @@ describe('qitmeer-core', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.strictEqual(tx.byteLength(), Buffer.from(data.TX.nowitness.hex, 'hex').length)
       })
-      it('getHash', function () {
+      it('getTxHash', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
-        assert.deepStrictEqual(tx.toBuffer(undefined, undefined, qitmeer.tx.TxSerializeNoWitness), Buffer.from(data.TX.nowitness.hex, 'hex'))
-        assert.deepStrictEqual(tx.getTxHashBuffer(), Buffer.from(data.TX.nowitness.tx.txid, 'hex'))
+        assert.deepStrictEqual(tx.toBuffer(), Buffer.from(data.TX.nowitness.hex, 'hex'), 'nowitness')
+        assert.deepStrictEqual(tx.getTxIdBuffer().reverse(), Buffer.from(data.TX.nowitness.tx.txid, 'hex'))
       })
-      it('getId ' + data.TX.nowitness.tx.txid, function () {
+      it('getTxId ' + data.TX.nowitness.tx.txid, function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
-        assert.strictEqual(tx.getId(), data.TX.nowitness.tx.txid)
+        assert.strictEqual(tx.getTxId(), data.TX.nowitness.tx.txid)
       })
       it('clone', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
@@ -261,10 +261,10 @@ describe('qitmeer-core', function () {
         })
         assert.strictEqual(tx.locktime, txClone.locktime)
         assert.strictEqual(tx.exprie, txClone.exprie)
-        assert.strictEqual(tx.getId(), txClone.getId())
-        assert.deepStrictEqual(tx.getHash(), txClone.getHash())
-        assert.strictEqual(tx.getHashFullId(), txClone.getHashFullId())
-        assert.deepStrictEqual(tx.getHashFull(), txClone.getHashFull())
+        assert.deepStrictEqual(tx.getTxHash(), txClone.getTxHash())
+        assert.strictEqual(tx.getTxId(), txClone.getTxId())
+        assert.deepStrictEqual(tx.getTxIdBuffer(), txClone.getTxIdBuffer())
+        assert.deepStrictEqual(tx.getTxHashBuffer(), txClone.getTxHashBuffer())
       })
     })
     describe('full witness', function () {
@@ -276,9 +276,9 @@ describe('qitmeer-core', function () {
           assert.strictEqual(vin.txid.reverse().toString('hex'), data.TX.witness.tx.vin[index].txid)
           assert.strictEqual(vin.vout, data.TX.witness.tx.vin[index].vout)
           assert.strictEqual(vin.sequence, data.TX.witness.tx.vin[index].sequence)
-          assert.strictEqual(vin.amountin, data.TX.witness.tx.vin[index].amountin)
-          assert.strictEqual(vin.blockheight, data.TX.witness.tx.vin[index].blockheight)
-          assert.strictEqual(vin.txindex, data.TX.witness.tx.vin[index].txindex)
+          // assert.strictEqual(vin.amountin, data.TX.witness.tx.vin[index].amountin)
+          // assert.strictEqual(vin.blockheight, data.TX.witness.tx.vin[index].blockheight)
+          // assert.strictEqual(vin.txindex, data.TX.witness.tx.vin[index].txindex)
           assert.deepStrictEqual(vin.script, Buffer.from(data.TX.witness.tx.vin[index].scriptSig.hex, 'hex'))
           assert.strictEqual(106, vin.script.length)
         })
@@ -299,19 +299,19 @@ describe('qitmeer-core', function () {
       it('getHash', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.deepStrictEqual(tx.toBuffer(undefined, undefined, qitmeer.tx.TxSerializeWitness), Buffer.from(data.TX.witness.hex, 'hex'))
-        assert.deepStrictEqual(tx.getHash().reverse(), Buffer.from(data.TX.witness.tx.txid, 'hex'))
+        assert.deepStrictEqual(tx.getTxIdBuffer().reverse(), Buffer.from(data.TX.witness.tx.txid, 'hex'))
       })
-      it('getId ' + data.TX.witness.tx.txid, function () {
+      it('getTxId ' + data.TX.witness.tx.txid, function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
-        assert.strictEqual(tx.getId(), data.TX.witness.tx.txid)
+        assert.strictEqual(tx.getTxId(), data.TX.witness.tx.txid)
       })
-      it('getHashFull ', function () {
+      it('getTxIdBuffer', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
-        assert.deepStrictEqual(tx.getHashFull().reverse(), Buffer.from(data.TX.witness.tx.txhash, 'hex'))
+        assert.deepStrictEqual(tx.getTxIdBuffer().reverse(), Buffer.from(data.TX.witness.tx.txid, 'hex'))
       })
-      it('getHsahFullId ' + data.TX.witness.tx.txhash, function () {
+      it('getTxHashBuffer' + data.TX.witness.tx.txhash, function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
-        assert.strictEqual(tx.getHashFullId(), data.TX.witness.tx.txhash)
+        assert.deepStrictEqual(tx.getTxHashBuffer().reverse(), Buffer.from(data.TX.witness.tx.txhash,'hex'))
       })
       it('clone', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
@@ -331,10 +331,10 @@ describe('qitmeer-core', function () {
         })
         assert.strictEqual(tx.locktime, txClone.locktime)
         assert.strictEqual(tx.exprie, txClone.exprie)
-        assert.strictEqual(tx.getId(), txClone.getId())
-        assert.deepStrictEqual(tx.getHash(), txClone.getHash())
-        assert.strictEqual(tx.getHashFullId(), txClone.getHashFullId())
-        assert.deepStrictEqual(tx.getHashFull(), txClone.getHashFull())
+        assert.deepStrictEqual(tx.getTxHash(), txClone.getTxHash())
+        assert.strictEqual(tx.getTxId(), txClone.getTxId())
+        assert.deepStrictEqual(tx.getTxIdBuffer(), txClone.getTxIdBuffer())
+        assert.deepStrictEqual(tx.getTxHashBuffer(), txClone.getTxHashBuffer())
       })
     })
     describe('two inputs', function () {
@@ -355,7 +355,7 @@ describe('qitmeer-core', function () {
       data.SignHashTest.forEach(function (f) {
         it('hashForSignature ' + f.signHash, function () {
           const mytx = qitmeer.tx.fromBuffer(Buffer.from(f.txHex, 'hex'))
-          assert.strictEqual(mytx.getId(), f.txId)
+          assert.strictEqual(mytx.getTxId(), f.txId)
           const preScript = qitmeer.script.fromBuffer(Buffer.from(f.prvScriptHex, 'hex'))
           assert.strictEqual(preScript.toAsm(), f.prvScriptAsm)
           const signHash = mytx.hashForSignature(0, preScript, qitmeer.tx.SIGHASH_ALL)
@@ -385,9 +385,9 @@ describe('qitmeer-core', function () {
             // assert.strictEqual(vin.txid.reverse().toString('hex'), data.Block.json.transactions[index].vin[j].txid)
             // assert.strictEqual(vin.vout, data.Block.json.transactions[index].vin[j].vout)
             assert.strictEqual(vin.sequence, data.Block.json.transactions[index].vin[i].sequence)
-            assert.strictEqual(vin.amountin, data.Block.json.transactions[index].vin[i].amountin)
-            assert.strictEqual(vin.blockheight, data.Block.json.transactions[index].vin[i].blockheight)
-            assert.strictEqual(vin.txindex, data.Block.json.transactions[index].vin[i].txindex)
+            // assert.strictEqual(vin.amountin, data.Block.json.transactions[index].vin[i].amountin)
+            // assert.strictEqual(vin.blockheight, data.Block.json.transactions[index].vin[i].blockheight)
+            // assert.strictEqual(vin.txindex, data.Block.json.transactions[index].vin[i].txindex)
           })
           assert.strictEqual(tx.vout.length, data.Block.json.transactions[index].vout.length)
           tx.vout.forEach(function (vout, i) {
