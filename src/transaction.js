@@ -153,8 +153,8 @@ Transaction.prototype.byteLength = function (stype) {
     (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
-    (hasWitnesses ? this.vin.reduce(function (sum, input) { 
-      return sum + ( Buffer.from( '0000', 'hex' ).compare( input.script ) === 0 ? 1 : varSliceSize(input.script) )
+    (hasWitnesses ? this.vin.reduce(function (sum, input) {
+      return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script))
     }, 0) : 0)
   // amountin + blockheight + txindex + script
   return length
@@ -221,14 +221,13 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
       // writeUInt64(input.amountin)
       // writeUInt32(input.blockheight)
       // writeUInt32(input.txindex)
-      Buffer.from('0000','hex').compare( input.script ) !== 0?writeVarSlice(input.script):''
+      Buffer.alloc(2).compare(input.script) !== 0 ? writeVarSlice(input.script) : ''
     })
   }
   // avoid slicing unless necessary
   if (initialOffset !== undefined) return buffer.slice(initialOffset, offset)
   return buffer
 }
-
 
 Transaction.prototype.getTxIdBuffer = function () {
   return hash.dblake2b256(this.toBuffer(undefined, undefined, Transaction.TxSerializeNoWitness))
@@ -375,7 +374,6 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
       if (y === inIndex) return
       input.sequence = 0
     })
-
   }
   // Serialize and Hash
   function sigHashPrefixSerializeSize (txIns, txOuts, inIndex) {

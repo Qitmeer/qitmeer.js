@@ -11,6 +11,7 @@ module.exports = Block
 
 // version + parentRoot + txRoot + stateRoot + difficulty + height + timestamp + nonce
 // 124 = 4 + 32 + 32 + 32 + 4 + 8 + 4 + 8
+
 const BlockHeaderSize = 124
 
 function Block () {
@@ -88,7 +89,6 @@ Block.fromBuffer = function (buffer) {
 
 Block.prototype.byteLength = function (headersOnly) {
   if (headersOnly || !this.transactions) return BlockHeaderSize
-  console.log  ( this.transactions.length )
   return BlockHeaderSize + varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
     return a + x.byteLength()
   }, 0)

@@ -38,8 +38,8 @@ function toOutputScript (address, network) {
   network = network || Network.privnet
   const decode = fromBase58Check(address)
   if (decode) {
-    if ( decode.version === network.pubKeyHashAddrId ) return Script.Output.P2PKH(decode.hash)
-    if ( decode.version === network.ScriptHashAddrID ) return Script.Output.P2SH(decode.hash)
+    if (decode.version === network.pubKeyHashAddrId) return Script.Output.P2PKH(decode.hash)
+    if (decode.version === network.ScriptHashAddrID) return Script.Output.P2SH(decode.hash)
     throw Error('Unknown version ' + decode.version)
   }
   throw Error('fail to base58check decode ' + address)

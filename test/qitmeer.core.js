@@ -311,7 +311,7 @@ describe('qitmeer-core', function () {
       })
       it('getTxHashBuffer' + data.TX.witness.tx.txhash, function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
-        assert.deepStrictEqual(tx.getTxHashBuffer().reverse(), Buffer.from(data.TX.witness.tx.txhash,'hex'))
+        assert.deepStrictEqual(tx.getTxHashBuffer().reverse(), Buffer.from(data.TX.witness.tx.txhash, 'hex'))
       })
       it('clone', function () {
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
