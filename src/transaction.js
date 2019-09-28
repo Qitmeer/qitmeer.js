@@ -221,7 +221,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
       // writeUInt64(input.amountin)
       // writeUInt32(input.blockheight)
       // writeUInt32(input.txindex)
-      Buffer.alloc(2).compare(input.script) !== 0 ? writeVarSlice(input.script) : ''
+      if (Buffer.alloc(2).compare(input.script) !== 0) writeVarSlice(input.script)
     })
   }
   // avoid slicing unless necessary

@@ -69,7 +69,7 @@ Block.fromBuffer = function (buffer) {
 
   // block.nonce > 2^53-1
   const nonceBuffer = readSlice(8)
-  block.nonce = new Bignumber( nonceBuffer.reverse() ).toString()
+  block.nonce = new Bignumber(nonceBuffer.reverse()).toString()
 
   if (buffer.length === BlockHeaderSize) return block
 
@@ -80,8 +80,8 @@ Block.fromBuffer = function (buffer) {
   }
 
   // parents
-  const parentsLength = readVarInt ()
-  
+  const parentsLength = readVarInt()
+
   for (let i = 0; i < parentsLength; ++i) {
     const parent = readSlice(32)
     block.parents.push(parent.reverse().toString('hex'))
@@ -155,12 +155,12 @@ Block.prototype.toBuffer = function (headersOnly) {
   if (headersOnly || !this.transactions) return buffer
 
   // parents
-  writeVarInt (this.parents.length)
-  this.parents.forEach( function (parent) {
-    writeSlice( Buffer.from(parent,'hex').reverse() )
+  writeVarInt(this.parents.length)
+  this.parents.forEach(function (parent) {
+    writeSlice(Buffer.from(parent, 'hex').reverse())
   })
 
-  writeVarInt (this.transactions.length)
+  writeVarInt(this.transactions.length)
 
   this.transactions.forEach(function (tx) {
     const txSize = tx.byteLength() // TODO: extract from toBuffer?

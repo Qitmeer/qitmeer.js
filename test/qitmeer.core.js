@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-// const { describe, it } = require('mocha')
+const { describe, it } = require('mocha')
 const assert = require('assert')
 const base58 = require('bs58')
 const qitmeer = require('../src')
