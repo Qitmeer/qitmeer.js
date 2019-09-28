@@ -442,7 +442,7 @@ describe('qitmeer-core', function () {
       it('calculate txRoot, multi tx', function () {
         const block = qitmeer.block.fromBuffer(Buffer.from(data.BlockMultipleTx.hex, 'hex'))
         const txInBlock = block.transactions
-        assert.strictEqual(3, txInBlock.length)
+        assert.strictEqual(2, txInBlock.length)
         txInBlock.forEach(function (tx, i) {
           assert.strictEqual(tx.getTxId(), data.BlockMultipleTx.json.transactions[i].txid)
           assert.strictEqual(tx.getTxHash(), data.BlockMultipleTx.json.transactions[i].txhash)

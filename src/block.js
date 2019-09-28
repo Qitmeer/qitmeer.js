@@ -27,6 +27,7 @@ function Block () {
   this.timestamp = 0
   this.nonce = 0
   this.transactions = []
+  this.parents = []
 }
 
 Block.fromBuffer = function (buffer) {
@@ -96,9 +97,12 @@ Block.fromBuffer = function (buffer) {
 
 Block.prototype.byteLength = function (headersOnly) {
   if (headersOnly || !this.transactions) return BlockHeaderSize
-  return BlockHeaderSize + varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
+  const transactionsLenth = varuint.encodingLength(this.transactions.length)
+  const transactionsByteLength = this.transactions.reduce(function (a, x) {
     return a + x.byteLength()
   }, 0)
+  const parentsLenth = varuint.encodingLength(this.parents.length) + this.parents.length * 32
+  return BlockHeaderSize + transactionsLenth + transactionsByteLength + parentsLenth
 }
 
 Block.prototype.toBuffer = function (headersOnly) {
@@ -121,6 +125,10 @@ Block.prototype.toBuffer = function (headersOnly) {
     utils.writeUInt64LE(buffer, i, offset)
     offset += 8
   }
+  function writeVarInt (i) {
+    varuint.encode(i, buffer, offset)
+    offset += varuint.encode.bytes
+  }
 
   writeInt32(this.version)
   writeSlice(this.parentRoot)
@@ -136,11 +144,15 @@ Block.prototype.toBuffer = function (headersOnly) {
   typecheck(types.Number, Number(this.nonce))
   const nonce = Bignumber(this.nonce)
   writeSlice(Buffer.from(nonce.toString(16),'hex').reverse())
-
   if (headersOnly || !this.transactions) return buffer
 
-  varuint.encode(this.transactions.length, buffer, offset)
-  offset += varuint.encode.bytes
+  // parents
+  writeVarInt (this.parents.length)
+  this.parents.forEach( function (parent) {
+    writeSlice( Buffer.from(parent,'hex').reverse() )
+  })
+
+  writeVarInt (this.transactions.length)
 
   this.transactions.forEach(function (tx) {
     const txSize = tx.byteLength() // TODO: extract from toBuffer?
