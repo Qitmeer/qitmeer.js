@@ -368,10 +368,6 @@ describe('qitmeer-core', function () {
     describe('test block', function () {
       it('fromBuffer', function () {
         const block = qitmeer.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-        console.log (
-          block,
-          block.nonce
-        )
         assert.strictEqual(block.version, data.Block.json.version)
         assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentRoot)
         assert.strictEqual(block.txRoot.reverse().toString('hex'), data.Block.json.txRoot)
@@ -379,8 +375,7 @@ describe('qitmeer-core', function () {
         assert.strictEqual(block.difficulty, data.Block.json.difficulty)
         assert.strictEqual(block.height, data.Block.json.height)
         assert.strictEqual(block.timestamp, Math.round(new Date(data.Block.json.timestamp).getTime() / 1000))
-        assert.strictEqual(block.nonce.toString(10), data.Block.json.nonce)
-
+        assert.strictEqual(block.nonce, data.Block.json.nonce)
         assert.strictEqual(block.transactions.length, data.Block.json.transactions.length)
         block.transactions.forEach(function (tx, index) {
           assert.strictEqual(tx.version, data.Block.json.transactions[index].version)
@@ -415,13 +410,13 @@ describe('qitmeer-core', function () {
         const block = qitmeer.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
         assert.deepStrictEqual(block.toBuffer(false), Buffer.from(data.Block.hex, 'hex'))
       })
-      it('getHash', function () {
+      it('getHashBuffer', function () {
         const block = qitmeer.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-        assert.deepStrictEqual(block.getHash(), Buffer.from(data.Block.json.hash, 'hex').reverse())
+        assert.deepStrictEqual(block.getHashBuffer(), Buffer.from(data.Block.json.hash, 'hex').reverse())
       })
-      it('getId ' + data.Block.json.hash, function () {
+      it('getHash ' + data.Block.json.hash, function () {
         const block = qitmeer.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
-        assert.strictEqual(block.getId(), data.Block.json.hash)
+        assert.strictEqual(block.getHash(), data.Block.json.hash)
       })
     })
     describe('tx in block', function () {
@@ -429,11 +424,11 @@ describe('qitmeer-core', function () {
       block.transactions.forEach(function (tx, index) {
         const txid = data.Block.json.transactions[index].txid
         it('txid ' + txid, function () {
-          assert.strictEqual(tx.getId(), txid)
+          assert.strictEqual(tx.getTxId(), txid)
         })
         const fullhash = data.Block.json.transactions[index].txhash
-        it('txfullhash ' + fullhash, function () {
-          assert.strictEqual(tx.getHashFullId(), fullhash)
+        it('txhash ' + fullhash, function () {
+          assert.strictEqual(tx.getTxHash(), fullhash)
         })
       })
     })
@@ -449,8 +444,8 @@ describe('qitmeer-core', function () {
         const txInBlock = block.transactions
         assert.strictEqual(3, txInBlock.length)
         txInBlock.forEach(function (tx, i) {
-          assert.strictEqual(tx.getId(), data.BlockMultipleTx.json.transactions[i].txid)
-          assert.strictEqual(tx.getHashFullId(), data.BlockMultipleTx.json.transactions[i].txhash)
+          assert.strictEqual(tx.getTxId(), data.BlockMultipleTx.json.transactions[i].txid)
+          assert.strictEqual(tx.getTxHash(), data.BlockMultipleTx.json.transactions[i].txhash)
         })
         assert.deepStrictEqual(qitmeer.block.calculateTxRoot(txInBlock), Buffer.from(data.BlockMultipleTx.json.txRoot, 'hex').reverse())
       })

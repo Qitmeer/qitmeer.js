@@ -135,7 +135,7 @@ Block.prototype.toBuffer = function (headersOnly) {
   typecheck(types.String, this.nonce)
   typecheck(types.Number, Number(this.nonce))
   const nonce = Bignumber(this.nonce)
-  writeSlice(Buffer.from(nonce.toString(16),'hex'))
+  writeSlice(Buffer.from(nonce.toString(16),'hex').reverse())
 
   if (headersOnly || !this.transactions) return buffer
 
@@ -163,7 +163,7 @@ Block.calculateTxRoot = function (transactions) {
   if (transactions.length === 0) throw TypeError('Cannot compute merkle root for zero transactions')
 
   const hashes = transactions.map(function (transaction) {
-    return transaction.getHashFull()
+    return transaction.getTxHash()
   })
 
   return fastMerkleRoot(hashes, hash.dblake2b256)
