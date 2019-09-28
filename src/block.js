@@ -163,7 +163,7 @@ Block.calculateTxRoot = function (transactions) {
   if (transactions.length === 0) throw TypeError('Cannot compute merkle root for zero transactions')
 
   const hashes = transactions.map(function (transaction) {
-    return transaction.getTxHash()
+    return transaction.getTxIdBuffer()
   })
 
   return fastMerkleRoot(hashes, hash.dblake2b256)
