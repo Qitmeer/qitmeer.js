@@ -152,7 +152,7 @@ const privte = 'd7e11af4918fbefaa21fdc49d531099c6b30cc30e19560fe8a337a467b00ab93
 const data = require('./data/qitmeer.core/core.json')
 const BigNmuber = require('bignumber.js')
 !(function () {
-  const blockdata = data.Block.json
+  const blockdata = data.BlockMultipleTx.json
   const block = new qitmeer.block()
   // block.version = blockdata.version
   // Object.keys(block).map( k => {
@@ -175,12 +175,13 @@ const BigNmuber = require('bignumber.js')
     block
   )
   console.log(
-    BigNmuber( (blockdata.nonce) ).toString(16),
-    block.toBuffer().toString('hex'),
-    qitmeer.block.fromBuffer(Buffer.from('08000000780f1b5426ca177cc0d028772e9e1b02e20b2bd10f7d564cb15ab601000000009a9b31f63c232d819a52da7207f557b41bdf17b9c28207491a4f2487360ddd6a000000000000000000000000000000000000000000000000000000000000000037fd061cb4140000000000000c358a5d00000000f9339f9ff209150f', 'hex')),
+    blockdata.nonce,
+    BigNmuber( (blockdata.nonce) ).toString(),
+    block.toBuffer(true).toString('hex'),
+    // qitmeer.block.fromBuffer(Buffer.from('08000000780f1b5426ca177cc0d028772e9e1b02e20b2bd10f7d564cb15ab601000000009a9b31f63c232d819a52da7207f557b41bdf17b9c28207491a4f2487360ddd6a000000000000000000000000000000000000000000000000000000000000000037fd061cb4140000000000000c358a5d00000000f9339f9ff209150f', 'hex')),
     block.getHash(),
-    Buffer.from( '571f18021df012e9', 'hex').toString('hex'),
-    BigNmuber('0x'+Buffer.from( '571f18021df012e9', 'hex').toString('hex'))
+    Buffer.from( BigNmuber( (blockdata.nonce) ).toString(16), 'hex').toString('hex'),
+    BigNmuber('0x'+Buffer.from( '0f1509f29f9f33f9', 'hex').toString('hex'))
 
   )
   // for ( let i in blcok) {

@@ -6,9 +6,9 @@ const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
 const hash = require('./hash')
 const fastMerkleRoot = require('merkle-lib/fastRoot')
-const Bignumber = require('bignumber.js')
 const types = require('./types')
 const typecheck = require('./typecheck')
+const Bignumber = require('bn.js')
 
 module.exports = Block
 
@@ -142,8 +142,9 @@ Block.prototype.toBuffer = function (headersOnly) {
   // nonce > 2*53-1
   typecheck(types.String, this.nonce)
   typecheck(types.Number, Number(this.nonce))
-  const nonce = Bignumber(this.nonce)
-  writeSlice(Buffer.from(nonce.toString(16),'hex').reverse())
+  const nonce = new Bignumber(this.nonce)
+  console.log (nonce,'noncenonce' )
+  writeSlice(nonce.toBuffer().reverse())
   if (headersOnly || !this.transactions) return buffer
 
   // parents
