@@ -10,9 +10,9 @@ const fastMerkleRoot = require('merkle-lib/fastRoot')
 module.exports = Block
 
 // version + parentRoot + txRoot + stateRoot + difficulty + height + timestamp + nonce
-// 124 = 4 + 32 + 32 + 32 + 4 + 8 + 4 + 8
+// 124 = 4 + 32 + 32 + 32 + 4 + 8 + 8 + 8
 
-const BlockHeaderSize = 124
+const BlockHeaderSize = 128
 
 function Block () {
   this.version = 1
@@ -60,8 +60,9 @@ Block.fromBuffer = function (buffer) {
   block.stateRoot = readSlice(32)
   block.difficulty = readUInt32()
   block.height = readUInt64()
-  block.timestamp = readUInt32()
-  block.nonce = readUInt64()
+  block.timestamp = readUInt64()
+  // block.nonce = readUInt64()
+  block.nonce = readSlice(8)
 
   if (buffer.length === BlockHeaderSize) return block
 
@@ -121,8 +122,9 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeSlice(this.stateRoot)
   writeUInt32(this.difficulty)
   writeUInt64(this.height)
-  writeUInt32(this.timestamp)
-  writeUInt64(this.nonce)
+  writeUInt64(this.timestamp)
+  // writeUInt64(this.nonce)
+  writeSlice(this.nonce)
 
   if (headersOnly || !this.transactions) return buffer
 
