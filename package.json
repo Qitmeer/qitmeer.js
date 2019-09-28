@@ -31,7 +31,6 @@
     "standard": "^12.0.1"
   },
   "dependencies": {
-    "bignumber.js": "^9.0.0",
     "bip66": "^1.1.5",
     "blakejs": "^1.1.0",
     "bn.js": "^5.0.0",
