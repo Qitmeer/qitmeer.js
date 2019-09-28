@@ -368,14 +368,18 @@ describe('qitmeer-core', function () {
     describe('test block', function () {
       it('fromBuffer', function () {
         const block = qitmeer.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
+        console.log (
+          block,
+          block.nonce
+        )
         assert.strictEqual(block.version, data.Block.json.version)
-        assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentHash)
+        assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentRoot)
         assert.strictEqual(block.txRoot.reverse().toString('hex'), data.Block.json.txRoot)
         assert.strictEqual(block.stateRoot.reverse().toString('hex'), data.Block.json.stateRoot)
         assert.strictEqual(block.difficulty, data.Block.json.difficulty)
         assert.strictEqual(block.height, data.Block.json.height)
         assert.strictEqual(block.timestamp, Math.round(new Date(data.Block.json.timestamp).getTime() / 1000))
-        assert.strictEqual(block.nonce, data.Block.json.nonce)
+        assert.strictEqual(block.nonce.toString(10), data.Block.json.nonce)
 
         assert.strictEqual(block.transactions.length, data.Block.json.transactions.length)
         block.transactions.forEach(function (tx, index) {

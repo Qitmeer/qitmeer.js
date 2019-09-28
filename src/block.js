@@ -6,6 +6,9 @@ const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
 const hash = require('./hash')
 const fastMerkleRoot = require('merkle-lib/fastRoot')
+const Bignumber = require('bignumber.js')
+const types = require('./types')
+const typecheck = require('./typecheck')
 
 module.exports = Block
 
@@ -62,7 +65,10 @@ Block.fromBuffer = function (buffer) {
   block.height = readUInt64()
   block.timestamp = readUInt64()
   // block.nonce = readUInt64()
-  block.nonce = readSlice(8)
+
+  // block.nonce > 2^53-1
+  const nonceBuffer = readSlice(8)
+  block.nonce = Bignumber( '0x' + nonceBuffer.reverse().toString('hex') ).toString()
 
   if (buffer.length === BlockHeaderSize) return block
 
@@ -124,7 +130,12 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeUInt64(this.height)
   writeUInt64(this.timestamp)
   // writeUInt64(this.nonce)
-  writeSlice(this.nonce)
+
+  // nonce > 2*53-1
+  typecheck(types.String, this.nonce)
+  typecheck(types.Number, Number(this.nonce))
+  const nonce = Bignumber(this.nonce)
+  writeSlice(Buffer.from(nonce.toString(16),'hex'))
 
   if (headersOnly || !this.transactions) return buffer
 
@@ -140,12 +151,12 @@ Block.prototype.toBuffer = function (headersOnly) {
   return buffer
 }
 
-Block.prototype.getHash = function () {
+Block.prototype.getHashBuffer = function () {
   return hash.dblake2b256(this.toBuffer(true))
 }
 
-Block.prototype.getId = function () {
-  return this.getHash().reverse().toString('hex')
+Block.prototype.getHash = function () {
+  return this.getHashBuffer().reverse().toString('hex')
 }
 
 Block.calculateTxRoot = function (transactions) {

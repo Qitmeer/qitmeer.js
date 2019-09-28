@@ -150,6 +150,7 @@ const privte = 'd7e11af4918fbefaa21fdc49d531099c6b30cc30e19560fe8a337a467b00ab93
 
 // block
 const data = require('./data/qitmeer.core/core.json')
+const BigNmuber = require('bignumber.js')
 !(function () {
   const blockdata = data.Block.json
   const block = new qitmeer.block()
@@ -165,13 +166,17 @@ const data = require('./data/qitmeer.core/core.json')
   block.difficulty = blockdata.difficulty
   block.height = blockdata.height
   block.timestamp = new Date(blockdata.timestamp) / 1000
-  block.nonce = Buffer.from(blockdata.nonce.toString(16),'hex').reverse() // blockdata.nonce //
+  block.nonce = blockdata.nonce // blockdata.nonce //
   const transactions = qitmeer.tx.fromBuffer(Buffer.from('0100000001d8055fdc29a2eb78e9eed1adb6f3ea208f4ff907a4b64cc037df40d886d69450ffffffffffffffff0280461c86000000001976a914e2901efe76aa8604003489a176581c669d6e88dc88ac80b2e60e000000001976a914868b9b6bc7e4a9c804ad3d3d7a2a6be27476941e88ac000000000000000001510164081ecdcf84765f4e5d2067726467686e766933706f6f6c363732333431363235363334393731393833382463663239326138622d346138392d343736312d616465352d376239656261623738393539', 'hex'))
   block.transactions = [transactions]
   console.log(
-    block.nonce,
-    block.toBuffer(true).toString('hex'),
-    // qitmeer.block.fromBuffer(Buffer.from('080000000ad2492aca6d17384ae791d20ad7deccb7d67bf0f15d4c53fba067ca4d000000be1a38f4e14b7abe77b6cdd5449cd2698ada2108c7e55fc44643bb54ae1b45c60000000000000000000000000000000000000000000000000000000000000000ffff001e6400000000000000a113825d00000000e912f01d02181f57010ad2492aca6d17384ae791d20ad7deccb7d67bf0f15d4c53fba067ca4d000000010100000001d8055fdc29a2eb78e9eed1adb6f3ea208f4ff907a4b64cc037df40d886d69450ffffffffffffffff0280461c86000000001976a914e2901efe76aa8604003489a176581c669d6e88dc88ac80b2e60e000000001976a914868b9b6bc7e4a9c804ad3d3d7a2a6be27476941e88ac000000000000000001510164081ecdcf84765f4e5d2067726467686e766933706f6f6c363732333431363235363334393731393833382463663239326138622d346138392d343736312d616465352d376239656261623738393539', 'hex'))
+    BigNmuber( (blockdata.nonce) ).toString(16),
+    block.toBuffer().toString('hex'),
+    qitmeer.block.fromBuffer(Buffer.from('080000000ad2492aca6d17384ae791d20ad7deccb7d67bf0f15d4c53fba067ca4d000000be1a38f4e14b7abe77b6cdd5449cd2698ada2108c7e55fc44643bb54ae1b45c60000000000000000000000000000000000000000000000000000000000000000ffff001e6400000000000000a113825d00000000e912f01d02181f57', 'hex')),
+    block.getHash(),
+    Buffer.from( '571f18021df012e9', 'hex').toString('hex'),
+    BigNmuber('0x'+Buffer.from( '571f18021df012e9', 'hex').toString('hex'))
+
   )
   // for ( let i in blcok) {
   //     console.log  ( i )
