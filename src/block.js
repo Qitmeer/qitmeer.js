@@ -69,7 +69,7 @@ Block.fromBuffer = function (buffer) {
 
   // block.nonce > 2^53-1
   const nonceBuffer = readSlice(8)
-  block.nonce = Bignumber( '0x' + nonceBuffer.reverse().toString('hex') ).toString()
+  block.nonce = new Bignumber( nonceBuffer.reverse() ).toString()
 
   if (buffer.length === BlockHeaderSize) return block
 
@@ -77,6 +77,14 @@ Block.fromBuffer = function (buffer) {
     const vi = varuint.decode(buffer, offset)
     offset += varuint.decode.bytes
     return vi
+  }
+
+  // parents
+  const parentsLength = readVarInt ()
+  
+  for (let i = 0; i < parentsLength; ++i) {
+    const parent = readSlice(32)
+    block.parents.push(parent.reverse().toString('hex'))
   }
 
   function readTransaction () {
@@ -87,7 +95,7 @@ Block.fromBuffer = function (buffer) {
 
   const nTransactions = readVarInt()
 
-  for (var i = 0; i < nTransactions; ++i) {
+  for (let i = 0; i < nTransactions; ++i) {
     const tx = readTransaction()
     block.transactions.push(tx)
   }
@@ -143,7 +151,6 @@ Block.prototype.toBuffer = function (headersOnly) {
   typecheck(types.String, this.nonce)
   typecheck(types.Number, Number(this.nonce))
   const nonce = new Bignumber(this.nonce)
-  console.log (nonce,'noncenonce' )
   writeSlice(nonce.toBuffer().reverse())
   if (headersOnly || !this.transactions) return buffer
 

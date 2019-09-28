@@ -369,7 +369,7 @@ describe('qitmeer-core', function () {
       it('fromBuffer', function () {
         const block = qitmeer.block.fromBuffer(Buffer.from(data.Block.hex, 'hex'))
         assert.strictEqual(block.version, data.Block.json.version)
-        assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentRoot)
+        assert.strictEqual(block.parentRoot.reverse().toString('hex'), data.Block.json.parentroot)
         assert.strictEqual(block.txRoot.reverse().toString('hex'), data.Block.json.txRoot)
         assert.strictEqual(block.stateRoot.reverse().toString('hex'), data.Block.json.stateRoot)
         assert.strictEqual(block.difficulty, data.Block.json.difficulty)
