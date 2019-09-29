@@ -213,6 +213,7 @@ describe('qitmeer-core', function () {
   describe('qitmeer.tx', function () {
     describe('nowitness', function () {
       it('fromBuffer', function () {
+        // qx tx-encode -i db4d833a87b300f516a3702a3450037dc9fe9febe41a0713d8e626173c8c4c3f:2 -o RmFskNPMcPLn4KpDqYzkgwBoa5soPS2SDDH:440 -o RmQNkCr8ehRUzJhmNmgQVByv7VjakuCjc3d:9.9
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.nowitness.hex, 'hex'))
         assert.strictEqual(tx.version, data.TX.nowitness.tx.version)
         assert.strictEqual(tx.vin.length, data.TX.nowitness.tx.vin.length)
@@ -269,6 +270,7 @@ describe('qitmeer-core', function () {
     })
     describe('full witness', function () {
       it('fromBuffer', function () {
+        // qx tx-sign -k 9af3b7c0b4f19635f90a5fc722defb961ac43508c66ffe5df992e9314f2a2948 01000000013f4c8c3c1726e6d813071ae4eb9ffec97d0350342a70a316f500b3873a834ddb02000000ffffffff0200b89a3e0a0000001976a91469570a6c1fcb68db1b1c50b34960e714d42c7b9c88ac8033023b000000001976a914c693f8fbfe6836f1fb55579b427cfc4fd201495388ac00000000000000000100
         const tx = qitmeer.tx.fromBuffer(Buffer.from(data.TX.witness.hex, 'hex'))
         assert.strictEqual(tx.version, data.TX.witness.tx.version)
         assert.strictEqual(tx.vin.length, data.TX.witness.tx.vin.length)
