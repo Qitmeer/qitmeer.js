@@ -123,9 +123,6 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     vinLen = witnessLen
   }
   for (i = 0; i < vinLen; ++i) {
-    // tx.vin[i].amountin = hasWitnesses ? readUInt64() : 0
-    // tx.vin[i].blockheight = hasWitnesses ? readUInt32() : 0
-    // tx.vin[i].txindex = hasWitnesses ? readUInt32() : 0
     tx.vin[i].script = hasWitnesses ? readVarSlice() : Buffer.from('', 'hex')
   }
 
@@ -155,8 +152,7 @@ Transaction.prototype.byteLength = function (stype) {
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
     (hasWitnesses ? this.vin.reduce(function (sum, input) {
       return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script))
-    }, 0) : 0)
-  // amountin + blockheight + txindex + script
+    }, 0) : 0) // script
   return length
 }
 
@@ -218,9 +214,6 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   if (serializeType !== Transaction.TxSerializeNoWitness) {
     writeVarInt(this.vin.length)
     this.vin.forEach(function (input) {
-      // writeUInt64(input.amountin)
-      // writeUInt32(input.blockheight)
-      // writeUInt32(input.txindex)
       if (Buffer.alloc(2).compare(input.script) !== 0) writeVarSlice(input.script)
     })
   }

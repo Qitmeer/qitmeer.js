@@ -65,9 +65,8 @@ Block.fromBuffer = function (buffer) {
   block.difficulty = readUInt32()
   block.height = readUInt64()
   block.timestamp = readUInt64()
-  // block.nonce = readUInt64()
 
-  // block.nonce > 2^53-1
+  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
   const nonceBuffer = readSlice(8)
   block.nonce = new Bignumber(nonceBuffer.reverse()).toString()
 
@@ -145,9 +144,8 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeUInt32(this.difficulty)
   writeUInt64(this.height)
   writeUInt64(this.timestamp)
-  // writeUInt64(this.nonce)
 
-  // nonce > 2*53-1
+  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
   typecheck(types.String, this.nonce)
   typecheck(types.Number, Number(this.nonce))
   const nonce = new Bignumber(this.nonce)

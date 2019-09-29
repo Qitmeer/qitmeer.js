@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HalalChain/qitmeer.js"
+    "url": "git+https://github.com/Qitmeer/qitmeer.js"
   },
   "keywords": [
     "qitmeer.js",
@@ -22,9 +22,9 @@
   "author": "dindinw",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/HalalChain/qitmeer.js/issues"
+    "url": "https://github.com/Qitmeer/qitmeer.js/issues"
   },
-  "homepage": "https://github.com/HalalChain/qitmeer.js#readme",
+  "homepage": "https://github.com/Qitmeer/qitmeer.js#readme",
   "devDependencies": {
     "bs58": "^4.0.1",
     "mocha": "^5.2.0",
