@@ -286,9 +286,6 @@ Transaction.prototype.clone = function () {
       txid: txIn.txid,
       vout: txIn.vout,
       sequence: txIn.sequence,
-      // amountin: txIn.amountin || 0,
-      // blockheight: txIn.blockheight || 0,
-      // txindex: txIn.txindex || 0,
       script: txIn.script
     }
   })
