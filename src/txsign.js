@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The nox developers
+// Copyright 2017-2018 The qitmeer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 const Transaction = require('./transaction')
@@ -9,18 +9,19 @@ const SCRIPT_TYPE = Script.types
 const addr = require('./address')
 const cypto = require('./hash')
 const Signature = require('./signature')
+const Network = require('./networks')
 
 module.exports = TxSigner
 
-function TxSigner ( network = Network.privnet ) {
+function TxSigner (network = Network.privnet) {
   this.__version = 1
   this.__inputs = []
   this.__network = network
   this.__tx = new Transaction()
 }
 
-TxSigner.newSigner = function ( network ) {
-  return new TxSigner( network )
+TxSigner.newSigner = function (network) {
+  return new TxSigner(network)
 }
 
 TxSigner.prototype.setLockTime = function (locktime) {
@@ -43,7 +44,7 @@ TxSigner.prototype.setVersion = function (version) {
   this.__tx.version = version
 }
 
-TxSigner.prototype.addInput = function (txHash, vout, options = {} ) {
+TxSigner.prototype.addInput = function (txHash, vout, options = {}) {
   typecheck(types.Hex32, txHash)
   typecheck(types.UInt32, vout)
 
@@ -65,7 +66,7 @@ TxSigner.prototype.addInput = function (txHash, vout, options = {} ) {
     prevOutScript: options && options.prevOutScript
   })
 
-  this.__tx.addInput( hash, vout, options.sequence )
+  this.__tx.addInput(hash, vout, options.sequence)
 }
 
 TxSigner.prototype.addOutput = function (address, amount) {
@@ -94,7 +95,7 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
   // signHash
   const signHash = this.__tx.hashForSignature(vin, input.prevOutScript, hashType)
   const signature = keyPair.sign(signHash)
-  
+
   // signature
   input.signature = Signature.encode(signature, hashType)
   input.pubkey = ourPubKey
@@ -107,7 +108,6 @@ TxSigner.prototype.build = function () {
   })
   return tx
 }
-
 
 TxSigner.prototype.getId = function () {
   return this.__tx.getId()

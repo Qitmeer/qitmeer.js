@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The nox developers
+// Copyright 2017-2018 The qitmeer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -29,7 +29,6 @@ Transaction.SIGHASH_ANYONECANPAY = 0x80
 const SigHashMask = 0x1f
 const SigHashSerializePrefix = 1
 const SigHashSerializeWitness = 3
-
 const EMPTY_SCRIPT = Buffer.allocUnsafe(0)
 const BLANK_OUTPUT = {
   amount: 0,
@@ -124,9 +123,6 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     vinLen = witnessLen
   }
   for (i = 0; i < vinLen; ++i) {
-    tx.vin[i].amountin = hasWitnesses ? readUInt64() : 0
-    tx.vin[i].blockheight = hasWitnesses ? readUInt32() : 0
-    tx.vin[i].txindex = hasWitnesses ? readUInt32() : 0
     tx.vin[i].script = hasWitnesses ? readVarSlice() : Buffer.from('', 'hex')
   }
 
@@ -154,8 +150,9 @@ Transaction.prototype.byteLength = function (stype) {
     (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
-    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + 8 + 4 + 4 + varSliceSize(input.script) }, 0) : 0)
-  // amountin + blockheight + txindex + script
+    (hasWitnesses ? this.vin.reduce(function (sum, input) {
+      return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script))
+    }, 0) : 0) // script
   return length
 }
 
@@ -163,8 +160,7 @@ Transaction.prototype.toHex = function () {
   return this.toBuffer().toString('hex')
 }
 Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
-  if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength(stype))
-
+  if (!buffer) buffer = Buffer.alloc(this.byteLength(stype))
   let offset = initialOffset || 0
 
   function writeSlice (slice) { offset += slice.copy(buffer, offset) }
@@ -218,10 +214,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   if (serializeType !== Transaction.TxSerializeNoWitness) {
     writeVarInt(this.vin.length)
     this.vin.forEach(function (input) {
-      writeUInt64(input.amountin)
-      writeUInt32(input.blockheight)
-      writeUInt32(input.txindex)
-      writeVarSlice(input.script)
+      if (Buffer.alloc(2).compare(input.script) !== 0) writeVarSlice(input.script)
     })
   }
   // avoid slicing unless necessary
@@ -229,24 +222,22 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
   return buffer
 }
 
-Transaction.prototype.getHash = function () {
+Transaction.prototype.getTxIdBuffer = function () {
   return hash.dblake2b256(this.toBuffer(undefined, undefined, Transaction.TxSerializeNoWitness))
 }
 
-Transaction.prototype.getId = function () {
+Transaction.prototype.getTxId = function () {
   // transaction hash's are displayed in reverse order
-  return this.getHash().reverse().toString('hex')
+  return this.getTxIdBuffer().reverse().toString('hex')
 }
 
-Transaction.prototype.getHashFull = function () {
-  const prefixHash = this.getHash()
-  const witnessHash = hash.dblake2b256(this.toBuffer(undefined, undefined, Transaction.TxSerializeOnlyWitness))
-  return hash.dblake2b256(Buffer.concat([prefixHash, witnessHash]))
+Transaction.prototype.getTxHash = function () {
+  return this.getTxHashBuffer().reverse().toString('hex')
 }
 
-Transaction.prototype.getHashFullId = function () {
+Transaction.prototype.getTxHashBuffer = function () {
   // transaction hash's are displayed in reverse order
-  return this.getHashFull().reverse().toString('hex')
+  return hash.dblake2b256(Buffer.concat([this.toBuffer(undefined, undefined, Transaction.TxSerializeFull)]))
 }
 
 Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
@@ -295,9 +286,6 @@ Transaction.prototype.clone = function () {
       txid: txIn.txid,
       vout: txIn.vout,
       sequence: txIn.sequence,
-      amountin: txIn.amountin || 0,
-      blockheight: txIn.blockheight || 0,
-      txindex: txIn.txindex || 0,
       script: txIn.script
     }
   })
@@ -376,7 +364,6 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
       if (y === inIndex) return
       input.sequence = 0
     })
-
   }
   // Serialize and Hash
   function sigHashPrefixSerializeSize (txIns, txOuts, inIndex) {

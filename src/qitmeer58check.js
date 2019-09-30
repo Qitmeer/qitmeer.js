@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The nox developers
+// Copyright 2017-2018 The Qirmeer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -9,12 +9,12 @@ const Buffer = require('safe-buffer').Buffer
 const hash = require('./hash')
 
 module.exports = {
-  default: Nox58checkBase(hash.dblake2b256),
-  Nox58checkdsha256: Nox58checkBase(hash.dsha256),
-  Nox58checkBase: Nox58checkBase
+  default: Qitmeer58checkBase(hash.dblake2b256),
+  Qitmeer58checkdsha256: Qitmeer58checkBase(hash.dsha256),
+  Qitmeer58checkBase: Qitmeer58checkBase
 }
 
-function Nox58checkBase (checksumFn) {
+function Qitmeer58checkBase (checksumFn) {
   // Encode a buffer as a base58-check encoded string
   function encode (payload) {
     var checksum = checksumFn(payload)

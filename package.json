@@ -1,28 +1,30 @@
 {
-  "name": "noxjs-lib",
-  "version": "1.0.0",
-  "description": "NOX client-side JavaScript library",
+  "name": "qitmeer-js",
+  "version": "1.0.2",
+  "description": "Qirmeer client-side JavaScript library",
   "main": "./src/index.js",
   "scripts": {
     "test": "npm run standard && npm run unit",
     "standard": "standard",
-    "unit": "mocha"
+    "unit": "mocha ./test/qitmeer.core.js",
+    "standfix": "standard --fix"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dindinw/noxjs-lib.git"
+    "url": "git+https://github.com/Qitmeer/qitmeer.js"
   },
   "keywords": [
-    "noxjs",
-    "noxjs-lib",
-    "nox"
+    "qitmeer.js",
+    "qitmeer-lib",
+    "qitmeer",
+    "qitmeer-js"
   ],
   "author": "dindinw",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dindinw/noxjs-lib/issues"
+    "url": "https://github.com/Qitmeer/qitmeer.js/issues"
   },
-  "homepage": "https://github.com/dindinw/noxjs-lib#readme",
+  "homepage": "https://github.com/Qitmeer/qitmeer.js#readme",
   "devDependencies": {
     "bs58": "^4.0.1",
     "mocha": "^5.2.0",
@@ -31,10 +33,14 @@
   "dependencies": {
     "bip66": "^1.1.5",
     "blakejs": "^1.1.0",
+    "bn.js": "^5.0.0",
     "create-hash": "^1.2.0",
     "merkle-lib": "^2.0.10",
     "randombytes": "^2.0.6",
+    "standard": "^12.0.1",
     "tiny-secp256k1": "^1.0.1",
     "varuint-bitcoin": "^1.1.0"
-  }
+  },
+  "_from": "qitmeer-js@1.0.0",
+  "_resolved": "https://registry.npm.taobao.org/qitmeer-js/download/qitmeer-js-1.0.0.tgz"
 }

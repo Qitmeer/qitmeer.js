@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The nox developers
+// Copyright 2017-2018 The qitmeer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 const utils = require('./utils')
@@ -6,12 +6,16 @@ const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
 const hash = require('./hash')
 const fastMerkleRoot = require('merkle-lib/fastRoot')
+const types = require('./types')
+const typecheck = require('./typecheck')
+const Bignumber = require('bn.js')
 
 module.exports = Block
 
 // version + parentRoot + txRoot + stateRoot + difficulty + height + timestamp + nonce
-// 124 = 4 + 32 + 32 + 32 + 4 + 8 + 4 + 8
-const BlockHeaderSize = 124
+// 124 = 4 + 32 + 32 + 32 + 4 + 8 + 8 + 8
+
+const BlockHeaderSize = 128
 
 function Block () {
   this.version = 1
@@ -23,6 +27,7 @@ function Block () {
   this.timestamp = 0
   this.nonce = 0
   this.transactions = []
+  this.parents = []
 }
 
 Block.fromBuffer = function (buffer) {
@@ -59,8 +64,11 @@ Block.fromBuffer = function (buffer) {
   block.stateRoot = readSlice(32)
   block.difficulty = readUInt32()
   block.height = readUInt64()
-  block.timestamp = readUInt32()
-  block.nonce = readUInt64()
+  block.timestamp = readUInt64()
+
+  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
+  const nonceBuffer = readSlice(8)
+  block.nonce = new Bignumber(nonceBuffer.reverse()).toString()
 
   if (buffer.length === BlockHeaderSize) return block
 
@@ -68,6 +76,14 @@ Block.fromBuffer = function (buffer) {
     const vi = varuint.decode(buffer, offset)
     offset += varuint.decode.bytes
     return vi
+  }
+
+  // parents
+  const parentsLength = readVarInt()
+
+  for (let i = 0; i < parentsLength; ++i) {
+    const parent = readSlice(32)
+    block.parents.push(parent.reverse().toString('hex'))
   }
 
   function readTransaction () {
@@ -78,7 +94,7 @@ Block.fromBuffer = function (buffer) {
 
   const nTransactions = readVarInt()
 
-  for (var i = 0; i < nTransactions; ++i) {
+  for (let i = 0; i < nTransactions; ++i) {
     const tx = readTransaction()
     block.transactions.push(tx)
   }
@@ -88,10 +104,12 @@ Block.fromBuffer = function (buffer) {
 
 Block.prototype.byteLength = function (headersOnly) {
   if (headersOnly || !this.transactions) return BlockHeaderSize
-
-  return BlockHeaderSize + varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
+  const transactionsLenth = varuint.encodingLength(this.transactions.length)
+  const transactionsByteLength = this.transactions.reduce(function (a, x) {
     return a + x.byteLength()
   }, 0)
+  const parentsLenth = varuint.encodingLength(this.parents.length) + this.parents.length * 32
+  return BlockHeaderSize + transactionsLenth + transactionsByteLength + parentsLenth
 }
 
 Block.prototype.toBuffer = function (headersOnly) {
@@ -114,6 +132,10 @@ Block.prototype.toBuffer = function (headersOnly) {
     utils.writeUInt64LE(buffer, i, offset)
     offset += 8
   }
+  function writeVarInt (i) {
+    varuint.encode(i, buffer, offset)
+    offset += varuint.encode.bytes
+  }
 
   writeInt32(this.version)
   writeSlice(this.parentRoot)
@@ -121,13 +143,22 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeSlice(this.stateRoot)
   writeUInt32(this.difficulty)
   writeUInt64(this.height)
-  writeUInt32(this.timestamp)
-  writeUInt64(this.nonce)
+  writeUInt64(this.timestamp)
 
+  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
+  typecheck(types.String, this.nonce)
+  typecheck(types.Number, Number(this.nonce))
+  const nonce = new Bignumber(this.nonce)
+  writeSlice(nonce.toBuffer().reverse())
   if (headersOnly || !this.transactions) return buffer
 
-  varuint.encode(this.transactions.length, buffer, offset)
-  offset += varuint.encode.bytes
+  // parents
+  writeVarInt(this.parents.length)
+  this.parents.forEach(function (parent) {
+    writeSlice(Buffer.from(parent, 'hex').reverse())
+  })
+
+  writeVarInt(this.transactions.length)
 
   this.transactions.forEach(function (tx) {
     const txSize = tx.byteLength() // TODO: extract from toBuffer?
@@ -138,19 +169,19 @@ Block.prototype.toBuffer = function (headersOnly) {
   return buffer
 }
 
-Block.prototype.getHash = function () {
+Block.prototype.getHashBuffer = function () {
   return hash.dblake2b256(this.toBuffer(true))
 }
 
-Block.prototype.getId = function () {
-  return this.getHash().reverse().toString('hex')
+Block.prototype.getHash = function () {
+  return this.getHashBuffer().reverse().toString('hex')
 }
 
 Block.calculateTxRoot = function (transactions) {
   if (transactions.length === 0) throw TypeError('Cannot compute merkle root for zero transactions')
 
   const hashes = transactions.map(function (transaction) {
-    return transaction.getHashFull()
+    return transaction.getTxIdBuffer()
   })
 
   return fastMerkleRoot(hashes, hash.dblake2b256)

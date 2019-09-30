@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The nox developers
+// Copyright 2017-2018 The qitmeer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 const _OPS = require('./ops/ops.json')
@@ -7,7 +7,7 @@ module.exports = {
   typecheck: require('./typecheck'),
   hash: require('./hash'),
   ec: require('./ec'),
-  nox58check: require('./nox58check'),
+  qitmeer58check: require('./qitmeer58check'),
   address: require('./address'),
   networks: require('./networks'),
   tx: require('./transaction'),
