@@ -109,6 +109,6 @@ TxSigner.prototype.build = function () {
   return tx
 }
 
-TxSigner.prototype.getId = function () {
-  return this.__tx.getId()
+TxSigner.prototype.getTxId = function () {
+  return this.__tx.getTxId()
 }
