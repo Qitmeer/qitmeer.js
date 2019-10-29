@@ -6,16 +6,11 @@ const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
 const hash = require('./hash')
 const fastMerkleRoot = require('merkle-lib/fastRoot')
-const types = require('./types')
-const typecheck = require('./typecheck')
-const Bignumber = require('bn.js')
 
 module.exports = Block
 
-// version + parentRoot + txRoot + stateRoot + difficulty + height + timestamp + nonce
-// 124 = 4 + 32 + 32 + 32 + 4 + 8 + 8 + 8
-
-const BlockHeaderSize = 128
+// version + parentRoot + txRoot + stateRoot + difficulty + timestamp + pow( nonce + pow_type + edge_bits + circle_nonces )
+const BlockHeaderSize = 4 + 32 + 32 + 32 + 4 + 4 + ( 4 + 1 + 1 + 168 )
 
 function Block () {
   this.version = 1
@@ -27,6 +22,7 @@ function Block () {
   this.nonce = 0
   this.transactions = []
   this.parents = []
+  this.pow = {}
 }
 
 Block.fromBuffer = function (buffer) {
@@ -64,8 +60,6 @@ Block.fromBuffer = function (buffer) {
   block.difficulty = readUInt32()
   block.timestamp = new Date( readUInt32() * 1000 )
 
-  if (buffer.length === BlockHeaderSize) return block
-
   function readVarInt () {
     const vi = varuint.decode(buffer, offset)
     offset += varuint.decode.bytes
@@ -79,6 +73,7 @@ Block.fromBuffer = function (buffer) {
   block.pow.edge_bits = readVarInt()
   block.pow.circle_nonces = readSlice(168)
 
+  if (buffer.length === BlockHeaderSize) return block
   // parents
   const parentsLength = readVarInt()
 
@@ -143,19 +138,22 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeSlice(this.txRoot)
   writeSlice(this.stateRoot)
   writeUInt32(this.difficulty)
-  writeUInt64(this.timestamp)
 
-  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
-  typecheck(types.String, this.nonce)
-  typecheck(types.Number, Number(this.nonce))
-  const nonce = new Bignumber(this.nonce)
-  writeSlice(nonce.toBuffer().reverse())
+  const timestamp = new Date( this.timestamp ) / 1000
+  writeUInt32(timestamp)
+
+  // pow
+  writeUInt32(this.pow.nonce)
+  writeVarInt(this.pow.pow_type)
+  writeVarInt(this.pow.edge_bits)
+  writeSlice(this.pow.circle_nonces)
+
   if (headersOnly || !this.transactions) return buffer
 
   // parents
   writeVarInt(this.parents.length)
   this.parents.forEach(function (parent) {
-    writeSlice(Buffer.from(parent, 'hex').reverse())
+    writeSlice( parent )
   })
 
   writeVarInt(this.transactions.length)
@@ -170,7 +168,8 @@ Block.prototype.toBuffer = function (headersOnly) {
 }
 
 Block.prototype.getHashBuffer = function () {
-  return hash.dblake2b256(this.toBuffer(true))
+  // BlockHeaderSize - 169
+  return hash.dblake2b256(this.toBuffer(true).slice(0, BlockHeaderSize - 169))
 }
 
 Block.prototype.getHash = function () {
