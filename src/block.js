@@ -23,7 +23,6 @@ function Block () {
   this.txRoot = null
   this.stateRoot = null
   this.difficulty = 0
-  this.height = 0
   this.timestamp = 0
   this.nonce = 0
   this.transactions = []
@@ -63,8 +62,7 @@ Block.fromBuffer = function (buffer) {
   block.txRoot = readSlice(32)
   block.stateRoot = readSlice(32)
   block.difficulty = readUInt32()
-  block.timestamp = readUInt64()
-  block.nonce = readUInt64()
+  block.timestamp = new Date( readUInt32() * 1000 )
 
   if (buffer.length === BlockHeaderSize) return block
 
@@ -76,18 +74,17 @@ Block.fromBuffer = function (buffer) {
 
   // pow
   block.pow = {}
-
+  block.pow.nonce = readUInt32()
   block.pow.pow_type = readVarInt()
   block.pow.edge_bits = readVarInt()
-  block.pow.circle_nonces = readSlice(128)
-
+  block.pow.circle_nonces = readSlice(168)
 
   // parents
   const parentsLength = readVarInt()
 
   for (let i = 0; i < parentsLength; ++i) {
     const parent = readSlice(32)
-    block.parents.push(parent.reverse().toString('hex'))
+    block.parents.push(parent)
   }
 
   function readTransaction () {
@@ -146,7 +143,6 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeSlice(this.txRoot)
   writeSlice(this.stateRoot)
   writeUInt32(this.difficulty)
-  writeUInt64(this.height)
   writeUInt64(this.timestamp)
 
   // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
