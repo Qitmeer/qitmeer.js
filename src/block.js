@@ -1,21 +1,16 @@
 // Copyright 2017-2018 The qitmeer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
-const utils = require('./utils')
+// const utils = require('./utils')
 const varuint = require('varuint-bitcoin')
 const Transaction = require('./transaction')
 const hash = require('./hash')
 const fastMerkleRoot = require('merkle-lib/fastRoot')
-const types = require('./types')
-const typecheck = require('./typecheck')
-const Bignumber = require('bn.js')
 
 module.exports = Block
 
-// version + parentRoot + txRoot + stateRoot + difficulty + height + timestamp + nonce
-// 124 = 4 + 32 + 32 + 32 + 4 + 8 + 8 + 8
-
-const BlockHeaderSize = 128
+// version + parentRoot + txRoot + stateRoot + difficulty + timestamp + pow( nonce + pow_type + edge_bits + circle_nonces )
+const BlockHeaderSize = 4 + 32 + 32 + 32 + 4 + 4 + (4 + 1 + 1 + 168)
 
 function Block () {
   this.version = 1
@@ -23,11 +18,11 @@ function Block () {
   this.txRoot = null
   this.stateRoot = null
   this.difficulty = 0
-  this.height = 0
   this.timestamp = 0
   this.nonce = 0
   this.transactions = []
   this.parents = []
+  this.pow = {}
 }
 
 Block.fromBuffer = function (buffer) {
@@ -51,11 +46,11 @@ Block.fromBuffer = function (buffer) {
     return i
   }
 
-  function readUInt64 () {
-    const i = utils.readUInt64LE(buffer, offset)
-    offset += 8
-    return i
-  }
+  // function readUInt64 () {
+  //   const i = utils.readUInt64LE(buffer, offset)
+  //   offset += 8
+  //   return i
+  // }
 
   const block = new Block()
   block.version = readInt32()
@@ -63,14 +58,7 @@ Block.fromBuffer = function (buffer) {
   block.txRoot = readSlice(32)
   block.stateRoot = readSlice(32)
   block.difficulty = readUInt32()
-  block.height = readUInt64()
-  block.timestamp = readUInt64()
-
-  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
-  const nonceBuffer = readSlice(8)
-  block.nonce = new Bignumber(nonceBuffer.reverse()).toString()
-
-  if (buffer.length === BlockHeaderSize) return block
+  block.timestamp = new Date(readUInt32() * 1000)
 
   function readVarInt () {
     const vi = varuint.decode(buffer, offset)
@@ -78,12 +66,22 @@ Block.fromBuffer = function (buffer) {
     return vi
   }
 
+  // pow
+  block.pow = {}
+  block.pow.nonce = readUInt32()
+  block.pow.pow_type = readVarInt()
+  block.pow.proof_data = {
+    edge_bits: readVarInt(),
+    circle_nonces: readSlice(168)
+  }
+
+  if (buffer.length === BlockHeaderSize) return block
   // parents
   const parentsLength = readVarInt()
 
   for (let i = 0; i < parentsLength; ++i) {
     const parent = readSlice(32)
-    block.parents.push(parent.reverse().toString('hex'))
+    block.parents.push(parent)
   }
 
   function readTransaction () {
@@ -128,10 +126,11 @@ Block.prototype.toBuffer = function (headersOnly) {
     buffer.writeUInt32LE(i, offset)
     offset += 4
   }
-  function writeUInt64 (i) {
-    utils.writeUInt64LE(buffer, i, offset)
-    offset += 8
-  }
+  // function writeUInt64 (i) {
+  //   utils.writeUInt64LE(buffer, i, offset)
+  //   offset += 8
+  // }
+
   function writeVarInt (i) {
     varuint.encode(i, buffer, offset)
     offset += varuint.encode.bytes
@@ -142,20 +141,22 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeSlice(this.txRoot)
   writeSlice(this.stateRoot)
   writeUInt32(this.difficulty)
-  writeUInt64(this.height)
-  writeUInt64(this.timestamp)
 
-  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
-  typecheck(types.String, this.nonce)
-  typecheck(types.Number, Number(this.nonce))
-  const nonce = new Bignumber(this.nonce)
-  writeSlice(nonce.toBuffer().reverse())
+  const timestamp = new Date(this.timestamp) / 1000
+  writeUInt32(timestamp)
+
+  // pow
+  writeUInt32(this.pow.nonce)
+  writeVarInt(this.pow.pow_type)
+  writeVarInt(this.pow.proof_data.edge_bits)
+  writeSlice(this.pow.proof_data.circle_nonces)
+
   if (headersOnly || !this.transactions) return buffer
 
   // parents
   writeVarInt(this.parents.length)
   this.parents.forEach(function (parent) {
-    writeSlice(Buffer.from(parent, 'hex').reverse())
+    writeSlice(parent)
   })
 
   writeVarInt(this.transactions.length)
@@ -170,7 +171,7 @@ Block.prototype.toBuffer = function (headersOnly) {
 }
 
 Block.prototype.getHashBuffer = function () {
-  return hash.dblake2b256(this.toBuffer(true))
+  return hash.dblake2b256(this.toBuffer(true).slice(0, BlockHeaderSize - 169))
 }
 
 Block.prototype.getHash = function () {
