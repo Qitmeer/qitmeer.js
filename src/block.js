@@ -74,6 +74,14 @@ Block.fromBuffer = function (buffer) {
     return vi
   }
 
+  // pow
+  block.pow = {}
+
+  block.pow.pow_type = readVarInt()
+  block.pow.edge_bits = readVarInt()
+  block.pow.circle_nonces = readSlice(128)
+
+
   // parents
   const parentsLength = readVarInt()
 
