@@ -57,13 +57,13 @@ Block.fromBuffer = function (buffer) {
     return i
   }
 
+
   const block = new Block()
   block.version = readInt32()
   block.parentRoot = readSlice(32)
   block.txRoot = readSlice(32)
   block.stateRoot = readSlice(32)
   block.difficulty = readUInt32()
-  block.height = readUInt64()
   block.timestamp = readUInt64()
 
   // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
