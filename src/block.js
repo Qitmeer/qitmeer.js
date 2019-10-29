@@ -57,7 +57,6 @@ Block.fromBuffer = function (buffer) {
     return i
   }
 
-
   const block = new Block()
   block.version = readInt32()
   block.parentRoot = readSlice(32)
@@ -65,10 +64,7 @@ Block.fromBuffer = function (buffer) {
   block.stateRoot = readSlice(32)
   block.difficulty = readUInt32()
   block.timestamp = readUInt64()
-
-  // block.nonce > Number.MAX_SAFE_INTEGER = 2^53-1
-  const nonceBuffer = readSlice(8)
-  block.nonce = new Bignumber(nonceBuffer.reverse()).toString()
+  block.nonce = readUInt64()
 
   if (buffer.length === BlockHeaderSize) return block
 
