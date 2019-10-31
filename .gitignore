@@ -1,3 +1,5 @@
 node_modules/
 test/taw.md
 .gitignore
+
+test/blocktest.js
