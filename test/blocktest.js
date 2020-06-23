@@ -10,6 +10,26 @@ console.log(
   block.toBuffer(true).toString('hex'),
   block.getHash()
 )
+
+const keyPair = qitmeer.ec.fromPrivateKey(Buffer.from('7084847b67f620b238a471947aa34393ac10b5a535c104ee3109132c608e477f', 'hex'), { 'compressed': false })
+// network
+const txsnr = qitmeer.txsign.newSigner(qitmeer.networks.testnet)
+txsnr.setVersion(1)
+txsnr.setTimestamp()
+// alex's previous transaction output, has 450 qitmeer
+txsnr.addInput('5b042be7d324721447e6b94a6413980e29b7539955cdf6356c92062b603635b8', 0)
+txsnr.addOutput('TmkEYGo9kSs65vRUvZqB1HxCpLhirr5wLov', 9799976600)
+txsnr.addOutput('TmmG3qTkiK2mbP2dQ9XBFk44vaJegbsAhYf', 1100000000)
+// (in)45000000000 - (out)44990000000 = (miner fee)10000000
+
+// sign
+// txsnr.sign(0, keyPair)
+// get raw Tx
+const rawTx = txsnr.build()
+const rawB = rawTx.toBuffer().toString('hex')
+console.log( rawTx )
+console.log( rawB )
+
 // console.log (
 //     new Bignumber( '989' ).toBuffer().reverse().toString('hex')
 // )
@@ -49,3 +69,74 @@ console.log(
 //   //     console.log  ( i )
 //   // }
 // }())
+
+
+
+
+var convertHex = {
+  bytesToHex: function(bytes) {
+    /*if (typeof bytes.byteLength != 'undefined') {
+      var newBytes = []
+
+      if (typeof bytes.buffer != 'undefined')
+        bytes = new DataView(bytes.buffer)
+      else
+        bytes = new DataView(bytes)
+
+      for (var i = 0; i < bytes.byteLength; ++i) {
+        newBytes.push(bytes.getUint8(i))
+      }
+      bytes = newBytes
+    }*/
+    return arrBytesToHex(bytes)
+  },
+  hexToBytes: function(hex) {
+    if (hex.length % 2 === 1) throw new Error("hexToBytes can't have a string with an odd number of characters.")
+    if (hex.indexOf('0x') === 0) hex = hex.slice(2)
+    return hex.match(/../g).map(function(x) { return parseInt(x,16) })
+  }
+}
+
+
+// PRIVATE
+
+function arrBytesToHex(bytes) {
+  return bytes.map(function(x) { return padLeft(x.toString(16),2) }).join('')
+}
+
+function padLeft(orig, len) {
+  if (orig.length > len) return orig
+  return Array(len - orig.length + 1).join('0') + orig
+}
+  
+
+
+const numToByteArray = function(num) {
+  if (num <= 256) { 
+      return [num];
+  } else {
+      return [num % 256].concat(numToByteArray(Math.floor(num / 256)));
+  }
+}
+
+const bytesToNum = function(bytes) {
+  if (bytes.length == 0) return 0;
+  else return bytes[0] + 256 * bytesToNum(bytes.slice(1));
+}
+
+
+const hexToTime = hex => bytesToNum(hex.match(/(..)/g).map( v => parseInt( v,16 ) ))
+const timeToHex = num => {
+  if ( isNaN(num*1) ) throw 'timeToHex time type need number'
+  const byteArr = numToByteArray(num)
+  return convertHex.bytesToHex(byteArr)
+}
+console.log(
+  hexToTime('338ff15e'),
+  '338ff15e'
+)
+
+// 0100000001b83536602b06926c35f6cd559953b7290e9813644ab9e647147224d3e72b045b00000000ffffffff0298c61f48020000001976a914e977793ba61bc506ba08a8387ac4060e767905e388ac00ab9041000000001976a914f4b8b184808bf05b4446717ba085c485d73419b388ac0000000000000000018b48304502210091edc802cb19881ab93084534273d381785ccb8b9c1089ce322760694c59add902203cc1f2bfe7d0317fbfd0052c647b9f06f1238149daf7b056a7a3ce8e5a90fd78014104b476657062c2ea453b9c77768e091572f9c5bd086b7e29a4f03eb11ea1db1b024d817395ae549dc1f2734bd37d9a9860cddd2a46e70fee84b058a021d65d0079
+// 0100000001b83536602b06926c35f6cd559953b7290e9813644ab9e647147224d3e72b045b00000000ffffffff0298c61f48020000001976a914e977793ba61bc506ba08a8387ac4060e767905e388ac00ab9041000000001976a914f4b8b184808bf05b4446717ba085c485d73419b388ac00000000000000000100
+// 0100000001b83536602b06926c35f6cd559953b7290e9813644ab9e647147224d3e72b045b00000000ffffffff0298c61f48020000001976a914e977793ba61bc506ba08a8387ac4060e767905e388ac00ab9041000000001976a914f4b8b184808bf05b4446717ba085c485d73419b388ac0000000000000000 338ff15e 0100
+// 0f12e977793ba61bc506ba08a8387ac4060e767905e38e09db5d
