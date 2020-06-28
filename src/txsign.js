@@ -44,6 +44,11 @@ TxSigner.prototype.setVersion = function (version) {
   this.__tx.version = version
 }
 
+TxSigner.prototype.setTimestamp = function (timestamp) {
+  typecheck(types.UInt32, timestamp)
+  this.__tx.timestamp = timestamp
+}
+
 TxSigner.prototype.addInput = function (txHash, vout, options = {}) {
   typecheck(types.Hex32, txHash)
   typecheck(types.UInt32, vout)
