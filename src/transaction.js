@@ -467,7 +467,6 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
 
   offset = writeUInt32(prefixBuffer, txTmp.locktime, offset)
   offset = writeUInt32(prefixBuffer, txTmp.exprie, offset)
-  // offset = writeUInt32(prefixBuffer, txTmp.timestamp, offset)
   const witnessBuffer = Buffer.allocUnsafe(sigHashWitnessSerializeSize(txTmp.vin, ourScript))
   witnessBuffer.fill(0)
   offset = 0
