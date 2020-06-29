@@ -45,6 +45,7 @@ function Transaction () {
   this._stype = 0 // default = 0, TxSerializeType : 0 - full , 1 - no-witness, 2 - only-witness
   this.locktime = 0
   this.exprie = 0
+  this.timestamp = 0
   this.vin = []
   this.vout = []
 }
@@ -114,6 +115,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     }
     tx.locktime = readUInt32()
     tx.exprie = readUInt32()
+    tx.timestamp = readUInt32()
   }
 
   let hasWitnesses = tx._stype !== Transaction.TxSerializeNoWitness
@@ -144,6 +146,7 @@ Transaction.prototype.byteLength = function (stype) {
   }
   const length =
     4 + // version
+    4 + // Timestamp
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vin.length)) +
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vout.length)) +
     (onlyWitnesses ? 0 : this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0)) + // txid + vout + seq
@@ -209,6 +212,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 
     writeUInt32(this.locktime)
     writeUInt32(this.exprie)
+    writeUInt32(this.timestamp)
   }
 
   if (serializeType !== Transaction.TxSerializeNoWitness) {
@@ -297,6 +301,7 @@ Transaction.prototype.clone = function () {
   })
   newTx.locktime = this.locktime
   newTx.exprie = this.exprie
+  newTx.timestamp = this.timestamp
 
   return newTx
 }
@@ -382,6 +387,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     //    d) N bytes pkscript (0 bytes if not SigHashSingle output)
     // 6) 4 bytes lock time
     // 7) 4 bytes expiry
+    // 8) 4 bytes timestamp
     let nTxIns = txIns.length
     let nTxOuts = txOuts.length
     let size = 4 + varuint.encodingLength(nTxIns) +
@@ -461,7 +467,6 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
 
   offset = writeUInt32(prefixBuffer, txTmp.locktime, offset)
   offset = writeUInt32(prefixBuffer, txTmp.exprie, offset)
-
   const witnessBuffer = Buffer.allocUnsafe(sigHashWitnessSerializeSize(txTmp.vin, ourScript))
   witnessBuffer.fill(0)
   offset = 0
