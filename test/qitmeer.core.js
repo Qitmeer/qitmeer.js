@@ -168,7 +168,7 @@ describe('qitmeer-core', function () {
         const privHex = f[0]
         const pubHex = f[1]
         it('fromPrivateKey ' + privHex, function () {
-          const keyPair = qitmeer.ec.fromPrivateKey(Buffer.from(privHex, 'hex'), { 'compressed': false })
+          const keyPair = qitmeer.ec.fromPrivateKey(Buffer.from(privHex, 'hex'), { compressed: false })
           assert.strictEqual(keyPair.compressed, false)
           assert.strictEqual(keyPair.privateKey.toString('hex'), privHex)
           assert.strictEqual(keyPair.__priv.toString('hex'), privHex)
@@ -176,7 +176,7 @@ describe('qitmeer-core', function () {
           assert.strictEqual(keyPair.__pub.toString('hex'), pubHex)
         })
         it('fromPubKey ' + pubHex, function () {
-          const keyPair = qitmeer.ec.fromPublicKey(Buffer.from(pubHex, 'hex'), { 'compressed': false })
+          const keyPair = qitmeer.ec.fromPublicKey(Buffer.from(pubHex, 'hex'), { compressed: false })
           assert.strictEqual(keyPair.compressed, false)
           assert.strictEqual(keyPair.privateKey, null)
           assert.strictEqual(keyPair.__priv, null)

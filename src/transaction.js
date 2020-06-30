@@ -118,7 +118,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     tx.timestamp = readUInt32()
   }
 
-  let hasWitnesses = tx._stype !== Transaction.TxSerializeNoWitness
+  const hasWitnesses = tx._stype !== Transaction.TxSerializeNoWitness
   if (hasWitnesses) {
     const witnessLen = readVarInt()
     if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
@@ -186,7 +186,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
     writeSlice(slice)
   }
 
-  let serializeType = stype || this._stype
+  const serializeType = stype || this._stype
 
   if (serializeType === Transaction.TxSerializeFull) {
     writeInt32(this.version)
@@ -254,7 +254,7 @@ Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
     scriptSig = EMPTY_SCRIPT
   }
   // Add the input and return the input's index
-  let size = this.vin.push({
+  const size = this.vin.push({
     txid: hash,
     vout: index,
     sequence: sequence,
@@ -388,8 +388,8 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     // 6) 4 bytes lock time
     // 7) 4 bytes expiry
     // 8) 4 bytes timestamp
-    let nTxIns = txIns.length
-    let nTxOuts = txOuts.length
+    const nTxIns = txIns.length
+    const nTxOuts = txOuts.length
     let size = 4 + varuint.encodingLength(nTxIns) +
       nTxIns * (32 + 4 + 1 + 4) +
       varuint.encodingLength(nTxOuts) +
@@ -419,22 +419,22 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     // to write.  So, rather than looping through all inputs and manually
     // calculating the size per input, use (numTxIns - 1) as an
     // optimization.
-    let nTxIns = txIns.length
-    let size = 4 + varuint.encodingLength(nTxIns) + (nTxIns - 1) + varSliceSize(signScript)
+    const nTxIns = txIns.length
+    const size = 4 + varuint.encodingLength(nTxIns) + (nTxIns - 1) + varSliceSize(signScript)
     return size
   }
 
-  function writeSlice (buffer, slice, offset) { let o = slice.copy(buffer, offset); return offset + o }
+  function writeSlice (buffer, slice, offset) { const o = slice.copy(buffer, offset); return offset + o }
 
-  function writeUInt16 (buffer, i, offset) { let o = buffer.writeUInt16LE(i, offset); return o }
+  function writeUInt16 (buffer, i, offset) { const o = buffer.writeUInt16LE(i, offset); return o }
 
-  function writeUInt32 (buffer, i, offset) { let o = buffer.writeUInt32LE(i, offset); return o }
+  function writeUInt32 (buffer, i, offset) { const o = buffer.writeUInt32LE(i, offset); return o }
 
-  function writeUInt64 (buffer, i, offset) { let o = utils.writeUInt64LE(buffer, i, offset); return o }
+  function writeUInt64 (buffer, i, offset) { const o = utils.writeUInt64LE(buffer, i, offset); return o }
 
   function writeVarInt (buffer, i, offset) {
     varuint.encode(i, buffer, offset)
-    let o = varuint.encode.bytes
+    const o = varuint.encode.bytes
     return offset + o
   }
   function writeVarSlice (buffer, slice, offset) {
