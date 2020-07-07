@@ -1,6 +1,6 @@
 {
   "name": "qitmeer-js",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Qirmeer client-side JavaScript library",
   "main": "./src/index.js",
   "scripts": {

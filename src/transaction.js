@@ -115,6 +115,9 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     }
     tx.locktime = readUInt32()
     tx.exprie = readUInt32()
+  }
+
+  if (tx._stype === Transaction.TxSerializeFull) {
     tx.timestamp = readUInt32()
   }
 
@@ -140,18 +143,21 @@ Transaction.prototype.hasWitnesses = function () {
 Transaction.prototype.byteLength = function (stype) {
   let hasWitnesses = this.hasWitnesses()
   let onlyWitnesses = false
+  let hashFull = stype === Transaction.TxSerializeFull
   if (stype !== undefined) {
     hasWitnesses = (stype === Transaction.TxSerializeFull || stype === Transaction.TxSerializeOnlyWitness)
     onlyWitnesses = (stype === Transaction.TxSerializeOnlyWitness)
+  } else {
+    hashFull = true
   }
   const length =
     4 + // version
-    4 + // Timestamp
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vin.length)) +
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vout.length)) +
     (onlyWitnesses ? 0 : this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0)) + // txid + vout + seq
     (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
+    (hashFull ? 4 : 0) + // Timestamp
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
     (hasWitnesses ? this.vin.reduce(function (sum, input) {
       return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script))
@@ -212,6 +218,9 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 
     writeUInt32(this.locktime)
     writeUInt32(this.exprie)
+  }
+
+  if (serializeType === Transaction.TxSerializeFull) {
     writeUInt32(this.timestamp)
   }
 
