@@ -115,10 +115,12 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     }
     tx.locktime = readUInt32()
     tx.exprie = readUInt32()
-    tx.timestamp = readUInt32()
   }
 
   const hasWitnesses = tx._stype !== Transaction.TxSerializeNoWitness
+
+  tx.timestamp = hasWitnesses ? readUInt32() : 0
+
   if (hasWitnesses) {
     const witnessLen = readVarInt()
     if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
@@ -146,12 +148,12 @@ Transaction.prototype.byteLength = function (stype) {
   }
   const length =
     4 + // version
-    4 + // Timestamp
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vin.length)) +
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vout.length)) +
     (onlyWitnesses ? 0 : this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0)) + // txid + vout + seq
     (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
+    (hasWitnesses ? 4 : 0) + // Timestamp
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
     (hasWitnesses ? this.vin.reduce(function (sum, input) {
       return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script))
@@ -212,6 +214,9 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 
     writeUInt32(this.locktime)
     writeUInt32(this.exprie)
+  }
+
+  if (serializeType !== Transaction.TxSerializeNoWitness) {
     writeUInt32(this.timestamp)
   }
 
@@ -387,7 +392,6 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     //    d) N bytes pkscript (0 bytes if not SigHashSingle output)
     // 6) 4 bytes lock time
     // 7) 4 bytes expiry
-    // 8) 4 bytes timestamp
     const nTxIns = txIns.length
     const nTxOuts = txOuts.length
     let size = 4 + varuint.encodingLength(nTxIns) +
