@@ -38,12 +38,14 @@ function _Amount (value) {
   return _UInt53(value) && value <= AMOUNT_MAX
 }
 
+const MEER = 0
+const QITID = 1
 const COIN_IDS = {
-  MEER: 0,
-  QITID: 1
+  [MEER]: 'MEER',
+  [QITID]: 'QITID'
 }
-function _CoinId(coinName) {
-  return COIN_IDS[coinName]
+function _CoinId(coinId) {
+  return COIN_IDS[coinId]
 }
 
 var types = {

@@ -74,7 +74,7 @@ TxSigner.prototype.addInput = function (txHash, vout, options = {}) {
   this.__tx.addInput(hash, vout, options.sequence)
 }
 
-TxSigner.prototype.addOutput = function (address, amount) {
+TxSigner.prototype.addOutput = function (address, amount, coinId) {
   typecheck(types.Base58, address)
   typecheck(types.Amount, amount)
   const scriptPubKey = addr.toOutputScript(address, this.__network).toBuffer()
