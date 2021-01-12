@@ -38,6 +38,14 @@ function _Amount (value) {
   return _UInt53(value) && value <= AMOUNT_MAX
 }
 
+const COIN_IDS = {
+  MEER: 0,
+  QITID: 1
+}
+function _CoinId(coinName) {
+  return COIN_IDS[coinName]
+}
+
 var types = {
   Array: function (value) { return value !== null && value !== undefined && value.constructor === Array },
   Boolean: function (value) { return typeof value === 'boolean' },
@@ -61,7 +69,8 @@ var types = {
   Hash256: _BufferN(32),
   Hash160: _BufferN(20),
   Amount: _Amount,
-  Base58: _Base58
+  Base58: _Base58,
+  CoinId: _CoinId
 }
 
 module.exports = types
