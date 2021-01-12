@@ -108,7 +108,9 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     }
     const voutLen = readVarInt()
     for (i = 0; i < voutLen; ++i) {
+      const conId = readUInt16()
       tx.vout.push({
+        conId: types.CoinId(conId),
         amount: readUInt64(),
         script: readVarSlice()
       })
@@ -208,6 +210,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 
     writeVarInt(this.vout.length)
     this.vout.forEach(function (txOut) {
+      writeUInt64(txOut.coinId)
       writeUInt64(txOut.amount)
       writeVarSlice(txOut.script)
     })
@@ -301,6 +304,7 @@ Transaction.prototype.clone = function () {
   })
   newTx.vout = this.vout.map(function (txOut) {
     return {
+      coinId: txOut.coinId,
       amount: txOut.amount,
       script: txOut.script
     }

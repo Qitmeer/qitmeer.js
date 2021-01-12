@@ -45,7 +45,7 @@ const COIN_IDS = {
   [QITID]: 'QITID'
 }
 function _CoinId(coinId) {
-  return COIN_IDS[coinId]
+  return COIN_IDS[coinId] || 'Unknown-CoinID:' + coinId
 }
 
 var types = {
