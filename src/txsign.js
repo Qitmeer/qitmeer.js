@@ -78,7 +78,7 @@ TxSigner.prototype.addOutput = function (address, amount, coinId) {
   typecheck(types.Base58, address)
   typecheck(types.Amount, amount)
   const scriptPubKey = addr.toOutputScript(address, this.__network).toBuffer()
-  return this.__tx.addOutput(scriptPubKey, amount)
+  return this.__tx.addOutput(scriptPubKey, amount, coinId)
 }
 
 TxSigner.prototype.sign = function (vin, keyPair, hashType) {
