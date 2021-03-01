@@ -120,7 +120,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   }
 
   const hasWitnesses = tx._stype !== Transaction.TxSerializeNoWitness
-
+  
   tx.timestamp = hasWitnesses ? readUInt32() : 0
 
   if (hasWitnesses) {
@@ -210,7 +210,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 
     writeVarInt(this.vout.length)
     this.vout.forEach(function (txOut) {
-      writeUInt64(txOut.coinId)
+      writeUInt16(txOut.coinId)
       writeUInt64(txOut.amount)
       writeVarSlice(txOut.script)
     })
@@ -391,8 +391,8 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     //    d) 4 bytes sequence
     // 4) number of outputs varint
     // 5) per output:
+    //    0) 2 bytes coinId
     //    a) 8 bytes amount
-    //    b) 2 bytes script version
     //    c) pkscript len varint (1 byte if not SigHashSingle output)
     //    d) N bytes pkscript (0 bytes if not SigHashSingle output)
     // 6) 4 bytes lock time
@@ -402,7 +402,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     let size = 4 + varuint.encodingLength(nTxIns) +
       nTxIns * (32 + 4 + 1 + 4) +
       varuint.encodingLength(nTxOuts) +
-      nTxOuts * (8 + 2) +
+      nTxOuts * (2 + 8) +
       4 + 4
     txOuts.forEach(function (output, i) {
       let s = output.script
@@ -470,6 +470,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   // txOut
   offset = writeVarInt(prefixBuffer, txTmp.vout.length, offset)
   txTmp.vout.forEach(function (txOut) {
+    offset = writeUInt16(prefixBuffer, txOut.coinId, offset)
     offset = writeUInt64(prefixBuffer, txOut.amount, offset)
     offset = writeVarSlice(prefixBuffer, txOut.script, offset)
   })

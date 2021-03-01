@@ -100,7 +100,6 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
   // signHash
   const signHash = this.__tx.hashForSignature(vin, input.prevOutScript, hashType)
   const signature = keyPair.sign(signHash)
-
   // signature
   input.signature = Signature.encode(signature, hashType)
   input.pubkey = ourPubKey
