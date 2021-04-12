@@ -153,7 +153,7 @@ Transaction.prototype.byteLength = function (stype) {
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vin.length)) +
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vout.length)) +
     (onlyWitnesses ? 0 : this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0)) + // txid + vout + seq
-    (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return 4 + sum + 8 + varSliceSize(output.script) }, 0)) + // coinId + amount + script
+    (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return 2 + sum + 8 + varSliceSize(output.script) }, 0)) + // coinId + amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? 4 : 0) + // Timestamp
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
