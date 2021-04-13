@@ -44,7 +44,7 @@ const COIN_IDS = {
   [MEER]: 'MEER',
   [QITID]: 'QITID'
 }
-function _CoinId(coinId) {
+function _CoinId (coinId) {
   return COIN_IDS[coinId] || 'Unknown-CoinID:' + coinId
 }
 

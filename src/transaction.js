@@ -120,7 +120,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   }
 
   const hasWitnesses = tx._stype !== Transaction.TxSerializeNoWitness
-  
+
   tx.timestamp = hasWitnesses ? readUInt32() : 0
 
   if (hasWitnesses) {
