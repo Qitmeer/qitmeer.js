@@ -27,18 +27,18 @@
   "homepage": "https://github.com/Qitmeer/qitmeer.js#readme",
   "devDependencies": {
     "bs58": "^4.0.1",
-    "mocha": "^8.0.1",
-    "standard": "^14.3.4"
+    "mocha": "^8.3.2",
+    "standard": "^16.0.3"
   },
   "dependencies": {
     "bip66": "^1.1.5",
     "blakejs": "^1.1.0",
-    "bn.js": "^5.1.2",
+    "bn.js": "^5.2.0",
     "create-hash": "^1.2.0",
     "merkle-lib": "^2.0.10",
     "randombytes": "^2.1.0",
-    "standard": "^14.3.4",
-    "tiny-secp256k1": "^1.1.5",
+    "standard": "^16.0.3",
+    "tiny-secp256k1": "^1.1.6",
     "varuint-bitcoin": "^1.1.2"
   },
   "_from": "qitmeer-js@1.0.0",

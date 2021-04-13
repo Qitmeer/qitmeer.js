@@ -48,7 +48,7 @@ function _CoinId (coinId) {
   return COIN_IDS[coinId] || 'Unknown-CoinID:' + coinId
 }
 
-var types = {
+const types = {
   Array: function (value) { return value !== null && value !== undefined && value.constructor === Array },
   Boolean: function (value) { return typeof value === 'boolean' },
   Function: function (value) { return typeof value === 'function' },

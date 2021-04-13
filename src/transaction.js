@@ -99,7 +99,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   if (tx._stype === Transaction.TxSerializeFull ||
     tx._stype === Transaction.TxSerializeNoWitness) {
     vinLen = readVarInt()
-    for (var i = 0; i < vinLen; ++i) {
+    for (let i = 0; i < vinLen; ++i) {
       tx.vin.push({
         txid: readSlice(32),
         vout: readUInt32(),
@@ -107,7 +107,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
       })
     }
     const voutLen = readVarInt()
-    for (i = 0; i < voutLen; ++i) {
+    for (let i = 0; i < voutLen; ++i) {
       const conId = readUInt16()
       tx.vout.push({
         conId: types.CoinId(conId),
@@ -128,7 +128,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
     vinLen = witnessLen
   }
-  for (i = 0; i < vinLen; ++i) {
+  for (let i = 0; i < vinLen; ++i) {
     tx.vin[i].script = hasWitnesses ? readVarSlice() : Buffer.from('', 'hex')
   }
 
@@ -157,9 +157,7 @@ Transaction.prototype.byteLength = function (stype) {
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? 4 : 0) + // Timestamp
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
-    (hasWitnesses ? this.vin.reduce(function (sum, input) {
-      return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script))
-    }, 0) : 0) // script
+    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script)) }, 0) : 0) // script
   return length
 }
 
@@ -371,7 +369,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     txTmp.vout.length = inIndex + 1
 
     // "blank" outputs before
-    for (var i = 0; i < inIndex; i++) {
+    for (let i = 0; i < inIndex; i++) {
       txTmp.vout[i] = BLANK_OUTPUT
     }
     // ignore sequence numbers (except at inIndex)

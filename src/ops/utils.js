@@ -5,14 +5,11 @@
 const OPS = require('./ops.json')
 
 function encodingLength (i) {
-  return i < OPS.OP_PUSHDATA1 ? 1
-    : i <= 0xff ? 2
-      : i <= 0xffff ? 3
-        : 5
+  return i < OPS.OP_PUSHDATA1 ? 1 : (i <= 0xff ? 2 : (i <= 0xffff ? 3 : 5))
 }
 
 function encode (buffer, number, offset) {
-  var size = encodingLength(number)
+  const size = encodingLength(number)
 
   // ~6 bit
   if (size === 1) {
@@ -38,8 +35,8 @@ function encode (buffer, number, offset) {
 }
 
 function decode (buffer, offset) {
-  var opcode = buffer.readUInt8(offset)
-  var number, size
+  const opcode = buffer.readUInt8(offset)
+  let number, size
 
   // ~6 bit
   if (opcode < OPS.OP_PUSHDATA1) {
