@@ -32,7 +32,7 @@ function decodeRaw (buffer, version) {
 }
 
 function encodeRaw (privateKey, compressed, version) {
-  var result = Buffer.alloc(compressed ? 34 : 33)
+  const result = Buffer.alloc(compressed ? 34 : 33)
   if (types.Nil(version)) {
     version = 0x80
   }

@@ -74,11 +74,11 @@ TxSigner.prototype.addInput = function (txHash, vout, options = {}) {
   this.__tx.addInput(hash, vout, options.sequence)
 }
 
-TxSigner.prototype.addOutput = function (address, amount) {
+TxSigner.prototype.addOutput = function (address, amount, coinId) {
   typecheck(types.Base58, address)
   typecheck(types.Amount, amount)
   const scriptPubKey = addr.toOutputScript(address, this.__network).toBuffer()
-  return this.__tx.addOutput(scriptPubKey, amount)
+  return this.__tx.addOutput(scriptPubKey, amount, coinId)
 }
 
 TxSigner.prototype.sign = function (vin, keyPair, hashType) {
@@ -100,7 +100,6 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
   // signHash
   const signHash = this.__tx.hashForSignature(vin, input.prevOutScript, hashType)
   const signature = keyPair.sign(signHash)
-
   // signature
   input.signature = Signature.encode(signature, hashType)
   input.pubkey = ourPubKey

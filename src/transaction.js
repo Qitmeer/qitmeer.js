@@ -99,7 +99,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
   if (tx._stype === Transaction.TxSerializeFull ||
     tx._stype === Transaction.TxSerializeNoWitness) {
     vinLen = readVarInt()
-    for (var i = 0; i < vinLen; ++i) {
+    for (let i = 0; i < vinLen; ++i) {
       tx.vin.push({
         txid: readSlice(32),
         vout: readUInt32(),
@@ -107,8 +107,10 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
       })
     }
     const voutLen = readVarInt()
-    for (i = 0; i < voutLen; ++i) {
+    for (let i = 0; i < voutLen; ++i) {
+      const conId = readUInt16()
       tx.vout.push({
+        conId: types.CoinId(conId),
         amount: readUInt64(),
         script: readVarSlice()
       })
@@ -126,7 +128,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     if (witnessLen > 0 && witnessLen !== vinLen) throw new Error('Wrong witness length')
     vinLen = witnessLen
   }
-  for (i = 0; i < vinLen; ++i) {
+  for (let i = 0; i < vinLen; ++i) {
     tx.vin[i].script = hasWitnesses ? readVarSlice() : Buffer.from('', 'hex')
   }
 
@@ -151,13 +153,11 @@ Transaction.prototype.byteLength = function (stype) {
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vin.length)) +
     (onlyWitnesses ? 0 : varuint.encodingLength(this.vout.length)) +
     (onlyWitnesses ? 0 : this.vin.reduce(function (sum, input) { return sum + 32 + 4 + 4 }, 0)) + // txid + vout + seq
-    (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)) + // amount + script
+    (onlyWitnesses ? 0 : this.vout.reduce(function (sum, output) { return 2 + sum + 8 + varSliceSize(output.script) }, 0)) + // coinId + amount + script
     (onlyWitnesses ? 0 : 4 + 4) + // lock-time + expire
     (hasWitnesses ? 4 : 0) + // Timestamp
     (hasWitnesses ? varuint.encodingLength(this.vin.length) : 0) + // the varint for witness
-    (hasWitnesses ? this.vin.reduce(function (sum, input) {
-      return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script))
-    }, 0) : 0) // script
+    (hasWitnesses ? this.vin.reduce(function (sum, input) { return sum + (Buffer.alloc(2).compare(input.script) === 0 ? 1 : varSliceSize(input.script)) }, 0) : 0) // script
   return length
 }
 
@@ -208,6 +208,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset, stype) {
 
     writeVarInt(this.vout.length)
     this.vout.forEach(function (txOut) {
+      writeUInt16(txOut.coinId)
       writeUInt64(txOut.amount)
       writeVarSlice(txOut.script)
     })
@@ -268,12 +269,13 @@ Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
   return size - 1
 }
 
-Transaction.prototype.addOutput = function (scriptPubKey, amount) {
+Transaction.prototype.addOutput = function (scriptPubKey, amount, coinId = 0) {
   typecheck(types.Buffer, scriptPubKey)
   typecheck(types.Amount, amount)
 
   // Add the output and return the output's index
   return (this.vout.push({
+    coinId,
     amount: amount,
     script: scriptPubKey
   }) - 1)
@@ -300,6 +302,7 @@ Transaction.prototype.clone = function () {
   })
   newTx.vout = this.vout.map(function (txOut) {
     return {
+      coinId: txOut.coinId,
       amount: txOut.amount,
       script: txOut.script
     }
@@ -366,7 +369,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     txTmp.vout.length = inIndex + 1
 
     // "blank" outputs before
-    for (var i = 0; i < inIndex; i++) {
+    for (let i = 0; i < inIndex; i++) {
       txTmp.vout[i] = BLANK_OUTPUT
     }
     // ignore sequence numbers (except at inIndex)
@@ -386,8 +389,8 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     //    d) 4 bytes sequence
     // 4) number of outputs varint
     // 5) per output:
+    //    0) 2 bytes coinId
     //    a) 8 bytes amount
-    //    b) 2 bytes script version
     //    c) pkscript len varint (1 byte if not SigHashSingle output)
     //    d) N bytes pkscript (0 bytes if not SigHashSingle output)
     // 6) 4 bytes lock time
@@ -397,7 +400,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     let size = 4 + varuint.encodingLength(nTxIns) +
       nTxIns * (32 + 4 + 1 + 4) +
       varuint.encodingLength(nTxOuts) +
-      nTxOuts * (8 + 2) +
+      nTxOuts * (2 + 8) +
       4 + 4
     txOuts.forEach(function (output, i) {
       let s = output.script
@@ -465,6 +468,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   // txOut
   offset = writeVarInt(prefixBuffer, txTmp.vout.length, offset)
   txTmp.vout.forEach(function (txOut) {
+    offset = writeUInt16(prefixBuffer, txOut.coinId, offset)
     offset = writeUInt64(prefixBuffer, txOut.amount, offset)
     offset = writeVarSlice(prefixBuffer, txOut.script, offset)
   })

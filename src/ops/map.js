@@ -4,9 +4,9 @@
 
 const OPS = require('./ops.json')
 
-var map = {}
-for (var op in OPS) {
-  var code = OPS[op]
+const map = {}
+for (const op in OPS) {
+  const code = OPS[op]
   map[code] = op
 }
 
