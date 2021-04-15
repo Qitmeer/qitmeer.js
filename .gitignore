@@ -2,5 +2,4 @@ node_modules/
 test/taw.md
 .gitignore
 /.idea
-package-lock.json
 test/blocktest.js
