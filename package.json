@@ -38,7 +38,7 @@
     "merkle-lib": "^2.0.10",
     "randombytes": "^2.1.0",
     "standard": "^16.0.3",
-    "tiny-secp256k1": "^1.1.5",
+    "tiny-secp256k1": "^2.0.0",
     "varuint-bitcoin": "^1.1.2"
   },
   "_from": "qitmeer-js@1.0.0",
