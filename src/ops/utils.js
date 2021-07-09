@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The qitmeer developers
+// Copyright 2017-2018 The meer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -15,17 +15,17 @@ function encode (buffer, number, offset) {
   if (size === 1) {
     buffer.writeUInt8(number, offset)
 
-  // 8 bit
+    // 8 bit
   } else if (size === 2) {
     buffer.writeUInt8(OPS.OP_PUSHDATA1, offset)
     buffer.writeUInt8(number, offset + 1)
 
-  // 16 bit
+    // 16 bit
   } else if (size === 3) {
     buffer.writeUInt8(OPS.OP_PUSHDATA2, offset)
     buffer.writeUInt16LE(number, offset + 1)
 
-  // 32 bit
+    // 32 bit
   } else {
     buffer.writeUInt8(OPS.OP_PUSHDATA4, offset)
     buffer.writeUInt32LE(number, offset + 1)
@@ -43,19 +43,19 @@ function decode (buffer, offset) {
     number = opcode
     size = 1
 
-  // 8 bit
+    // 8 bit
   } else if (opcode === OPS.OP_PUSHDATA1) {
     if (offset + 2 > buffer.length) return null
     number = buffer.readUInt8(offset + 1)
     size = 2
 
-  // 16 bit
+    // 16 bit
   } else if (opcode === OPS.OP_PUSHDATA2) {
     if (offset + 3 > buffer.length) return null
     number = buffer.readUInt16LE(offset + 1)
     size = 3
 
-  // 32 bit
+    // 32 bit
   } else {
     if (offset + 5 > buffer.length) return null
     if (opcode !== OPS.OP_PUSHDATA4) throw new Error('Unexpected opcode')
