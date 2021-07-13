@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The qitmeer developers
+// Copyright 2017-2018 The meer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -7,12 +7,14 @@ function _LengthN (type, l) {
     if (!type(value)) return false
     if (value.length === l) return true
   }
+
   return length
 }
 
 function _Buffer (value) {
   return Buffer.isBuffer(value)
 }
+
 const _BufferN = _LengthN.bind(null, _Buffer)
 
 function _Hex (value) {
@@ -26,6 +28,7 @@ function _Base58 (value) {
 const _HexN = _LengthN.bind(null, _Hex)
 
 const _UINT53_MAX = Math.pow(2, 53) - 1
+
 function _UInt53 (value) {
   return typeof value === 'number' &&
     value >= 0 &&
@@ -34,6 +37,7 @@ function _UInt53 (value) {
 }
 
 const AMOUNT_MAX = 21 * 1e14
+
 function _Amount (value) {
   return _UInt53(value) && value <= AMOUNT_MAX
 }
@@ -44,6 +48,7 @@ const COIN_IDS = {
   [MEER]: 'MEER',
   [QITID]: 'QITID'
 }
+
 function _CoinId (coinId) {
   return COIN_IDS[coinId] || 'Unknown-CoinID:' + coinId
 }

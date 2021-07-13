@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The qitmeer developers
+// Copyright 2017-2018 The meer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -52,6 +52,7 @@ function Transaction () {
 
 Transaction.fromBuffer = function (buffer, __noStrict) {
   let offset = 0
+
   function readSlice (n) {
     offset += n
     return buffer.slice(offset - n, offset)
@@ -363,7 +364,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
       if (i === inIndex) return
       input.sequence = 0
     })
-  // Blank all other output except the same index, SIGHASH_SINGLE
+    // Blank all other output except the same index, SIGHASH_SINGLE
   } else if (fSingle) {
     // truncate outputs after
     txTmp.vout.length = inIndex + 1
@@ -378,6 +379,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
       input.sequence = 0
     })
   }
+
   // Serialize and Hash
   function sigHashPrefixSerializeSize (txIns, txOuts, inIndex) {
     // 1) 4 bytes version/serialization type
@@ -412,6 +414,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     })
     return size
   }
+
   function sigHashWitnessSerializeSize (txIns, signScript) {
     // 1) 4 bytes version/serialization type
     // 2) number of inputs varint
@@ -431,19 +434,32 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
     return size
   }
 
-  function writeSlice (buffer, slice, offset) { const o = slice.copy(buffer, offset); return offset + o }
+  function writeSlice (buffer, slice, offset) {
+    const o = slice.copy(buffer, offset)
+    return offset + o
+  }
 
-  function writeUInt16 (buffer, i, offset) { const o = buffer.writeUInt16LE(i, offset); return o }
+  function writeUInt16 (buffer, i, offset) {
+    const o = buffer.writeUInt16LE(i, offset)
+    return o
+  }
 
-  function writeUInt32 (buffer, i, offset) { const o = buffer.writeUInt32LE(i, offset); return o }
+  function writeUInt32 (buffer, i, offset) {
+    const o = buffer.writeUInt32LE(i, offset)
+    return o
+  }
 
-  function writeUInt64 (buffer, i, offset) { const o = utils.writeUInt64LE(buffer, i, offset); return o }
+  function writeUInt64 (buffer, i, offset) {
+    const o = utils.writeUInt64LE(buffer, i, offset)
+    return o
+  }
 
   function writeVarInt (buffer, i, offset) {
     varuint.encode(i, buffer, offset)
     const o = varuint.encode.bytes
     return offset + o
   }
+
   function writeVarSlice (buffer, slice, offset) {
     let o = writeVarInt(buffer, slice.length, offset)
     o = writeSlice(buffer, slice, o)

@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The qitmeer developers
+// Copyright 2017-2018 The meer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 const Transaction = require('./transaction')
@@ -31,7 +31,9 @@ TxSigner.prototype.setLockTime = function (locktime) {
   if (this.__inputs.some(function (input) {
     if (!input.signatures) return false
 
-    return input.signatures.some(function (s) { return s })
+    return input.signatures.some(function (s) {
+      return s
+    })
   })) {
     throw new Error('No, this would invalidate signatures')
   }
@@ -60,7 +62,9 @@ TxSigner.prototype.addInput = function (txHash, vout, options = {}) {
   const prevOutId = txHash + ':' + vout
 
   this.__inputs.forEach(function (input) {
-    if (input._prevOutId === prevOutId) { throw new Error('Duplicate TxOut: ' + prevOutId) }
+    if (input._prevOutId === prevOutId) {
+      throw new Error('Duplicate TxOut: ' + prevOutId)
+    }
   })
 
   this.__inputs.push({
@@ -68,7 +72,8 @@ TxSigner.prototype.addInput = function (txHash, vout, options = {}) {
     prevOutTx: txHash,
     prevOutIndex: vout,
     prevOutType: (options && options.prevOutType) || SCRIPT_TYPE.P2PKH,
-    prevOutScript: options && options.prevOutScript
+    prevOutScript: options && options.prevOutScript,
+    lockTime: options.lockTime ?? 0,
   })
 
   this.__tx.addInput(hash, vout, options.sequence)
@@ -95,7 +100,9 @@ TxSigner.prototype.sign = function (vin, keyPair, hashType) {
   // build prevOutScript
   if (types.Nil(input.prevOutScript)) {
     const hash = cypto.hash160(ourPubKey)
-    input.prevOutScript = Script.Output.P2PKH(hash)
+    // Lock script
+    if (input.lockTime > 0) input.prevOutScript = Script.Output.CLTV(hash, input.lockTime)
+    else input.prevOutScript = Script.Output.P2PKH(hash)
   }
   // signHash
   const signHash = this.__tx.hashForSignature(vin, input.prevOutScript, hashType)

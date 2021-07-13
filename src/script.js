@@ -1,4 +1,4 @@
-// Copyright 2017-2018 The qitmeer developers
+// Copyright 2017-2018 The meer developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -34,6 +34,23 @@ const __publicKeyScript = function (hash) {
   return script
 }
 
+// Lock script
+const __cltvScript = function (hash, lockTime) {
+  const script = new Script()
+  script.stack = [
+    'cltv',
+    lockTime,
+    OPS.OP_CHECKLOCKTIMEVERIFY,
+    OPS.OP_DROP,
+    OPS.OP_DUP,
+    OPS.OP_HASH160,
+    hash,
+    OPS.OP_EQUALVERIFY,
+    OPS.OP_CHECKSIG
+  ]
+  return script
+}
+
 const __scriptHash = function (hash) {
   const script = new Script()
   script.stack = [
@@ -55,6 +72,7 @@ const __signatureScript = function (signature, pubkey) {
 
 Script.Output = {
   P2PKH: __publicKeyScript,
+  CLTV: __cltvScript,
   P2SH: __scriptHash
 }
 
@@ -126,7 +144,30 @@ Script.prototype.toAsm = function () {
 }
 
 Script.prototype.toBuffer = function () {
-  const bufferSize = this.stack.reduce(function (accum, chunk) {
+  let lockIndex
+  const bufferSize = this.stack.reduce(function (accum, chunk, i) {
+    if (typeof chunk === 'string' && chunk === 'cltv') {
+      lockIndex = 1
+      return accum
+    }
+    if (typeof lockIndex === 'number' && lockIndex === i) {
+      if (chunk === 0) {
+        return accum + 1
+      } else if (chunk >= 1 && chunk <= 16) {
+        return accum + 1
+      } else {
+        const result = Buffer.alloc(9)
+        while (chunk > 0) {
+          result.writeUInt8(chunk & 0xff)
+          chunk >>= 8
+          accum += 1
+        }
+        if ((result[accum - 1] & 0x80) !== 0) {
+          accum += 1
+        }
+        return accum + 1
+      }
+    }
     // data chunk
     if (Buffer.isBuffer(chunk)) {
       // adhere to BIP62.3, minimal push policy
@@ -140,13 +181,47 @@ Script.prototype.toBuffer = function () {
     // opcode
     return accum + 1
   }, 0.0)
-
   const buffer = Buffer.allocUnsafe(bufferSize)
   let offset = 0
 
-  this.stack.forEach(function (chunk) {
-    // data chunk
-    if (Buffer.isBuffer(chunk)) {
+  this.stack.forEach(function (chunk, index) {
+    // Judge whether it is locked or not
+    if (typeof chunk === 'string' && chunk === 'cltv') return
+    // Lock execution
+    if (typeof lockIndex === 'number' && lockIndex === index) {
+      if (chunk === 0) {
+        buffer.writeUInt8(OPS.OP_0, offset)
+        offset += 1
+      } else if (chunk >= 1 && chunk <= 16) {
+        buffer.writeUInt8(OPS.OP_1 - 1 + chunk, offset)
+        offset += 1
+      } else {
+        let dataLen = 0
+        const data = Buffer.alloc(12)
+        let n = chunk
+        while (n > 0) {
+          data.writeUInt8(n & 0xff, dataLen)
+          n >>= 8
+          dataLen++
+        }
+        if ((data[dataLen - 1] & 0x80) !== 0) {
+          dataLen++
+        }
+
+        buffer.writeUInt8(dataLen, offset)
+        offset++
+        console.log(`${offset} - ${chunk}`, buffer)
+        while (chunk > 0) {
+          buffer.writeUInt8(chunk & 0xff, offset)
+          chunk >>= 8
+          offset += 1
+        }
+        if ((buffer[offset - 1] & 0x80) !== 0) {
+          buffer.writeUInt8(0x00, offset)
+          offset += 1
+        }
+      }
+    } else if (Buffer.isBuffer(chunk)) {
       // adhere to BIP62.3, minimal push policy
       const opcode = utils.asMinimalOP(chunk)
       if (opcode !== undefined) {
@@ -159,14 +234,16 @@ Script.prototype.toBuffer = function () {
       chunk.copy(buffer, offset)
       offset += chunk.length
 
-    // opcode
+      // opcode
     } else {
       buffer.writeUInt8(chunk, offset)
       offset += 1
     }
+    console.log('buffer', buffer)
   })
 
   if (offset !== buffer.length) throw new Error('Could not decode chunks')
+  console.log('buffer', buffer)
   return buffer
 }
 
