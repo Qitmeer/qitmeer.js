@@ -14,29 +14,29 @@
     [
       "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","NmHNB2T6pYWj2xRnNZZAuXkXx3iEfiQmocS",
       {
-        "coin": "nox",
+        "coin": "pmeer",
         "network": "mainnet"
       }
     ],
     [
       "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","TmQ44wk1YTapkbwJqD3KhA9nAqQznL9vqFW",
       {
-        "coin": "nox",
+        "coin": "pmeer",
         "network": "testnet"
       }
     ],
     [
       "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","Rm7NkPMsHGSuYFg1o8o4b1v7owdYArn596R",
       {
-        "coin": "nox",
+        "coin": "pmeer",
         "network": "privnet"
       }
     ],
     [
-      "65ffb166a5eb252285b207a5639f97f9dbc42dfb","RmFa5hnPd3uQRpzr3xWTfr8EFZdX7dS1qzV",
+      "0c19fc4e878b2fb6c7c610aa0eec1f68f2028bb6","XmAjW6HhVRVjRfbcjJhBGUNZKMyQ7oQHsaK",
       {
-        "coin": "nox",
-        "network": "privnet"
+        "coin": "pmeer",
+        "network": "mixnet"
       }
     ]
   ],

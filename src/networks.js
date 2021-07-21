@@ -15,7 +15,7 @@ module.exports = {
     PrivateKeyID: 0x0cdd
   },
   mixnet: {
-    pubKeyHashAddrId: 0x1153,
+    pubKeyHashAddrId: 0x1152,
     ScriptHashAddrID: 0x1123,
     PrivateKeyID: 0x2326
   }
