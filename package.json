@@ -27,12 +27,12 @@
   "homepage": "https://github.com/Qitmeer/qitmeer.js#readme",
   "devDependencies": {
     "bs58": "^4.0.1",
-    "mocha": "^8.3.2",
+    "mocha": "^9.0.2",
     "standard": "^16.0.3"
   },
   "dependencies": {
     "bip66": "^1.1.5",
-    "blakejs": "^1.1.0",
+    "blakejs": "^1.1.1",
     "bn.js": "^5.2.0",
     "create-hash": "^1.2.0",
     "merkle-lib": "^2.0.10",
