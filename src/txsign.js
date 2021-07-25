@@ -73,7 +73,7 @@ TxSigner.prototype.addInput = function (txHash, vout, options = {}) {
     prevOutIndex: vout,
     prevOutType: (options && options.prevOutType) || SCRIPT_TYPE.P2PKH,
     prevOutScript: options && options.prevOutScript,
-    lockTime: options.lockTime || 0,
+    lockTime: options.lockTime || 0
   })
 
   this.__tx.addInput(hash, vout, options.sequence)
