@@ -5,7 +5,7 @@ module.exports = {
     PrivateKeyID: 0x22dc
   },
   testnet: {
-    pubKeyHashAddrId: 0x0f12,
+    pubKeyHashAddrId: 0x0f14,
     ScriptHashAddrID: 0x0ee2,
     PrivateKeyID: 0x0ce2
   },
