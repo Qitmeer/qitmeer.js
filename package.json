@@ -28,7 +28,7 @@
   "devDependencies": {
     "bs58": "^4.0.1",
     "mocha": "^9.0.2",
-    "standard": "^16.0.3"
+    "standard": "^16.0.4"
   },
   "dependencies": {
     "bip66": "^1.1.5",
@@ -37,7 +37,7 @@
     "create-hash": "^1.2.0",
     "merkle-lib": "^2.0.10",
     "randombytes": "^2.1.0",
-    "standard": "^16.0.3",
+    "standard": "^16.0.4",
     "tiny-secp256k1": "^1.1.6",
     "varuint-bitcoin": "^1.1.2"
   },
