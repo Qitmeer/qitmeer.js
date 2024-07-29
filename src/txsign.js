@@ -18,7 +18,6 @@ function TxSigner (network = Network.privnet) {
   this.__inputs = []
   this.__network = network
   this.__tx = new Transaction()
-  this.__tx.timestamp = (Date.now()/1000)
 }
 
 TxSigner.newSigner = function (network) {
