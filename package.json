@@ -2,11 +2,11 @@
   "name": "qitmeer-js",
   "version": "1.0.8",
   "description": "Qirmeer client-side JavaScript library",
-  "main": "./src/index.js",
+  "main": "./src/index.ts",
   "scripts": {
     "test": "npm run standard && npm run unit",
     "standard": "standard",
-    "unit": "mocha ./test/qitmeer.core.js",
+    "unit": "mocha --require ts-node/register ./test/qitmeer.core.ts",
     "standfix": "standard --fix"
   },
   "repository": {
@@ -27,15 +27,12 @@
   "homepage": "https://github.com/Qitmeer/qitmeer.js#readme",
   "devDependencies": {
     "@types/bs58": "^4.0.4",
-    "@types/chai": "^4.3.17",
     "@types/create-hash": "^1.2.6",
     "@types/mocha": "^10.0.7",
     "@types/tiny-secp256k1": "^2.0.1",
     "bs58": "^4.0.1",
-    "chai": "^5.1.1",
     "mocha": "^10.7.0",
     "standard": "^16.0.3",
-    "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
