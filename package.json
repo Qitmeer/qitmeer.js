@@ -48,7 +48,5 @@
     "standard": "^16.0.3",
     "tiny-secp256k1": "^1.1.6",
     "varuint-bitcoin": "^1.1.2"
-  },
-  "_from": "qitmeer-ts@1.0.0",
-  "_resolved": "https://registry.npm.taobao.org/qitmeer-ts/download/qitmeer-js-1.0.0.tgz"
+  }
 }
