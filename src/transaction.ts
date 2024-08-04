@@ -2,7 +2,6 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-const Buffer = require("safe-buffer").Buffer;
 import * as utils from "./utils";
 import * as varuint from "varuint-bitcoin";
 import * as hash from "./hash";

@@ -2,7 +2,6 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-const Buffer = require("safe-buffer").Buffer;
 import qitmeer58check from "./qitmeer58check";
 import { NetworkConfig } from "./networks";
 import Script from "./script";

@@ -1,5 +1,4 @@
 const bip66 = require("bip66");
-const Buffer = require("safe-buffer").Buffer;
 import typecheck from "./typecheck";
 import types from "./types";
 

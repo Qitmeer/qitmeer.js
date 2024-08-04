@@ -4,7 +4,6 @@
 
 import createHash from "create-hash";
 const blakejs = require("blakejs");
-const Buffer = require("safe-buffer").Buffer;
 
 function ripemd160(buffer: Buffer): Buffer {
   return Buffer.from(createHash("rmd160").update(buffer).digest());

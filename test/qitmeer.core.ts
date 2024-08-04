@@ -3,10 +3,9 @@
 // license that can be found in the LICENSE file.
 import { describe, it } from "mocha";
 import assert from "assert";
-const base58 = require("bs58");
+import bs58 from "bs58";
 import * as qitmeer from "../src";
 const data = require("./data/qitmeer.core/core.json");
-const Buffer = require("safe-buffer").Buffer;
 describe("qitmeer-core", () => {
   // type check
   describe("type check", function () {
@@ -29,11 +28,11 @@ describe("qitmeer-core", () => {
       const hexStr = f[0];
       const b58Str = f[1];
       it("encode " + hexStr + " -> " + b58Str, function () {
-        const encoded = base58.encode(Buffer.from(hexStr, "hex"));
+        const encoded = bs58.encode(Buffer.from(hexStr, "hex")).toString();
         assert.strictEqual(encoded, b58Str);
       });
       it("decode " + b58Str + " -> " + hexStr, function () {
-        const decoded = base58.decode(b58Str).toString("hex");
+        const decoded = Buffer.from(bs58.decode(b58Str)).toString("hex");
         assert.strictEqual(decoded, hexStr);
       });
     });
@@ -153,7 +152,7 @@ describe("qitmeer-core", () => {
         it("fromWIF " + wifStr, function () {
           assert.strictEqual(
             ecPrivStr,
-            Buffer.from(ecPair.privateKey).toString("hex")
+            Buffer.from(ecPair.privateKey as Buffer).toString("hex")
           );
           assert.strictEqual(true, ecPair.compressed);
         });
@@ -172,7 +171,7 @@ describe("qitmeer-core", () => {
         it("fromWIF " + wifStr, function () {
           assert.strictEqual(
             ecPrivStr,
-            Buffer.from(ecPair.privateKey).toString("hex")
+            Buffer.from(ecPair.privateKey as Buffer).toString("hex")
           );
           assert.strictEqual(false, ecPair.compressed);
         });

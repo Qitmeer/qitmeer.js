@@ -34,7 +34,8 @@ class EC {
     this.network = options.network || networks.privnet;
     this.__priv = priv || null;
     this.__pub = null;
-    if (pub) this.__pub = secp256k1.pointCompress(pub, this.compressed);
+    if (pub)
+      this.__pub = Buffer.from(secp256k1.pointCompress(pub, this.compressed));
   }
 
   get privateKey(): Buffer | null {
@@ -43,7 +44,9 @@ class EC {
 
   get publicKey(): Buffer {
     if (!this.__pub)
-      this.__pub = secp256k1.pointFromScalar(this.__priv!, this.compressed);
+      this.__pub = Buffer.from(
+        secp256k1.pointFromScalar(this.__priv!, this.compressed) as Uint8Array
+      );
     return this.__pub as Buffer;
   }
 
@@ -54,7 +57,7 @@ class EC {
 
   sign(hash: Buffer): Buffer {
     if (!this.__priv) throw new Error("Missing private key");
-    return secp256k1.sign(hash, this.__priv);
+    return Buffer.from(secp256k1.sign(hash, this.__priv));
   }
 
   verify(hash: Buffer, signature: Buffer): boolean {
@@ -84,7 +87,6 @@ function fromPublicKey(buffer: Buffer, options: ECOptions = {}): EC {
 
 function fromWIF(string: string): EC {
   const decoded: WIFDecoded = wif.decode(string);
-  console.log(decoded.privateKey, "----------------");
   return fromPrivateKey(decoded.privateKey, {
     compressed: decoded.compressed,
   });

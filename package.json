@@ -24,13 +24,11 @@
   },
   "homepage": "https://github.com/Qitmeer/qitmeer.ts#readme",
   "devDependencies": {
-    "@types/bs58": "^4.0.4",
     "@types/create-hash": "^1.2.6",
     "@types/mocha": "^10.0.7",
-    "@types/tiny-secp256k1": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "bs58": "^4.0.1",
+    "bs58": "^6.0.0",
     "eslint": "^9.8.0",
     "mocha": "^10.7.0",
     "standard": "^16.0.3",
@@ -38,7 +36,10 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@types/base-x": "^3.0.6",
+    "@types/bs58": "^4.0.4",
     "ansi-colors": "^4.1.3",
+    "base-x": "^5.0.0",
     "bip66": "^1.1.5",
     "blakejs": "^1.1.1",
     "bn.js": "^5.2.0",
@@ -46,7 +47,7 @@
     "merkle-lib": "^2.0.10",
     "randombytes": "^2.1.0",
     "standard": "^16.0.3",
-    "tiny-secp256k1": "^1.1.6",
+    "tiny-secp256k1": "^2.2.3",
     "varuint-bitcoin": "^1.1.2"
   }
 }

@@ -4,8 +4,7 @@
 
 "use strict";
 
-import base58 from "bs58";
-const Buffer = require("safe-buffer").Buffer;
+import bs58 from "bs58";
 import * as HashFunctions from "./hash";
 
 type ChecksumFn = (payload: Buffer) => Buffer;
@@ -21,15 +20,15 @@ function Qitmeer58checkBase(checksumFn: ChecksumFn): Qitmeer58Check {
   function encode(payload: Buffer): string {
     const checksum = checksumFn(payload);
 
-    return base58.encode(
-      Buffer.concat([payload, checksum], payload.length + 4)
-    );
+    return bs58
+      .encode(Buffer.concat([payload, checksum], payload.length + 4))
+      .toString();
   }
 
   function decodeRaw(buffer: Buffer): Buffer | undefined {
     const payload = buffer.slice(0, -4);
     const checksum = buffer.slice(-4);
-    const newChecksum = checksumFn(payload);
+    const newChecksum = checksumFn(payload as Buffer);
     if (
       ((checksum[0] as number) ^ (newChecksum[0] as number)) |
       ((checksum[1] as number) ^ (newChecksum[1] as number)) |
@@ -43,14 +42,14 @@ function Qitmeer58checkBase(checksumFn: ChecksumFn): Qitmeer58Check {
 
   // Decode a base58-check encoded string to a buffer, no result if checksum is wrong
   function decodeUnsafe(string: string): Buffer | undefined {
-    const buffer = base58.decodeUnsafe(string);
+    const buffer = bs58.decodeUnsafe(string);
     if (!buffer) return undefined;
 
-    return decodeRaw(buffer);
+    return decodeRaw(Buffer.from(buffer));
   }
 
   function decode(string: string): Buffer {
-    const buffer = base58.decode(string);
+    const buffer = Buffer.from(bs58.decode(string));
     const payload = decodeRaw(buffer);
     if (!payload) throw new Error("Invalid checksum");
     return payload;

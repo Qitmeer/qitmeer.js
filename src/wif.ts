@@ -4,7 +4,6 @@
 
 import qitmeer58check from "./qitmeer58check";
 import types from "./types";
-const Buffer = require("safe-buffer").Buffer;
 
 interface DecodeResult {
   version: number;
@@ -49,6 +48,7 @@ function encodeRaw(
     version = 0x80;
   }
   result.writeUInt8(version as number, 0);
+
   privateKey.copy(result, 1);
 
   if (compressed) {

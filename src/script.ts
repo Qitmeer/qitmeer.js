@@ -2,7 +2,6 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-const Buffer = require("safe-buffer").Buffer;
 const OPS = require("./ops/ops.json");
 const OPS_MAP = require("./ops/map");
 import * as utils from "./ops/utils";
@@ -129,7 +128,7 @@ class Script {
             n >>= 8;
             dataLen++;
           }
-          if ((result[dataLen - 1] & 0x80) !== 0) {
+          if (((result[dataLen - 1] as number) & 0x80) !== 0) {
             dataLen++;
           }
           return (accum as number) + dataLen + 1;
@@ -154,7 +153,7 @@ class Script {
       // opcode
       return (accum as number) + 1;
     }, 0.0);
-    const buffer = Buffer.allocUnsafe(bufferSize);
+    const buffer = Buffer.allocUnsafe(bufferSize as number);
     let offset = 0;
 
     this.stack.forEach((chunk, index) => {
@@ -177,7 +176,7 @@ class Script {
             n >>= 8;
             dataLen++;
           }
-          if ((data[dataLen - 1] & 0x80) !== 0) {
+          if (((data[dataLen - 1] as number) & 0x80) !== 0) {
             dataLen++;
           }
 
@@ -188,7 +187,7 @@ class Script {
             (chunk as number) >>= 8;
             offset += 1;
           }
-          if ((buffer[offset - 1] & 0x80) !== 0) {
+          if (((buffer[offset - 1] as number) & 0x80) !== 0) {
             buffer.writeUInt8(0x00, offset);
             offset += 1;
           }
@@ -206,7 +205,7 @@ class Script {
         (chunk as Buffer).copy(buffer, offset);
         offset += (chunk as Buffer).length;
       } else {
-        buffer.writeUInt8(chunk, offset);
+        buffer.writeUInt8(chunk as number, offset);
         offset += 1;
       }
     });
