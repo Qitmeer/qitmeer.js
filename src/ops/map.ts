@@ -2,12 +2,12 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-const OPS = require('./ops.json')
+const OPS = require("./ops.json");
 
-const map = {}
+const map: Record<number, string> = {};
 for (const op in OPS) {
-  const code = OPS[op]
-  map[code] = op
+  const code = OPS[op] as number;
+  map[code] = op;
 }
 
-module.exports = map
+export default map;

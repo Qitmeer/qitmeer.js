@@ -1,36 +1,44 @@
 {
-  "name": "qitmeer-js",
-  "version": "1.0.8",
+  "name": "qitmeer-ts",
+  "version": "1.0.9",
   "description": "Qirmeer client-side JavaScript library",
-  "main": "./src/index.js",
+  "main": "./src/index.ts",
   "scripts": {
-    "test": "npm run standard && npm run unit",
-    "standard": "standard",
-    "unit": "mocha ./test/qitmeer.core.js",
-    "standfix": "standard --fix"
+    "test": " npm run unit",
+    "unit": "mocha --require ts-node/register ./test/qitmeer.core.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Qitmeer/qitmeer.js"
+    "url": "git+https://github.com/Qitmeer/qitmeer.ts"
   },
   "keywords": [
-    "qitmeer.js",
+    "qitmeer.ts",
     "qitmeer-lib",
     "qitmeer",
-    "qitmeer-js"
+    "qitmeer-ts"
   ],
   "author": "dindinw",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Qitmeer/qitmeer.js/issues"
+    "url": "https://github.com/Qitmeer/qitmeer.ts/issues"
   },
-  "homepage": "https://github.com/Qitmeer/qitmeer.js#readme",
+  "homepage": "https://github.com/Qitmeer/qitmeer.ts#readme",
   "devDependencies": {
+    "@types/bs58": "^4.0.4",
+    "@types/create-hash": "^1.2.6",
+    "@types/mocha": "^10.0.7",
+    "@types/tiny-secp256k1": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "bs58": "^4.0.1",
-    "mocha": "^10.2.0",
-    "standard": "^16.0.3"
+    "eslint": "^9.8.0",
+    "mocha": "^10.7.0",
+    "standard": "^16.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
+    "ansi-colors": "^4.1.3",
     "bip66": "^1.1.5",
     "blakejs": "^1.1.1",
     "bn.js": "^5.2.0",
@@ -41,6 +49,6 @@
     "tiny-secp256k1": "^1.1.6",
     "varuint-bitcoin": "^1.1.2"
   },
-  "_from": "qitmeer-js@1.0.0",
-  "_resolved": "https://registry.npm.taobao.org/qitmeer-js/download/qitmeer-js-1.0.0.tgz"
+  "_from": "qitmeer-ts@1.0.0",
+  "_resolved": "https://registry.npm.taobao.org/qitmeer-ts/download/qitmeer-js-1.0.0.tgz"
 }
