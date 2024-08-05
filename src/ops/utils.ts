@@ -4,31 +4,33 @@
 
 const OPS = require("./ops.json");
 
+import * as uint8arraytools from "uint8array-tools";
+
 function encodingLength(i: number): number {
   return i < OPS.OP_PUSHDATA1 ? 1 : i <= 0xff ? 2 : i <= 0xffff ? 3 : 5;
 }
 
-function encode(buffer: Buffer, number: number, offset: number): number {
+function encode(buffer: Uint8Array, number: number, offset: number): number {
   const size = encodingLength(number);
 
   // ~6 bit
   if (size === 1) {
-    buffer.writeUInt8(number, offset);
+    uint8arraytools.writeUInt8(buffer, offset, number);
 
     // 8 bit
   } else if (size === 2) {
-    buffer.writeUInt8(OPS.OP_PUSHDATA1, offset);
-    buffer.writeUInt8(number, offset + 1);
+    uint8arraytools.writeUInt8(buffer, offset, OPS.OP_PUSHDATA1);
+    uint8arraytools.writeUInt8(buffer, offset + 1, number);
 
     // 16 bit
   } else if (size === 3) {
-    buffer.writeUInt8(OPS.OP_PUSHDATA2, offset);
-    buffer.writeUInt16LE(number, offset + 1);
+    uint8arraytools.writeUInt8(buffer, offset, OPS.OP_PUSHDATA2);
+    uint8arraytools.writeUInt16(buffer, offset + 1, number, "LE");
 
     // 32 bit
   } else {
-    buffer.writeUInt8(OPS.OP_PUSHDATA4, offset);
-    buffer.writeUInt32LE(number, offset + 1);
+    uint8arraytools.writeUInt8(buffer, offset, OPS.OP_PUSHDATA4);
+    uint8arraytools.writeUInt16(buffer, offset + 1, number, "LE");
   }
 
   return size;
@@ -40,8 +42,8 @@ interface DecodeResult {
   size: number;
 }
 
-function decode(buffer: Buffer, offset: number): DecodeResult | null {
-  const opcode = buffer.readUInt8(offset);
+function decode(buffer: Uint8Array, offset: number): DecodeResult | null {
+  const opcode = uint8arraytools.readUInt8(buffer, offset);
   let number: number;
   let size: number;
 
@@ -53,13 +55,13 @@ function decode(buffer: Buffer, offset: number): DecodeResult | null {
     // 8 bit
   } else if (opcode === OPS.OP_PUSHDATA1) {
     if (offset + 2 > buffer.length) return null;
-    number = buffer.readUInt8(offset + 1);
+    number = uint8arraytools.readUInt8(buffer, offset + 1);
     size = 2;
 
     // 16 bit
   } else if (opcode === OPS.OP_PUSHDATA2) {
     if (offset + 3 > buffer.length) return null;
-    number = buffer.readUInt16LE(offset + 1);
+    number = uint8arraytools.readUInt16(buffer, offset + 1, "LE");
     size = 3;
 
     // 32 bit
@@ -67,7 +69,7 @@ function decode(buffer: Buffer, offset: number): DecodeResult | null {
     if (offset + 5 > buffer.length) return null;
     if (opcode !== OPS.OP_PUSHDATA4) throw new Error("Unexpected opcode");
 
-    number = buffer.readUInt32LE(offset + 1);
+    number = uint8arraytools.readUInt16(buffer, offset + 1, "LE");
     size = 5;
   }
 
@@ -80,7 +82,7 @@ function decode(buffer: Buffer, offset: number): DecodeResult | null {
 
 const OP_INT_BASE = OPS.OP_RESERVED; // OP_1 - 1
 
-function asMinimalOP(buffer: Buffer): number | undefined {
+function asMinimalOP(buffer: Uint8Array): number | undefined {
   if (buffer.length === 0) return OPS.OP_0;
   if (buffer.length !== 1) return;
   if ((buffer[0] as number) >= 1 && (buffer[0] as number) <= 16)

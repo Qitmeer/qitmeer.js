@@ -15,7 +15,7 @@ function _LengthN(
 }
 
 function _Buffer(value: any): boolean {
-  return Buffer.isBuffer(value);
+  return value instanceof Uint8Array;
 }
 
 const _BufferN = _LengthN.bind(null, _Buffer);
@@ -107,7 +107,7 @@ const types = {
   UInt32: function (value: any): boolean {
     return value >>> 0 === value;
   },
-  Buffer: _Buffer,
+  Uint8Array: _Buffer,
   BufferN: _BufferN,
   Hex: _Hex,
   Hex32: _HexN(64),

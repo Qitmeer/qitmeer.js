@@ -4,14 +4,15 @@
 
 import qitmeer58check from "./qitmeer58check";
 import types from "./types";
+import * as uint8arraytools from "uint8array-tools";
 
 interface DecodeResult {
   version: number;
-  privateKey: Buffer;
+  privateKey: Uint8Array;
   compressed: boolean;
 }
 
-function decodeRaw(buffer: Buffer, version?: number): DecodeResult {
+function decodeRaw(buffer: Uint8Array, version?: number): DecodeResult {
   // check version only if defined
   if (version !== undefined && buffer[0] !== version)
     throw new Error("Invalid network version");
@@ -39,18 +40,17 @@ function decodeRaw(buffer: Buffer, version?: number): DecodeResult {
 }
 
 function encodeRaw(
-  privateKey: Buffer,
+  privateKey: Uint8Array,
   compressed: boolean,
   version?: number
-): Buffer {
-  const result = Buffer.alloc(compressed ? 34 : 33);
+): Uint8Array {
+  const result = new Uint8Array(compressed ? 34 : 33);
   if (types.Nil(version)) {
     version = 0x80;
   }
-  result.writeUInt8(version as number, 0);
-
-  privateKey.copy(result, 1);
-
+  uint8arraytools.writeUInt8(result, 0, version as number);
+  result.set(privateKey, 1);
+  // privateKey.copy(result, 1);
   if (compressed) {
     result[33] = 0x01;
   }
@@ -67,7 +67,7 @@ function decode(string: string, version?: number): DecodeResult {
 }
 
 function encode(
-  privateKey: Buffer,
+  privateKey: Uint8Array,
   compressed: boolean,
   version?: number
 ): string {

@@ -5,6 +5,7 @@ import { describe, it } from "mocha";
 import assert from "assert";
 import bs58 from "bs58";
 import * as qitmeer from "../src";
+import * as uint8arraytools from "uint8array-tools";
 const data = require("./data/qitmeer.core/core.json");
 describe("qitmeer-core", () => {
   // type check
@@ -15,7 +16,10 @@ describe("qitmeer-core", () => {
       assert.strictEqual(qitmeer.typecheck(qitmeer.types.Hex, hexStr), true);
       assert.strictEqual(qitmeer.typecheck(qitmeer.types.Hex32, hexStr), true);
       assert.strictEqual(
-        qitmeer.typecheck(qitmeer.types.Hash256, Buffer.from(hexStr, "hex")),
+        qitmeer.typecheck(
+          qitmeer.types.Hash256,
+          uint8arraytools.fromHex(hexStr)
+        ),
         true
       );
     });
@@ -28,11 +32,11 @@ describe("qitmeer-core", () => {
       const hexStr = f[0];
       const b58Str = f[1];
       it("encode " + hexStr + " -> " + b58Str, function () {
-        const encoded = bs58.encode(Buffer.from(hexStr, "hex")).toString();
+        const encoded = bs58.encode(uint8arraytools.fromHex(hexStr));
         assert.strictEqual(encoded, b58Str);
       });
       it("decode " + b58Str + " -> " + hexStr, function () {
-        const decoded = Buffer.from(bs58.decode(b58Str)).toString("hex");
+        const decoded = uint8arraytools.toHex(bs58.decode(b58Str));
         assert.strictEqual(decoded, hexStr);
       });
     });
@@ -44,9 +48,9 @@ describe("qitmeer-core", () => {
       const inputStr = d[0];
       const hashStr = d[1];
       it("sha256 " + inputStr + " -> " + hashStr, function () {
-        const hash = qitmeer.hash
-          .sha256(Buffer.from(inputStr, "hex"))
-          .toString("hex");
+        const hash = uint8arraytools.toHex(
+          qitmeer.hash.sha256(uint8arraytools.fromHex(inputStr))
+        );
         assert.strictEqual(hash, hashStr);
       });
     });
@@ -55,9 +59,9 @@ describe("qitmeer-core", () => {
       const inputStr = d[0];
       const hashStr = d[1];
       it("blake2b256 " + inputStr + " -> " + hashStr, function () {
-        const hash = qitmeer.hash
-          .blake2b256(Buffer.from(inputStr, "hex"))
-          .toString("hex");
+        const hash = uint8arraytools.toHex(
+          qitmeer.hash.blake2b256(uint8arraytools.fromHex(inputStr))
+        );
         assert.strictEqual(hash, hashStr);
       });
     });
@@ -66,9 +70,9 @@ describe("qitmeer-core", () => {
       const inputStr = d[0];
       const hashStr = d[1];
       it("hash160 " + inputStr + " -> " + hashStr, function () {
-        const hash = qitmeer.hash
-          .hash160(Buffer.from(inputStr, "hex"))
-          .toString("hex");
+        const hash = uint8arraytools.toHex(
+          qitmeer.hash.hash160(uint8arraytools.fromHex(inputStr))
+        );
         assert.strictEqual(hash, hashStr);
       });
     });
@@ -86,7 +90,7 @@ describe("qitmeer-core", () => {
       if (coin === "qitmeer") {
         it("fromBase58Check " + qitmeer58checkStr, function () {
           const decoded = qitmeer.address.fromBase58Check(qitmeer58checkStr);
-          assert.strictEqual(decoded.hash.toString("hex"), hexStr);
+          assert.strictEqual(uint8arraytools.toHex(decoded.hash), hexStr);
           switch (network) {
             case "privnet":
               assert.strictEqual(
@@ -116,21 +120,21 @@ describe("qitmeer-core", () => {
           switch (network) {
             case "privnet":
               encoded = qitmeer.address.toBase58Check(
-                Buffer.from(hexStr, "hex"),
+                uint8arraytools.fromHex(hexStr),
                 qitmeer.networks.privnet.pubKeyHashAddrId
               );
               assert.strictEqual(encoded, qitmeer58checkStr);
               break;
             case "mainnet":
               encoded = qitmeer.address.toBase58Check(
-                Buffer.from(hexStr, "hex"),
+                uint8arraytools.fromHex(hexStr),
                 qitmeer.networks.mainnet.pubKeyHashAddrId
               );
               assert.strictEqual(encoded, qitmeer58checkStr);
               break;
             case "testnet":
               encoded = qitmeer.address.toBase58Check(
-                Buffer.from(hexStr, "hex"),
+                uint8arraytools.fromHex(hexStr),
                 qitmeer.networks.testnet.pubKeyHashAddrId
               );
               assert.strictEqual(encoded, qitmeer58checkStr);
@@ -152,12 +156,13 @@ describe("qitmeer-core", () => {
         it("fromWIF " + wifStr, function () {
           assert.strictEqual(
             ecPrivStr,
-            Buffer.from(ecPair.privateKey as Buffer).toString("hex")
+            uint8arraytools.toHex(ecPair.privateKey as Uint8Array)
           );
           assert.strictEqual(true, ecPair.compressed);
         });
         it("toWIF " + ecPrivStr, function () {
           const wif = ecPair.toWIF();
+          console.log(wifStr, wif);
           assert.strictEqual(wifStr, wif);
         });
       });
@@ -171,7 +176,7 @@ describe("qitmeer-core", () => {
         it("fromWIF " + wifStr, function () {
           assert.strictEqual(
             ecPrivStr,
-            Buffer.from(ecPair.privateKey as Buffer).toString("hex")
+            uint8arraytools.toHex(ecPair.privateKey as Uint8Array)
           );
           assert.strictEqual(false, ecPair.compressed);
         });
@@ -188,21 +193,38 @@ describe("qitmeer-core", () => {
         const pubHex = f[1];
         it("fromPrivateKey " + privHex, function () {
           const keyPair = qitmeer.ec.fromPrivateKey(
-            Buffer.from(privHex, "hex")
+            uint8arraytools.fromHex(privHex)
           );
           assert.strictEqual(keyPair.compressed, true);
-          assert.strictEqual(keyPair.privateKey?.toString("hex"), privHex);
-          assert.strictEqual(keyPair.__priv?.toString("hex"), privHex);
-          assert.strictEqual(keyPair.publicKey.toString("hex"), pubHex);
-          assert.strictEqual(keyPair.__pub?.toString("hex"), pubHex);
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.privateKey as Uint8Array),
+            privHex
+          );
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.__priv as Uint8Array),
+            privHex
+          );
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.publicKey as Uint8Array),
+            pubHex
+          );
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.__pub as Uint8Array),
+            pubHex
+          );
         });
         it("fromPubKey " + pubHex, function () {
-          const keyPair = qitmeer.ec.fromPublicKey(Buffer.from(pubHex, "hex"));
+          const keyPair = qitmeer.ec.fromPublicKey(
+            uint8arraytools.fromHex(pubHex)
+          );
           assert.strictEqual(keyPair.compressed, true);
           assert.strictEqual(keyPair.privateKey, null);
           assert.strictEqual(keyPair.__priv, null);
-          assert.strictEqual(keyPair.publicKey.toString("hex"), pubHex);
-          assert.strictEqual(keyPair.__pub?.toString("hex"), pubHex);
+          assert.strictEqual(uint8arraytools.toHex(keyPair.publicKey), pubHex);
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.__pub as Uint8Array),
+            pubHex
+          );
         });
       });
     });
@@ -213,24 +235,41 @@ describe("qitmeer-core", () => {
         const pubHex = f[1];
         it("fromPrivateKey " + privHex, function () {
           const keyPair = qitmeer.ec.fromPrivateKey(
-            Buffer.from(privHex, "hex"),
-            { compressed: false }
+            uint8arraytools.fromHex(privHex),
+            {
+              compressed: false,
+            }
           );
           assert.strictEqual(keyPair.compressed, false);
-          assert.strictEqual(keyPair.privateKey?.toString("hex"), privHex);
-          assert.strictEqual(keyPair.__priv?.toString("hex"), privHex);
-          assert.strictEqual(keyPair.publicKey.toString("hex"), pubHex);
-          assert.strictEqual(keyPair.__pub?.toString("hex"), pubHex);
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.privateKey as Uint8Array),
+            privHex
+          );
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.__priv as Uint8Array),
+            privHex
+          );
+          assert.strictEqual(uint8arraytools.toHex(keyPair.publicKey), pubHex);
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.__pub as Uint8Array),
+            pubHex
+          );
         });
         it("fromPubKey " + pubHex, function () {
-          const keyPair = qitmeer.ec.fromPublicKey(Buffer.from(pubHex, "hex"), {
-            compressed: false,
-          });
+          const keyPair = qitmeer.ec.fromPublicKey(
+            uint8arraytools.fromHex(pubHex),
+            {
+              compressed: false,
+            }
+          );
           assert.strictEqual(keyPair.compressed, false);
           assert.strictEqual(keyPair.privateKey, null);
           assert.strictEqual(keyPair.__priv, null);
-          assert.strictEqual(keyPair.publicKey.toString("hex"), pubHex);
-          assert.strictEqual(keyPair.__pub?.toString("hex"), pubHex);
+          assert.strictEqual(uint8arraytools.toHex(keyPair.publicKey), pubHex);
+          assert.strictEqual(
+            uint8arraytools.toHex(keyPair.__pub as Uint8Array),
+            pubHex
+          );
         });
       });
     });

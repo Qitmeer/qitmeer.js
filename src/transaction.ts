@@ -8,18 +8,18 @@ import * as hash from "./hash";
 import types from "./types";
 import typecheck from "./typecheck";
 import Script from "script";
-
+import * as uint8arraytools from "uint8array-tools";
 interface VinObj {
-  txid: Buffer;
+  txid: Uint8Array;
   vout: number;
   sequence: number;
-  script: Buffer;
+  script: Uint8Array;
 }
 
 interface VoutObj {
   coinId: number;
   amount: bigint;
-  script: Buffer;
+  script: Uint8Array;
 }
 
 export default class Transaction {
@@ -52,22 +52,22 @@ export default class Transaction {
     this.vout = [];
   }
 
-  static fromBuffer(buffer: Buffer, __noStrict?: boolean): Transaction {
+  static fromBuffer(buffer: Uint8Array, __noStrict?: boolean): Transaction {
     let offset = 0;
 
-    function readSlice(n: number): Buffer {
+    function readSlice(n: number): Uint8Array {
       offset += n;
       return buffer.slice(offset - n, offset);
     }
 
     function readUInt16(): number {
-      const i = buffer.readUInt16LE(offset);
+      const i = uint8arraytools.readUInt16(buffer, offset, "LE");
       offset += 2;
       return i;
     }
 
     function readUInt32(): number {
-      const i = buffer.readUInt32LE(offset);
+      const i = uint8arraytools.readUInt16(buffer, offset, "LE");
       offset += 4;
       return i;
     }
@@ -79,12 +79,12 @@ export default class Transaction {
     }
 
     function readVarInt(): number {
-      const vi = varuint.decode(buffer, offset);
+      const vi = varuint.decode(Buffer.from(buffer), offset);
       offset += varuint.decode.bytes;
       return vi;
     }
 
-    function readVarSlice(): Buffer {
+    function readVarSlice(): Uint8Array {
       return readSlice(readVarInt());
     }
 
@@ -111,7 +111,7 @@ export default class Transaction {
           txid: readSlice(32),
           vout: readUInt32(),
           sequence: readUInt32(),
-          script: Buffer.alloc(0),
+          script: new Uint8Array(0),
         });
       }
       const voutLen = readVarInt();
@@ -140,7 +140,7 @@ export default class Transaction {
     for (let i = 0; i < vinLen; ++i) {
       tx!.vin[i]!.script = hasWitnesses
         ? readVarSlice()
-        : Buffer.from("", "hex");
+        : uint8arraytools.fromHex("");
     }
 
     if (__noStrict) return tx;
@@ -162,6 +162,7 @@ export default class Transaction {
         stype === Transaction.TxSerializeOnlyWitness;
       onlyWitnesses = stype === Transaction.TxSerializeOnlyWitness;
     }
+    const twoUint8Arr = new Uint8Array(2);
     const length =
       4 + // version
       (onlyWitnesses ? 0 : varuint.encodingLength(this.vin.length)) +
@@ -180,7 +181,7 @@ export default class Transaction {
         ? this.vin.reduce(
             (sum, input) =>
               sum +
-              (Buffer.alloc(2).compare(input.script) === 0
+              (uint8arraytools.compare(twoUint8Arr, input.script) === 0
                 ? 1
                 : varSliceSize(input.script)),
             0
@@ -190,39 +191,49 @@ export default class Transaction {
   }
 
   toHex(): string {
-    return this.toBuffer().toString("hex");
+    return uint8arraytools.toHex(this.toBuffer());
   }
 
-  toBuffer(buffer?: Buffer, initialOffset?: number, stype?: number): Buffer {
-    if (!buffer) buffer = Buffer.alloc(this.byteLength(stype));
+  toBuffer(
+    buffer?: Uint8Array,
+    initialOffset?: number,
+    stype?: number
+  ): Uint8Array {
+    if (!buffer) buffer = new Uint8Array(this.byteLength(stype));
     let offset = initialOffset || 0;
 
-    function writeSlice(slice: Buffer): void {
-      offset += slice.copy(buffer as Buffer, offset);
+    function writeSlice(slice: Uint8Array): void {
+      buffer!.set(slice, offset);
+      offset += slice.length;
     }
 
     function writeUInt16(i: number): void {
-      offset = (buffer as Buffer).writeUInt16LE(i, offset);
+      uint8arraytools.writeUInt16(buffer as Uint8Array, offset, i, "LE");
+      offset = buffer!.length;
     }
 
     function writeUInt32(i: number): void {
-      offset = (buffer as Buffer).writeUInt32LE(i, offset);
+      // offset = (buffer as Uint8Array).writeUInt32LE(i, offset);
+      uint8arraytools.writeUInt32(buffer as Uint8Array, offset, i, "LE");
+      offset = buffer!.length;
     }
 
     function writeInt32(i: number): void {
-      offset = (buffer as Buffer).writeInt32LE(i, offset);
+      // offset = (buffer as Uint8Array).writeInt32LE(i, offset);
+      uint8arraytools.writeUInt32(buffer as Uint8Array, offset, i, "LE");
+      offset = buffer!.length;
     }
 
     function writeUInt64(i: bigint): void {
-      offset = utils.writeUInt64LE(buffer as Buffer, Number(i), offset);
+      offset = utils.writeUInt64LE(buffer as Uint8Array, Number(i), offset);
     }
 
     function writeVarInt(i: number): void {
-      varuint.encode(i, buffer, offset);
+      varuint.encode(i, Buffer.from(buffer as Uint8Array), offset);
       offset += varuint.encode.bytes;
     }
 
-    function writeVarSlice(slice: Buffer): void {
+    function writeVarSlice(slice: Uint8Array): void {
       writeVarInt(slice.length);
       writeSlice(slice);
     }
@@ -264,18 +275,19 @@ export default class Transaction {
 
     if (serializeType !== Transaction.TxSerializeNoWitness) {
       writeVarInt(this.vin.length);
+      const twoUint8Array = new Uint8Array(2);
       this.vin.forEach(function (input) {
-        if (Buffer.alloc(2).compare(input.script) !== 0)
+        if (uint8arraytools.compare(twoUint8Array, input.script) !== 0)
           writeVarSlice(input.script);
       });
     }
     // avoid slicing unless necessary
     if (initialOffset !== undefined)
-      return (buffer as Buffer).slice(initialOffset, offset);
-    return buffer as Buffer;
+      return (buffer as Uint8Array).slice(initialOffset, offset);
+    return buffer as Uint8Array;
   }
 
-  getTxIdBuffer(): Buffer {
+  getTxIdBuffer(): Uint8Array {
     return hash.dblake2b256(
       this.toBuffer(undefined, undefined, Transaction.TxSerializeNoWitness)
     );
@@ -283,27 +295,27 @@ export default class Transaction {
 
   getTxId(): string {
     // transaction hash's are displayed in reverse order
-    return this.getTxIdBuffer().reverse().toString("hex");
+    return uint8arraytools.toHex(this.getTxIdBuffer().reverse());
   }
 
   getTxHash(): string {
-    return this.getTxHashBuffer().reverse().toString("hex");
+    return uint8arraytools.toHex(this.getTxHashBuffer().reverse());
   }
 
-  getTxHashBuffer(): Buffer {
+  getTxHashBuffer(): Uint8Array {
     // transaction hash's are displayed in reverse order
     return hash.dblake2b256(
-      Buffer.concat([
+      uint8arraytools.concat([
         this.toBuffer(undefined, undefined, Transaction.TxSerializeFull),
       ])
     );
   }
 
   addInput(
-    hash: Buffer,
+    hash: Uint8Array,
     index: number,
     sequence?: number,
-    scriptSig?: Buffer
+    scriptSig?: Uint8Array
   ): number {
     typecheck(types.Hash256, hash);
     typecheck(types.UInt32, index);
@@ -311,7 +323,7 @@ export default class Transaction {
       sequence = Transaction.DEFAULT_SEQUENCE;
     }
     if (types.Nil(scriptSig)) {
-      scriptSig = Buffer.alloc(0);
+      scriptSig = new Uint8Array(0);
     }
     // Add the input and return the input's index
     const size = this.vin.push({
@@ -323,8 +335,8 @@ export default class Transaction {
     return size - 1;
   }
 
-  addOutput(scriptPubKey: Buffer, amount: bigint, coinId = 0): number {
-    typecheck(types.Buffer, scriptPubKey);
+  addOutput(scriptPubKey: Uint8Array, amount: bigint, coinId = 0): number {
+    typecheck(types.Uint8Array, scriptPubKey);
     typecheck(types.Amount, amount);
 
     // Add the output and return the output's index
@@ -337,9 +349,9 @@ export default class Transaction {
     );
   }
 
-  setInputScript(index: number, scriptSig: Buffer): void {
+  setInputScript(index: number, scriptSig: Uint8Array): void {
     typecheck(types.Number, index);
-    typecheck(types.Buffer, scriptSig);
+    typecheck(types.Uint8Array, scriptSig);
 
     this!.vin[index]!.script = scriptSig;
   }
@@ -374,7 +386,7 @@ export default class Transaction {
     inIndex: number,
     prevOutScript: Script,
     hashType: number
-  ): Buffer {
+  ): Uint8Array {
     const fSingle = (hashType & SigHashMask) === Transaction.SIGHASH_SINGLE;
     const fNone = (hashType & SigHashMask) === Transaction.SIGHASH_NONE;
     const fAnyOne = (hashType & Transaction.SIGHASH_ANYONECANPAY) !== 0;
@@ -418,7 +430,7 @@ export default class Transaction {
     }
     // Blank only other inputs'signatures, SIGHASH_ALL
     txTmp.vin.forEach(function (input) {
-      input.script = Buffer.alloc(0);
+      input.script = new Uint8Array(0);
     });
     txTmp.vin[inIndex]!.script = ourScript;
 
@@ -450,12 +462,12 @@ export default class Transaction {
     // Serialize and Hash
     function sigHashPrefixSerializeSize(
       txIns: Array<{
-        txid: Buffer;
+        txid: Uint8Array;
         vout: number;
         sequence: number;
-        script: Buffer;
+        script: Uint8Array;
       }>,
-      txOuts: Array<{ coinId: number; amount: bigint; script: Buffer }>,
+      txOuts: Array<{ coinId: number; amount: bigint; script: Uint8Array }>,
       inIndex: number
     ): number {
       // 1) 4 bytes version/serialization type
@@ -486,7 +498,7 @@ export default class Transaction {
       txOuts.forEach(function (output, i) {
         let s = output.script;
         if (fSingle && i !== inIndex) {
-          s = Buffer.alloc(0);
+          s = new Uint8Array(0);
         }
         size += varuint.encodingLength(s.length);
         size += s.length;
@@ -496,12 +508,12 @@ export default class Transaction {
 
     function sigHashWitnessSerializeSize(
       txIns: Array<{
-        txid: Buffer;
+        txid: Uint8Array;
         vout: number;
         sequence: number;
-        script: Buffer;
+        script: Uint8Array;
       }>,
-      signScript: Buffer
+      signScript: Uint8Array
     ): number {
       // 1) 4 bytes version/serialization type
       // 2) number of inputs varint
@@ -525,35 +537,56 @@ export default class Transaction {
       return size;
     }
 
-    function writeSlice(buffer: Buffer, slice: Buffer, offset: number): number {
-      const o = slice.copy(buffer, offset);
-      return offset + o;
+    function writeSlice(
+      buffer: Uint8Array,
+      slice: Uint8Array,
+      offset: number
+    ): number {
+      buffer.set(slice, offset);
+      // const o = slice.copy(buffer, offset);
+      return offset + slice.length;
     }
 
-    function writeUInt16(buffer: Buffer, i: number, offset: number): number {
-      const o = buffer.writeUInt16LE(i, offset);
-      return o;
+    function writeUInt16(
+      buffer: Uint8Array,
+      i: number,
+      offset: number
+    ): number {
+      uint8arraytools.writeUInt16(buffer, offset, i, "LE");
+      return buffer.length;
     }
 
-    function writeUInt32(buffer: Buffer, i: number, offset: number): number {
-      const o = buffer.writeUInt32LE(i, offset);
-      return o;
+    function writeUInt32(
+      buffer: Uint8Array,
+      i: number,
+      offset: number
+    ): number {
+      uint8arraytools.writeUInt32(buffer, offset, i, "LE");
+      return buffer.length;
     }
 
-    function writeUInt64(buffer: Buffer, i: bigint, offset: number): number {
+    function writeUInt64(
+      buffer: Uint8Array,
+      i: bigint,
+      offset: number
+    ): number {
       const o = utils.writeUInt64LE(buffer, Number(i), offset);
       return o;
     }
 
-    function writeVarInt(buffer: Buffer, i: number, offset: number): number {
-      varuint.encode(i, buffer, offset);
+    function writeVarInt(
+      buffer: Uint8Array,
+      i: number,
+      offset: number
+    ): number {
+      varuint.encode(i, Buffer.from(buffer), offset);
       const o = varuint.encode.bytes;
       return offset + o;
     }
 
     function writeVarSlice(
-      buffer: Buffer,
-      slice: Buffer,
+      buffer: Uint8Array,
+      slice: Uint8Array,
       offset: number
     ): number {
       let o = writeVarInt(buffer, slice.length, offset);
@@ -561,7 +594,7 @@ export default class Transaction {
       return o;
     }
 
-    const prefixBuffer = Buffer.allocUnsafe(
+    const prefixBuffer = new Uint8Array(
       sigHashPrefixSerializeSize(txTmp.vin, txTmp.vout, inIndex)
     );
     prefixBuffer.fill(0);
@@ -588,7 +621,7 @@ export default class Transaction {
 
     offset = writeUInt32(prefixBuffer, txTmp.locktime, offset);
     offset = writeUInt32(prefixBuffer, txTmp.exprie, offset);
-    const witnessBuffer = Buffer.allocUnsafe(
+    const witnessBuffer = new Uint8Array(
       sigHashWitnessSerializeSize(txTmp.vin, ourScript)
     );
     witnessBuffer.fill(0);
@@ -608,12 +641,12 @@ export default class Transaction {
     // 1) the hash type (as little-endian uint32)
     // 2) prefix hash (as produced by hash function)
     // 3) witness hash (as produced by hash function)
-    const typeBuffer = Buffer.allocUnsafe(4);
-    typeBuffer.writeUInt32LE(hashType);
+    const typeBuffer = new Uint8Array(4);
+    uint8arraytools.writeUInt32(typeBuffer, 0, hashType, "LE");
     const prefixHash = hash.blake2b256(prefixBuffer);
     const witnessHash = hash.blake2b256(witnessBuffer);
     return hash.blake2b256(
-      Buffer.concat([typeBuffer, prefixHash, witnessHash])
+      uint8arraytools.concat([typeBuffer, prefixHash, witnessHash])
     );
   }
 }
@@ -621,14 +654,14 @@ export default class Transaction {
 const SigHashMask = 0x1f;
 const SigHashSerializePrefix = 1;
 const SigHashSerializeWitness = 3;
-const EMPTY_SCRIPT = Buffer.allocUnsafe(0);
+const EMPTY_SCRIPT = new Uint8Array(0);
 const BLANK_OUTPUT: VoutObj = {
   coinId: 0,
   amount: BigInt(0),
   script: EMPTY_SCRIPT,
 };
 
-function varSliceSize(someScript: Buffer): number {
+function varSliceSize(someScript: Uint8Array): number {
   const length = someScript.length;
 
   return varuint.encodingLength(length) + length;

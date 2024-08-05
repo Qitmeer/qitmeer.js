@@ -10,6 +10,7 @@ import * as addr from "./address";
 import * as crypto from "./hash";
 import * as Signature from "./signature";
 import { NetworkConfig } from "./networks";
+import * as uint8arraytools from "uint8array-tools";
 
 interface InputOptions {
   prevOutType?: string;
@@ -27,8 +28,8 @@ interface Input {
   prevOutType: string;
   prevOutScript?: Script;
   lockTime: number;
-  signature?: Buffer;
-  pubkey?: Buffer;
+  signature?: Uint8Array;
+  pubkey?: Uint8Array;
 }
 
 export default class TxSigner {
@@ -70,7 +71,7 @@ export default class TxSigner {
     typecheck(types.Hex32, txHash);
     typecheck(types.UInt32, vout);
 
-    const hash = Buffer.from(txHash, "hex").reverse();
+    const hash = uint8arraytools.fromHex(txHash).reverse();
     const prevOutId = `${txHash}:${vout}`;
 
     if (this.__inputs.some((input) => input._prevOutId === prevOutId)) {
@@ -92,7 +93,7 @@ export default class TxSigner {
       hash,
       vout,
       options.sequence as number,
-      Buffer.from("0x", "hex")
+      uint8arraytools.fromHex("0x")
     );
   }
 
@@ -138,8 +139,8 @@ export default class TxSigner {
       tx.setInputScript(
         i,
         Script.Input.P2PKH(
-          input.signature as Buffer,
-          input.pubkey as Buffer
+          input.signature as Uint8Array,
+          input.pubkey as Uint8Array
         ).toBuffer()
       );
     });

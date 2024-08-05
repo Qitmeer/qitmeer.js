@@ -14,19 +14,19 @@ interface ECOptions {
 }
 
 interface WIFDecoded {
-  privateKey: Buffer;
+  privateKey: Uint8Array;
   compressed: boolean;
 }
 
 class EC {
-  public __priv: Buffer | null;
-  public __pub: Buffer | null;
+  public __priv: Uint8Array | null;
+  public __pub: Uint8Array | null;
   public compressed: boolean;
   public network: NetworkConfig;
 
   constructor(
-    priv: Buffer | null,
-    pub: Buffer | null,
+    priv: Uint8Array | null,
+    pub: Uint8Array | null,
     options: ECOptions = {}
   ) {
     this.compressed =
@@ -35,19 +35,21 @@ class EC {
     this.__priv = priv || null;
     this.__pub = null;
     if (pub)
-      this.__pub = Buffer.from(secp256k1.pointCompress(pub, this.compressed));
+      this.__pub = Uint8Array.from(
+        secp256k1.pointCompress(pub, this.compressed)
+      );
   }
 
-  get privateKey(): Buffer | null {
+  get privateKey(): Uint8Array | null {
     return this.__priv;
   }
 
-  get publicKey(): Buffer {
+  get publicKey(): Uint8Array {
     if (!this.__pub)
-      this.__pub = Buffer.from(
+      this.__pub = Uint8Array.from(
         secp256k1.pointFromScalar(this.__priv!, this.compressed) as Uint8Array
       );
-    return this.__pub as Buffer;
+    return this.__pub as Uint8Array;
   }
 
   toWIF(): string {
@@ -55,19 +57,19 @@ class EC {
     return wif.encode(this.__priv, this.compressed);
   }
 
-  sign(hash: Buffer): Buffer {
+  sign(hash: Uint8Array): Uint8Array {
     if (!this.__priv) throw new Error("Missing private key");
-    return Buffer.from(secp256k1.sign(hash, this.__priv));
+    return Uint8Array.from(secp256k1.sign(hash, this.__priv));
   }
 
-  verify(hash: Buffer, signature: Buffer): boolean {
+  verify(hash: Uint8Array, signature: Uint8Array): boolean {
     return secp256k1.verify(hash, this.publicKey, signature);
   }
 }
 
 function fromEntropy(options: ECOptions = {}): EC {
   const rng = options.rng || randomBytes;
-  let x: Buffer;
+  let x: Uint8Array;
   do {
     x = rng(32);
   } while (!secp256k1.isPrivate(x));
@@ -75,13 +77,13 @@ function fromEntropy(options: ECOptions = {}): EC {
   return fromPrivateKey(x, options);
 }
 
-function fromPrivateKey(buffer: Buffer, options: ECOptions = {}): EC {
+function fromPrivateKey(buffer: Uint8Array, options: ECOptions = {}): EC {
   if (!secp256k1.isPrivate(buffer))
     throw new TypeError("Private key not in range [1, n)");
   return new EC(buffer, null, options);
 }
 
-function fromPublicKey(buffer: Buffer, options: ECOptions = {}): EC {
+function fromPublicKey(buffer: Uint8Array, options: ECOptions = {}): EC {
   return new EC(null, buffer, options);
 }
 

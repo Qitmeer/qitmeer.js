@@ -7,10 +7,11 @@ import { NetworkConfig } from "./networks";
 import Script from "./script";
 import types from "./types";
 import typecheck from "./typecheck";
+import * as uint8arraytools from "uint8array-tools";
 
 interface DecodeResult {
   version: number;
-  hash: Buffer;
+  hash: Uint8Array;
 }
 
 export { fromBase58Check, toBase58Check, toOutputScript };
@@ -21,17 +22,19 @@ function fromBase58Check(address: string): DecodeResult {
     throw new TypeError(`${address} is too short`);
   if (payload.length > 22) throw new TypeError(`${address} is too long`);
 
-  const version = payload.readUInt16BE(0);
+  const version = uint8arraytools.readUInt16(payload, 0, "BE");
   const hash = payload.slice(2);
 
   return { version, hash };
 }
 
-function toBase58Check(hash: Buffer, version: number): string {
+function toBase58Check(hash: Uint8Array, version: number): string {
   typecheck(types.Hash160, hash);
-  const payload = Buffer.allocUnsafe(22);
-  payload.writeUInt16BE(version, 0);
-  hash.copy(payload, 2);
+  const payload = new Uint8Array(22);
+  uint8arraytools.writeUInt16(payload, 0, version, "BE");
+  // hash.copy(payload, 2);
+  payload.set(hash, 2);
+  // for (var i = 2; i < payload.length; i++) hash[i] = payload[i];
   return qitmeer58check.default.encode(payload);
 }
 

@@ -6,29 +6,32 @@
 
 import bs58 from "bs58";
 import * as HashFunctions from "./hash";
+import * as uint8arraytools from "uint8array-tools";
 
-type ChecksumFn = (payload: Buffer) => Buffer;
+type ChecksumFn = (payload: Uint8Array) => Uint8Array;
 
 interface Qitmeer58Check {
-  encode: (payload: Buffer) => string;
-  decode: (string: string) => Buffer;
-  decodeUnsafe: (string: string) => Buffer | undefined;
+  encode: (payload: Uint8Array) => string;
+  decode: (string: string) => Uint8Array;
+  decodeUnsafe: (string: string) => Uint8Array | undefined;
 }
 
 function Qitmeer58checkBase(checksumFn: ChecksumFn): Qitmeer58Check {
   // Encode a buffer as a base58-check encoded string
-  function encode(payload: Buffer): string {
+  function encode(payload: Uint8Array): string {
     const checksum = checksumFn(payload);
+    let res = uint8arraytools.concat([payload, checksum]);
 
-    return bs58
-      .encode(Buffer.concat([payload, checksum], payload.length + 4))
-      .toString();
+    return bs58.encode(
+      // uint8arraytools.concat([payload, checksum], payload.length + 4)
+      res.slice(0, payload.length + 4)
+    );
   }
 
-  function decodeRaw(buffer: Buffer): Buffer | undefined {
+  function decodeRaw(buffer: Uint8Array): Uint8Array | undefined {
     const payload = buffer.slice(0, -4);
     const checksum = buffer.slice(-4);
-    const newChecksum = checksumFn(payload as Buffer);
+    const newChecksum = checksumFn(payload as Uint8Array);
     if (
       ((checksum[0] as number) ^ (newChecksum[0] as number)) |
       ((checksum[1] as number) ^ (newChecksum[1] as number)) |
@@ -41,15 +44,15 @@ function Qitmeer58checkBase(checksumFn: ChecksumFn): Qitmeer58Check {
   }
 
   // Decode a base58-check encoded string to a buffer, no result if checksum is wrong
-  function decodeUnsafe(string: string): Buffer | undefined {
+  function decodeUnsafe(string: string): Uint8Array | undefined {
     const buffer = bs58.decodeUnsafe(string);
     if (!buffer) return undefined;
 
-    return decodeRaw(Buffer.from(buffer));
+    return decodeRaw(Uint8Array.from(buffer));
   }
 
-  function decode(string: string): Buffer {
-    const buffer = Buffer.from(bs58.decode(string));
+  function decode(string: string): Uint8Array {
+    const buffer = Uint8Array.from(bs58.decode(string));
     const payload = decodeRaw(buffer);
     if (!payload) throw new Error("Invalid checksum");
     return payload;

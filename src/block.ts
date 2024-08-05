@@ -6,12 +6,13 @@ const varuint = require("varuint-bitcoin");
 import Transaction from "./transaction";
 import * as hash from "./hash";
 const fastMerkleRoot = require("merkle-lib/fastRoot");
+import * as uint8arraytools from "uint8array-tools";
 
 const BlockHeaderSize = 4 + 32 + 32 + 32 + 4 + 4 + (4 + 1 + 1 + 168);
 
 interface PowData {
   edge_bits: number;
-  circle_nonces: Buffer;
+  circle_nonces: Uint8Array;
 }
 
 interface BlockPow {
@@ -22,14 +23,14 @@ interface BlockPow {
 
 export default class Block {
   version: number;
-  parentRoot: Buffer | null;
-  txRoot: Buffer | null;
-  stateRoot: Buffer | null;
+  parentRoot: Uint8Array | null;
+  txRoot: Uint8Array | null;
+  stateRoot: Uint8Array | null;
   difficulty: number;
   timestamp: Date;
   nonce: number;
   transactions: Transaction[];
-  parents: Buffer[];
+  parents: Uint8Array[];
   pow: BlockPow;
 
   constructor() {
@@ -47,29 +48,30 @@ export default class Block {
       pow_type: 0,
       proof_data: {
         edge_bits: 0,
-        circle_nonces: Buffer.alloc(168),
+        circle_nonces: new Uint8Array(168),
       },
     };
   }
 
-  static fromBuffer(buffer: Buffer): Block {
-    if (buffer.length < 80) throw new Error("Buffer too small (< 80 bytes)");
+  static fromBuffer(buffer: Uint8Array): Block {
+    if (buffer.length < 80)
+      throw new Error("Uint8Array too small (< 80 bytes)");
 
     let offset = 0;
 
-    function readSlice(n: number): Buffer {
+    function readSlice(n: number): Uint8Array {
       offset += n;
       return buffer.slice(offset - n, offset);
     }
 
     function readUInt32(): number {
-      const i = buffer.readUInt32LE(offset);
+      const i = uint8arraytools.readUInt32(buffer, offset, "LE");
       offset += 4;
       return i;
     }
 
     function readInt32(): number {
-      const i = buffer.readInt32LE(offset);
+      const i = uint8arraytools.readUInt32(buffer, offset, "LE");
       offset += 4;
       return i;
     }
@@ -144,24 +146,26 @@ export default class Block {
     );
   }
 
-  toBuffer(headersOnly?: boolean): Buffer {
-    const buffer = Buffer.allocUnsafe(this.byteLength(headersOnly));
+  toBuffer(headersOnly?: boolean): Uint8Array {
+    const buffer = new Uint8Array(this.byteLength(headersOnly));
     let offset = 0;
 
-    function writeSlice(slice: Buffer): number {
-      slice.copy(buffer, offset);
+    function writeSlice(slice: Uint8Array): number {
+      // slice.copy(buffer, offset);
+      buffer.set(slice, offset);
+      // for (var i = offset; i < slice.length; i++) buffer[i] = slice[i];
       offset += slice.length;
       return offset;
     }
 
     function writeInt32(i: number): number {
-      buffer.writeInt32LE(i, offset);
+      uint8arraytools.writeUInt32(buffer, offset, i, "LE");
       offset += 4;
       return offset;
     }
 
     function writeUInt32(i: number): number {
-      buffer.writeUInt32LE(i, offset);
+      uint8arraytools.writeUInt32(buffer, offset, i, "LE");
       offset += 4;
       return offset;
     }
@@ -203,17 +207,17 @@ export default class Block {
     return buffer;
   }
 
-  getHashBuffer(): Buffer {
+  getHashBuffer(): Uint8Array {
     return hash.dblake2b256(
       this.toBuffer(true).slice(0, BlockHeaderSize - 169)
     );
   }
 
   getHash(): string {
-    return this.getHashBuffer().reverse().toString("hex");
+    return uint8arraytools.toHex(this.getHashBuffer().reverse());
   }
 
-  static calculateTxRoot(transactions: Transaction[]): Buffer {
+  static calculateTxRoot(transactions: Transaction[]): Uint8Array {
     if (transactions.length === 0)
       throw TypeError("Cannot compute merkle root for zero transactions");
 
@@ -227,6 +231,9 @@ export default class Block {
     if (!this.transactions) return false;
 
     const actualTxRoot = Block.calculateTxRoot(this.transactions);
-    return this.txRoot!.compare(actualTxRoot) === 0;
+    // uint8arraytools.compare(this.txRoot as Uint8Array, actualTxRoot);
+    return (
+      uint8arraytools.compare(this.txRoot as Uint8Array, actualTxRoot) === 0
+    );
   }
 }

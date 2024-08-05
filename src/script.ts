@@ -5,6 +5,7 @@
 const OPS = require("./ops/ops.json");
 const OPS_MAP = require("./ops/map");
 import * as utils from "./ops/utils";
+import * as uint8arraytools from "uint8array-tools";
 
 export interface SCRIPT_TYPE {
   NONSTANDARD: string;
@@ -16,7 +17,7 @@ export interface SCRIPT_TYPE {
 
 class Script {
   version: number;
-  stack: Array<number | Buffer | string>;
+  stack: Array<number | Uint8Array | string>;
 
   constructor() {
     this.version = 1; // not used, reversed
@@ -42,9 +43,9 @@ class Script {
     P2PK: __signatureScript,
   };
 
-  static fromBuffer(buffer: Buffer): Script | null {
+  static fromBuffer(buffer: Uint8Array): Script | null {
     const script = new Script();
-    if (Buffer.isBuffer(buffer)) {
+    if (buffer instanceof Uint8Array) {
       let i = 0;
       while (i < buffer.length) {
         const opcode = buffer[i] as number;
@@ -86,7 +87,7 @@ class Script {
       // opcode?
       if (OPS[chunkStr] !== undefined) return OPS[chunkStr];
       // data!
-      return Buffer.from(chunkStr, "hex");
+      return uint8arraytools.fromHex(chunkStr);
     });
     return script;
   }
@@ -95,10 +96,10 @@ class Script {
     return this.stack
       .map((chunk) => {
         // data?
-        if (Buffer.isBuffer(chunk)) {
-          const newchunk = chunk as Buffer;
+        if (chunk instanceof Uint8Array) {
+          const newchunk = chunk as Uint8Array;
           const op = utils.asMinimalOP(newchunk);
-          if (op === undefined) return newchunk.toString("hex");
+          if (op === undefined) return uint8arraytools.toHex(newchunk);
           chunk = op;
         }
         // opcode!
@@ -107,7 +108,7 @@ class Script {
       .join(" ");
   }
 
-  toBuffer(): Buffer {
+  toBuffer(): Uint8Array {
     let lockIndex: number | undefined;
     const bufferSize = this.stack.reduce((accum, chunk, i) => {
       if (typeof chunk === "string" && chunk === "cltv") {
@@ -120,11 +121,11 @@ class Script {
         } else if ((chunk as number) >= 1 && (chunk as number) <= 16) {
           return (accum as number) + 1;
         } else {
-          const result = Buffer.alloc(9);
+          const result = new Uint8Array(9);
           let dataLen = 0;
           let n = chunk as number;
           while (n > 0) {
-            result.writeUInt8(n & 0xff, dataLen);
+            uint8arraytools.writeUInt8(result, dataLen, n & 0xff);
             n >>= 8;
             dataLen++;
           }
@@ -135,8 +136,8 @@ class Script {
         }
       }
       // data chunk
-      if (Buffer.isBuffer(chunk)) {
-        const newBuffer = chunk as Buffer;
+      if (chunk instanceof Uint8Array) {
+        const newBuffer = chunk as Uint8Array;
         // adhere to BIP62.3, minimal push policy
         if (
           newBuffer.length === 1 &&
@@ -153,7 +154,7 @@ class Script {
       // opcode
       return (accum as number) + 1;
     }, 0.0);
-    const buffer = Buffer.allocUnsafe(bufferSize as number);
+    const buffer = new Uint8Array(bufferSize as number);
     let offset = 0;
 
     this.stack.forEach((chunk, index) => {
@@ -162,17 +163,21 @@ class Script {
       // Lock execution
       if (typeof lockIndex === "number" && lockIndex === index) {
         if (chunk === 0) {
-          buffer.writeUInt8(OPS.OP_0, offset);
+          uint8arraytools.writeUInt8(buffer, offset, OPS.OP_0);
           offset += 1;
         } else if ((chunk as number) >= 1 && (chunk as number) <= 16) {
-          buffer.writeUInt8(OPS.OP_1 - 1 + (chunk as number), offset);
+          uint8arraytools.writeUInt8(
+            buffer,
+            offset,
+            OPS.OP_1 - 1 + (chunk as number)
+          );
           offset += 1;
         } else {
           let dataLen = 0;
-          const data = Buffer.alloc(12);
+          const data = new Uint8Array(12);
           let n = chunk as number;
           while (n > 0) {
-            data.writeUInt8(n & 0xff, dataLen);
+            uint8arraytools.writeUInt8(data, dataLen, n & 0xff);
             n >>= 8;
             dataLen++;
           }
@@ -180,32 +185,37 @@ class Script {
             dataLen++;
           }
 
-          buffer.writeUInt8(dataLen, offset);
+          uint8arraytools.writeUInt8(buffer, dataLen, offset);
           offset++;
           while ((chunk as number) > 0) {
-            buffer.writeUInt8((chunk as number) & 0xff, offset);
+            uint8arraytools.writeUInt8(
+              buffer,
+              offset,
+              (chunk as number) & 0xff
+            );
             (chunk as number) >>= 8;
             offset += 1;
           }
           if (((buffer[offset - 1] as number) & 0x80) !== 0) {
-            buffer.writeUInt8(0x00, offset);
+            uint8arraytools.writeUInt8(buffer, offset, 0x00);
             offset += 1;
           }
         }
-      } else if (Buffer.isBuffer(chunk)) {
+      } else if (chunk instanceof Uint8Array) {
         // adhere to BIP62.3, minimal push policy
-        const opcode = utils.asMinimalOP(chunk as Buffer);
+        const opcode = utils.asMinimalOP(chunk as Uint8Array);
         if (opcode !== undefined) {
-          buffer.writeUInt8(opcode, offset);
+          uint8arraytools.writeUInt8(buffer, offset, opcode);
           offset += 1;
           return;
         }
 
-        offset += utils.encode(buffer, (chunk as Buffer).length, offset);
-        (chunk as Buffer).copy(buffer, offset);
-        offset += (chunk as Buffer).length;
+        offset += utils.encode(buffer, (chunk as Uint8Array).length, offset);
+        // (chunk as Uint8Array).copy(buffer, offset);
+        buffer.set(chunk, offset);
+        offset += (chunk as Uint8Array).length;
       } else {
-        buffer.writeUInt8(chunk as number, offset);
+        uint8arraytools.writeUInt8(buffer, offset, chunk as number);
         offset += 1;
       }
     });
@@ -227,7 +237,7 @@ class Script {
 
 // Helper functions
 
-function __publicKeyScript(hash: Buffer): Script {
+function __publicKeyScript(hash: Uint8Array): Script {
   const script = new Script();
   script.stack = [
     OPS.OP_DUP,
@@ -239,7 +249,7 @@ function __publicKeyScript(hash: Buffer): Script {
   return script;
 }
 
-function __cltvScript(hash: Buffer, lockTime: number): Script {
+function __cltvScript(hash: Uint8Array, lockTime: number): Script {
   const script = new Script();
   script.stack = [
     "cltv",
@@ -255,13 +265,13 @@ function __cltvScript(hash: Buffer, lockTime: number): Script {
   return script;
 }
 
-function __scriptHash(hash: Buffer): Script {
+function __scriptHash(hash: Uint8Array): Script {
   const script = new Script();
   script.stack = [OPS.OP_HASH160, hash, OPS.OP_EQUAL];
   return script;
 }
 
-function __signatureScript(signature: Buffer, pubkey: Buffer): Script {
+function __signatureScript(signature: Uint8Array, pubkey: Uint8Array): Script {
   const script = new Script();
   script.stack = [signature, pubkey];
   return script;
